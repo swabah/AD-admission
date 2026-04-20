@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent } from "react";
+import { useState, useRef, type ChangeEvent } from "react";
 import React from "react";
 import { addApplication } from "../services/supabase";
 import logo from "../assets/logo.jpg";
@@ -83,6 +83,7 @@ interface FormState extends FormData {
 }
 
 const ApplyPage = () => {
+  const photoInputRef = useRef<HTMLInputElement>(null);
   const [currentStep, setCurrentStep] = useState(1);
   const [photoDataURL, setPhotoDataURL] = useState<string | null>(null);
   const [formData, setFormData] = useState<FormState>({
