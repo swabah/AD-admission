@@ -54,7 +54,10 @@ const PRINT_STYLES = `
       top: 0 !important; 
       left: 0 !important; 
       margin: 0 !important;
-      box-shadow: none !important; 
+      box-shadow: none !important;
+      transform: none !important;
+      width: 210mm !important;
+      height: 297mm !important;
     }
     .no-print { display: none !important; }
   }
