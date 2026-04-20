@@ -1,0 +1,43 @@
+import { z } from "zod";
+
+export const applicationSchema = z.object({
+	firstName: z.string().min(1, "First name is required"),
+	lastName: z.string().min(1, "Last name is required"),
+	dob: z.string().min(1, "Date of birth is required"),
+	gender: z.string().min(1, "Gender is required"),
+	bloodGroup: z.string().optional(),
+	nationality: z.string().default("Indian"),
+	religion: z.string().optional(),
+	category: z.string().optional(),
+	aadhar: z.string().optional(),
+	studentPhone: z.string().optional(),
+	address: z.string().min(1, "Address is required"),
+	applyClass: z.string().min(1, "Class is required"),
+	academicYear: z.string().min(1, "Academic year is required"),
+	stream: z.string().optional(),
+	medium: z.string().default("English"),
+	prevSchool: z.string().optional(),
+	prevClass: z.string().optional(),
+	prevBoard: z.string().optional(),
+	prevPercentage: z.string().optional(),
+	achievements: z.string().optional(),
+	fatherName: z.string().min(1, "Father's name is required"),
+	fatherOcc: z.string().optional(),
+	fatherPhone: z.string().min(1, "Father's phone is required"),
+	fatherEmail: z.string().email("Invalid email").optional().or(z.literal("")),
+	motherName: z.string().min(1, "Mother's name is required"),
+	motherOcc: z.string().optional(),
+	motherPhone: z.string().optional(),
+	motherEmail: z.string().email("Invalid email").optional().or(z.literal("")),
+	income: z.string().optional(),
+	emergencyName: z.string().optional(),
+	emergencyPhone: z.string().optional(),
+	medical: z.string().optional(),
+	referral: z.string().optional(),
+	remarks: z.string().optional(),
+	agreeCheck: z.boolean().refine((val) => val === true, {
+		message: "You must agree to the declaration",
+	}),
+});
+
+export type ApplicationFormData = z.infer<typeof applicationSchema>;
