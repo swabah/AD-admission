@@ -2,11 +2,9 @@ import { useState, useRef, type ChangeEvent } from "react";
 import React from "react";
 import { addApplication } from "../services/supabase";
 import logo from "../assets/logo.jpg";
-import InfoItem from "../components/InfoItem";
-import PhotoUploadSection from "../components/PhotoUploadSection";
 import ApplicationPrintDocument from "../components/ApplicationPrintDocument";
 import { validateStep, validatePhoto } from "../utils/formValidation";
-import { formatDate, formatApplicationNo } from "../utils/formatters";
+import { formatApplicationNo } from "../utils/formatters";
 
 interface FormData {
   firstName: string;
@@ -1075,191 +1073,14 @@ const ApplyPage = () => {
           </div>
         </div>
 
-        <div id="printArea">
-          <div className="admit-header">
-            <div className="admit-school-info">
-              <div className="admit-logo">
-                <div className="admit-logo-circle">
-                  <img src={logo} alt="Ahlussuffa Logo" />
-                </div>
-                <div>
-                  <div className="admit-school-name">Ahlussuffa</div>
-                  <div className="admit-school-sub">
-                    Where Faith Meets Knowledge · Kannur, Kerala
-                  </div>
-                </div>
-              </div>
-              <div className="admit-form-title">
-                Student Admission Application
-              </div>
-            </div>
-            <div className="admit-app-no">
-              <div className="app-no-label">Application No.</div>
-              <div className="app-no-val">{appNo}</div>
-              <div className="app-date">
-                Date:{" "}
-                {new Date().toLocaleDateString("en-IN", {
-                  day: "2-digit",
-                  month: "long",
-                  year: "numeric",
-                })}
-              </div>
-            </div>
-          </div>
-          <div className="gold-bar" />
-
-          <div className="admit-body">
-            <div className="admit-top">
-              <div className="admit-photo">
-                {photoDataURL ? (
-                  <img
-                    src={photoDataURL}
-                    alt="Student portrait"
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                    }}
-                  />
-                ) : (
-                  "No Photo"
-                )}
-              </div>
-              <div className="admit-name-block">
-                <h3>
-                  {formData.firstName} {formData.lastName}
-                </h3>
-                <div className="admit-class">
-                  Applying for {formData.applyClass} · {formData.academicYear}
-                </div>
-                <div className="admit-tags">
-                  {[formData.gender, formData.bloodGroup]
-                    .filter((t) => t)
-                    .map((t) => (
-                      <span key={t} className="admit-tag">
-                        {t}
-                      </span>
-                    ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="admit-section-title">Personal Information</div>
-            <div className="info-grid">
-              <InfoItem
-                label="Date of Birth"
-                value={
-                  formData.dob
-                    ? new Date(formData.dob).toLocaleDateString("en-IN", {
-                        day: "2-digit",
-                        month: "long",
-                        year: "numeric",
-                      })
-                    : "—"
-                }
-              />
-              <InfoItem label="Gender" value={formData.gender} />
-              <InfoItem label="Blood Group" value={formData.bloodGroup} />
-              <InfoItem label="Nationality" value={formData.nationality} />
-              <InfoItem label="Aadhar No." value={formData.aadhar} />
-              <InfoItem label="Phone" value={formData.studentPhone} />
-              <div style={{ gridColumn: "1/-1" }}>
-                <InfoItem label="Address" value={formData.address} />
-              </div>
-            </div>
-
-            <div className="admit-section-title">Academic Details</div>
-            <div className="info-grid">
-              <InfoItem
-                label="Applying for Class"
-                value={formData.applyClass}
-              />
-              <InfoItem label="Academic Year" value={formData.academicYear} />
-              <InfoItem label="Stream" value={formData.stream} />
-              <InfoItem label="Previous School" value={formData.prevSchool} />
-              <InfoItem label="Previous Class" value={formData.prevClass} />
-              <InfoItem label="Previous Board" value={formData.prevBoard} />
-              <InfoItem
-                label="Last Exam Result"
-                value={formData.prevPercentage}
-              />
-              {formData.achievements && (
-                <div style={{ gridColumn: "1/-1" }}>
-                  <InfoItem
-                    label="Achievements"
-                    value={formData.achievements}
-                  />
-                </div>
-              )}
-            </div>
-
-            <div className="admit-section-title">Parent / Guardian Details</div>
-            <div className="info-grid">
-              <InfoItem label="Father's Name" value={formData.fatherName} />
-              <InfoItem
-                label="Father's Occupation"
-                value={formData.fatherOcc}
-              />
-              <InfoItem label="Father's Phone" value={formData.fatherPhone} />
-              <InfoItem label="Father's Email" value={formData.fatherEmail} />
-              <InfoItem label="Mother's Name" value={formData.motherName} />
-              <InfoItem
-                label="Mother's Occupation"
-                value={formData.motherOcc}
-              />
-              <InfoItem label="Mother's Phone" value={formData.motherPhone} />
-              <InfoItem label="Mother's Email" value={formData.motherEmail} />
-              <InfoItem label="Annual Income" value={formData.income} />
-              <InfoItem
-                label="Emergency Contact"
-                value={`${formData.emergencyName}${formData.emergencyPhone ? ` · ${formData.emergencyPhone}` : ""}`}
-              />
-            </div>
-
-            <div className="admit-section-title">Additional Information</div>
-            <div className="info-grid">
-              <InfoItem label="Referral Source" value={formData.referral} />
-              {formData.medical && (
-                <div style={{ gridColumn: "1/-1" }}>
-                  <InfoItem
-                    label="Medical / Allergies"
-                    value={formData.medical}
-                  />
-                </div>
-              )}
-              {formData.remarks && (
-                <div style={{ gridColumn: "1/-1" }}>
-                  <InfoItem
-                    label="Additional Remarks"
-                    value={formData.remarks}
-                  />
-                </div>
-              )}
-            </div>
-
-            <div className="admit-declaration">
-              <strong>Declaration:</strong> I hereby declare that all the
-              information provided in this application is true and correct to
-              the best of my knowledge. I agree to abide by the rules and
-              regulations of the institution.
-            </div>
-
-            <div className="admit-footer">
-              <div className="sig-line">
-                <div className="sig-dashes" />
-                <div className="sig-label">Parent / Guardian Signature</div>
-              </div>
-              <div className="sig-line">
-                <div className="sig-dashes" />
-                <div className="sig-label">Applicant Signature</div>
-              </div>
-              <div className="sig-line">
-                <div className="sig-dashes" />
-                <div className="sig-label">Office Use Only</div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <ApplicationPrintDocument
+          app={{
+            ...formData,
+            appNo,
+            photo: photoDataURL ?? undefined,
+            submissionDate: new Date().toISOString(),
+          }}
+        />
       </div>
     </div>
   );

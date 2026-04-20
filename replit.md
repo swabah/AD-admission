@@ -46,6 +46,18 @@ Configured as a **static site** deployment:
 - Build command: `npm run build`
 - Public directory: `dist`
 
+## Key Components
+
+- **ApplicationPrintDocument** — Unified A4 print form used by both ApplyPage (preview/print) and AdminPage (admin print). Uses fully inline styles for reliable print rendering. Accepts both camelCase (live form) and snake_case (Supabase) field names. Renders: navy+gold header, dotted-line fields, declaration, signature row, and "For Office Use Only" box.
+- **ApplyPage** — 3-step form (Personal → Academic → Parent & More). Photo upload with validation. On completion, shows `ApplicationPrintDocument` preview with Edit / Print / Share buttons.
+- **AdminPage** — Password-protected dashboard. Lists applications from Supabase, allows detail modal view and print via `ApplicationPrintDocument`.
+
+## Print / PDF
+
+- `@media print` in `src/index.css` hides all non-print UI and resets `#printArea` to full width with no border/shadow.
+- `ApplicationPrintDocument` renders an A4 page (210mm × 297mm) with `print-color-adjust: exact` preserved via inline styles.
+- The `@page` rule sets 8mm vertical / 10mm horizontal margins.
+
 ## Workflows
 
 - **Start application** — Runs `npm run dev` on port 5000 (webview)
