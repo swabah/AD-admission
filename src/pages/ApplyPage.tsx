@@ -276,15 +276,24 @@ const ApplyPage = () => {
       {/* Form Page */}
       <div id="formPage" className={`screen ${!showPreview ? "active" : ""}`}>
         <header>
-          <div className="school-logo">
+          <div className="header-decor-ring header-decor-ring--tl" />
+          <div className="header-decor-ring header-decor-ring--br" />
+          <div className="header-decor-dots" aria-hidden="true">
+            {Array.from({ length: 20 }).map((_, i) => (
+              <span key={i} className="header-dot" />
+            ))}
+          </div>
+          <div className="header-inner">
             <div className="logo-circle">
               <img src={logo} alt="Ahlussuffa Logo" />
             </div>
-            <div className="school-name-block">
-              <div className="school-name">Ahlussuffa</div>
-              <div className="school-sub">
-                Where Faith Meets Knowledge · Kannur, Kerala
-              </div>
+            <div className="school-name">Ahlussuffa</div>
+            <div className="school-sub">
+              Where Faith Meets Knowledge · Kannur, Kerala
+            </div>
+            <div className="header-badge">
+              <span className="header-badge-dot" />
+              Admissions Open · 2025–26
             </div>
           </div>
         </header>
