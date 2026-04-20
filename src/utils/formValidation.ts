@@ -52,16 +52,12 @@ export const validateStep = (
       errors.firstName = "First name is required";
     } else if (formData.firstName.trim().length < 2) {
       errors.firstName = "First name must be at least 2 characters";
-    } else if (!/^[a-zA-Z\s'-]+$/.test(formData.firstName.trim())) {
-      errors.firstName = "First name should only contain letters";
     }
 
     if (!formData.lastName?.trim()) {
       errors.lastName = "Last name is required";
     } else if (formData.lastName.trim().length < 2) {
       errors.lastName = "Last name must be at least 2 characters";
-    } else if (!/^[a-zA-Z\s'-]+$/.test(formData.lastName.trim())) {
-      errors.lastName = "Last name should only contain letters";
     }
 
     if (!formData.dob) {
@@ -69,13 +65,8 @@ export const validateStep = (
     } else {
       const dob = new Date(formData.dob);
       const today = new Date();
-      const age = today.getFullYear() - dob.getFullYear();
       if (dob >= today) {
         errors.dob = "Date of birth must be in the past";
-      } else if (age > 30) {
-        errors.dob = "Please check the date of birth — age seems too high";
-      } else if (age < 3) {
-        errors.dob = "Please check the date of birth — age seems too low";
       }
     }
 
@@ -85,8 +76,6 @@ export const validateStep = (
 
     if (!formData.address?.trim()) {
       errors.address = "Residential address is required";
-    } else if (formData.address.trim().length < 10) {
-      errors.address = "Please enter a complete address";
     }
 
     if (formData.aadhar && !isValidAadhar(formData.aadhar)) {
@@ -110,8 +99,6 @@ export const validateStep = (
   if (step === 3) {
     if (!formData.fatherName?.trim()) {
       errors.fatherName = "Father's name is required";
-    } else if (formData.fatherName.trim().length < 2) {
-      errors.fatherName = "Please enter a valid name";
     }
 
     if (!formData.fatherPhone) {
@@ -126,8 +113,6 @@ export const validateStep = (
 
     if (!formData.motherName?.trim()) {
       errors.motherName = "Mother's name is required";
-    } else if (formData.motherName.trim().length < 2) {
-      errors.motherName = "Please enter a valid name";
     }
 
     if (formData.motherPhone && !isValidPhone(formData.motherPhone)) {
