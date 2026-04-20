@@ -40,9 +40,7 @@ interface ApplicationPrintDocumentProps {
 
 const s = {
   page: {
-    width: "210mm",
-    minHeight: "297mm",
-    margin: "0 auto",
+    width: "100%",
     background: "#fff",
     fontFamily: "'Arial', 'Helvetica', sans-serif",
     fontSize: "8.5pt",

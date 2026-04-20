@@ -1780,97 +1780,39 @@ main {
 @media print {
   @page {
     size: A4 portrait;
-    margin: 8mm 10mm;
+    margin: 0;
   }
 
-  body {
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
     background: white !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  .no-print,
-  .preview-header,
-  .nav-btns,
-  .progress-bar,
-  header,
-  .admin-header,
-  .admin-login,
-  .admin-dashboard,
-  .admin-stats,
-  .applications-table,
-  .form-section,
-  .btn {
-    display: none !important;
+  /* Hide every element on the page */
+  body * {
+    visibility: hidden !important;
   }
 
-  .admin-print-view {
-    margin: 0;
-    padding: 0;
-    max-width: 100%;
+  /* Show only the print area and all its children */
+  #printArea,
+  #printArea * {
+    visibility: visible !important;
   }
 
-  .screen {
-    display: block !important;
-  }
-
+  /* Stamp the print area at the very top-left of the page */
   #printArea {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    margin: 0 !important;
+    padding: 0 !important;
     box-shadow: none !important;
     border: none !important;
     border-radius: 0 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    page-break-inside: avoid;
-  }
-
-  /* Legacy admit classes kept for backward compat — hidden by new design */
-  .admit-header {
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-
-  .admit-section-title {
-    margin: 16px 0 10px;
-    font-size: 10px;
-  }
-
-  .info-grid {
-    gap: 8px;
-    margin-bottom: 16px;
-  }
-
-  .info-item {
-    padding: 8px 10px;
-  }
-
-  .info-label {
-    font-size: 9px;
-  }
-
-  .info-item span {
-    font-size: 12px;
-  }
-
-  .admit-declaration {
-    margin-top: 16px;
-    padding: 12px 14px;
-    font-size: 11px;
-  }
-
-  .admit-footer {
-    margin-top: 32px;
-    padding-top: 20px;
-  }
-
-  .sig-dashes {
-    height: 30px;
-  }
-
-  .admit-tag {
-    font-size: 10px;
-    padding: 2px 8px;
   }
 }
 
