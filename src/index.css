@@ -99,10 +99,16 @@ h4 {
   color: var(--white);
   box-shadow: 0 2px 8px rgba(200, 146, 42, 0.35);
 }
-.btn-gold:hover {
+.btn-gold:hover:not(:disabled) {
   background: linear-gradient(135deg, #d4a040 0%, var(--gold) 100%);
   transform: translateY(-1px);
   box-shadow: 0 4px 16px rgba(200, 146, 42, 0.4);
+}
+.btn-gold:disabled,
+.btn-outline:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .btn-outline {
@@ -601,6 +607,10 @@ main {
   background: var(--blue-light);
   transform: scale(1.02);
 }
+.photo-box--error {
+  border-color: var(--error);
+  background: var(--error-bg);
+}
 .photo-box img {
   width: 100%;
   height: 100%;
@@ -622,6 +632,100 @@ main {
   font-size: 10.5px;
   color: var(--text-muted);
   opacity: 0.7;
+}
+
+.photo-feedback {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  max-width: 140px;
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+}
+.photo-feedback--error {
+  color: var(--error);
+  background: var(--error-bg);
+  border: 1px solid rgba(192, 57, 43, 0.2);
+}
+.photo-feedback--success {
+  color: var(--success);
+  background: var(--success-bg);
+  border: 1px solid rgba(26, 110, 70, 0.2);
+}
+.photo-feedback-icon {
+  flex-shrink: 0;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.submit-error-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--error-bg);
+  border: 1px solid rgba(192, 57, 43, 0.25);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-bottom: 20px;
+  animation: fade-in 0.25s ease;
+}
+.submit-error-icon {
+  font-size: 18px;
+  color: var(--error);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.submit-error-banner > div {
+  flex: 1;
+}
+.submit-error-banner strong {
+  display: block;
+  color: var(--error);
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+.submit-error-banner p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+.submit-error-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.submit-error-close:hover {
+  color: var(--error);
+}
+
+.btn-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* ─── Nav Buttons ─── */

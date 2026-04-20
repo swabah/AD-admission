@@ -5,7 +5,7 @@ import logo from "../assets/logo.jpg";
 import InfoItem from "../components/InfoItem";
 import PhotoUploadSection from "../components/PhotoUploadSection";
 import ApplicationPrintDocument from "../components/ApplicationPrintDocument";
-import { validateStep } from "../utils/formValidation";
+import { validateStep, validatePhoto } from "../utils/formValidation";
 import { formatDate, formatApplicationNo } from "../utils/formatters";
 
 interface FormData {
@@ -121,8 +121,12 @@ const ApplyPage = () => {
     agreeCheck: false,
   });
   const [errors, setErrors] = useState<FormErrors>({});
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const [photoInfo, setPhotoInfo] = useState<string | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const [appNo, setAppNo] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const compressImage = (
     file: File,
@@ -180,21 +184,31 @@ const ApplyPage = () => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check file size
+    setPhotoError(null);
+    setPhotoInfo(null);
+
+    const validationError = validatePhoto(file);
+    if (validationError) {
+      setPhotoError(validationError);
+      e.target.value = "";
+      return;
+    }
+
     const fileSizeInMB = file.size / (1024 * 1024);
 
     if (fileSizeInMB > 2) {
-      // Compress if larger than 2MB
+      setPhotoInfo("Compressing image, please wait…");
       compressImage(file, (compressedDataURL) => {
+        const finalMB = (compressedDataURL.length / (1024 * 1024)).toFixed(1);
         setPhotoDataURL(compressedDataURL);
-        alert(
-          `Image compressed from ${fileSizeInMB.toFixed(2)}MB to ${(compressedDataURL.length / (1024 * 1024)).toFixed(2)}MB`,
-        );
+        setPhotoInfo(`Photo ready — compressed to ${finalMB} MB`);
       });
     } else {
-      // Use original if small enough
       const reader = new FileReader();
-      reader.onload = (ev) => setPhotoDataURL(ev.target?.result as string);
+      reader.onload = (ev) => {
+        setPhotoDataURL(ev.target?.result as string);
+        setPhotoInfo(`Photo uploaded (${fileSizeInMB.toFixed(1)} MB)`);
+      };
       reader.readAsDataURL(file);
     }
   };
@@ -234,7 +248,12 @@ const ApplyPage = () => {
   };
 
   const submitForm = async () => {
-    if (!validate(3)) return;
+    setSubmitError(null);
+    if (!validate(3)) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    setIsSubmitting(true);
     const newAppNo = formatApplicationNo();
     setAppNo(newAppNo);
     try {
@@ -248,7 +267,12 @@ const ApplyPage = () => {
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
       console.error("Error submitting application: ", error);
-      alert("There was an error submitting the form. Please try again.");
+      setSubmitError(
+        "We couldn't submit your application right now. Please check your connection and try again.",
+      );
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -359,7 +383,7 @@ const ApplyPage = () => {
                   Student Photo
                 </label>
                 <div
-                  className="photo-box"
+                  className={`photo-box ${photoError ? "photo-box--error" : ""}`}
                   onClick={() => photoInputRef.current?.click()}
                 >
                   {photoDataURL ? (
@@ -368,18 +392,30 @@ const ApplyPage = () => {
                     <div className="photo-hint">
                       <div className="cam-icon">📷</div>
                       Upload Photo
-                      <small>JPG, PNG up to 5MB</small>
+                      <small>JPG, PNG, WebP · max 5 MB</small>
                     </div>
                   )}
                 </div>
                 <input
                   type="file"
                   id="photoInput"
-                  accept="image/*"
+                  accept="image/jpeg,image/png,image/webp"
                   onChange={previewPhoto}
                   ref={photoInputRef}
                   style={{ display: "none" }}
                 />
+                {photoError && (
+                  <div className="photo-feedback photo-feedback--error">
+                    <span className="photo-feedback-icon">⚠</span>
+                    {photoError}
+                  </div>
+                )}
+                {photoInfo && !photoError && (
+                  <div className="photo-feedback photo-feedback--success">
+                    <span className="photo-feedback-icon">✓</span>
+                    {photoInfo}
+                  </div>
+                )}
               </div>
 
               <div style={{ flex: 1, minWidth: "260px" }}>
@@ -971,12 +1007,40 @@ const ApplyPage = () => {
               {errors.agreeCheck}
             </div>
 
+            {submitError && (
+              <div className="submit-error-banner">
+                <span className="submit-error-icon">⚠</span>
+                <div>
+                  <strong>Submission failed</strong>
+                  <p>{submitError}</p>
+                </div>
+                <button
+                  className="submit-error-close"
+                  onClick={() => setSubmitError(null)}
+                  aria-label="Dismiss"
+                >
+                  ×
+                </button>
+              </div>
+            )}
+
             <div className="nav-btns">
-              <button className="btn btn-outline" onClick={() => prevStep(3)}>
+              <button className="btn btn-outline" onClick={() => prevStep(3)} disabled={isSubmitting}>
                 ← Back
               </button>
-              <button className="btn btn-gold" onClick={submitForm}>
-                Review & Submit ✓
+              <button
+                className="btn btn-gold"
+                onClick={submitForm}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? (
+                  <>
+                    <span className="btn-spinner" />
+                    Submitting…
+                  </>
+                ) : (
+                  "Review & Submit ✓"
+                )}
               </button>
             </div>
           </div>
