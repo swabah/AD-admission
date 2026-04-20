@@ -1,4 +1,4 @@
-import logo from "../assets/logo.jpg";
+import React, { useEffect } from "react";
 import { formatDate } from "../utils/formatters";
 
 interface RawApplicationData {
@@ -38,337 +38,448 @@ interface ApplicationPrintDocumentProps {
   app: RawApplicationData;
 }
 
-const s = {
-  page: {
-    width: "100%",
-    background: "#fff",
-    fontFamily: "'Arial', 'Helvetica', sans-serif",
-    fontSize: "8.5pt",
-    color: "#111",
-    display: "flex",
-    flexDirection: "column" as const,
-    boxSizing: "border-box" as const,
-  },
-  header: {
-    background: "#0a1628",
-    padding: "10px 14px 8px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: "10px",
-  },
-  headerLeft: {
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    flex: 1,
-  },
-  logoBox: {
-    width: "46px",
-    height: "46px",
-    background: "rgba(255,255,255,0.1)",
-    border: "1px solid rgba(200,146,42,0.5)",
-    borderRadius: "8px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: "5px",
-    flexShrink: 0,
-  },
-  logoImg: { width: "100%", height: "100%", objectFit: "contain" as const, filter: "brightness(0) invert(1)" },
-  schoolBlock: { color: "#fff" },
-  schoolName: { fontFamily: "'Georgia', serif", fontSize: "15pt", fontWeight: "bold" as const, lineHeight: 1.1 },
-  schoolSub: { fontSize: "7pt", color: "rgba(255,255,255,0.65)", letterSpacing: "0.04em", textTransform: "uppercase" as const },
-  formTitle: { fontSize: "9pt", color: "#c8922a", fontWeight: "bold" as const, marginTop: "3px", letterSpacing: "0.06em", textTransform: "uppercase" as const },
-  headerMeta: { color: "#fff", textAlign: "right" as const, fontSize: "7.5pt" },
-  metaLabel: { color: "rgba(255,255,255,0.6)", fontSize: "7pt" },
-  metaVal: { fontWeight: "bold" as const, fontSize: "9pt" },
-  goldBar: { height: "3px", background: "linear-gradient(90deg, transparent, #c8922a, #e8b86d, #c8922a, transparent)" },
-  photoBox: {
-    width: "72px",
-    height: "88px",
-    border: "1.5px solid rgba(255,255,255,0.3)",
-    borderRadius: "4px",
-    background: "rgba(255,255,255,0.08)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    overflow: "hidden",
-    flexShrink: 0,
-  },
-  body: { padding: "10px 14px", flex: 1, display: "flex", flexDirection: "column" as const, gap: "7px" },
-  sectionHead: {
-    background: "#0a1628",
-    color: "#fff",
-    fontSize: "7pt",
-    fontWeight: "bold" as const,
-    letterSpacing: "0.08em",
-    textTransform: "uppercase" as const,
-    padding: "3px 7px",
-    borderRadius: "2px",
-    marginBottom: "4px",
-  },
-  row: { display: "flex", gap: "10px", marginBottom: "3px", alignItems: "flex-end" },
-  field: { display: "flex", flexDirection: "column" as const, flex: 1 },
-  label: { fontSize: "6.5pt", color: "#666", textTransform: "uppercase" as const, letterSpacing: "0.05em", marginBottom: "1px" },
-  value: {
-    borderBottom: "1px dotted #999",
-    minHeight: "14px",
-    paddingBottom: "1px",
-    fontSize: "8.5pt",
-    color: "#111",
-    lineHeight: 1.3,
-  },
-  valueEmpty: {
-    borderBottom: "1px dotted #bbb",
-    minHeight: "14px",
-    paddingBottom: "1px",
-    fontSize: "8.5pt",
-    color: "#ccc",
-  },
-  declaration: {
-    borderTop: "1px solid #ddd",
-    paddingTop: "6px",
-    marginTop: "4px",
-    fontSize: "7.5pt",
-    color: "#333",
-    lineHeight: 1.5,
-  },
-  sigRow: { display: "flex", gap: "16px", marginTop: "18px" },
-  sigBlock: { flex: 1, textAlign: "center" as const },
-  sigLine: { borderTop: "1px solid #333", paddingTop: "3px", fontSize: "7pt", color: "#555" },
-  officeBox: {
-    border: "1.5px solid #0a1628",
-    borderRadius: "4px",
-    marginTop: "8px",
-    overflow: "hidden",
-  },
-  officeHead: {
-    background: "#0a1628",
-    color: "#fff",
-    padding: "3px 8px",
-    fontSize: "7pt",
-    fontWeight: "bold" as const,
-    letterSpacing: "0.08em",
-    textTransform: "uppercase" as const,
-    display: "flex",
-    alignItems: "center",
-    gap: "6px",
-  },
-  officeBody: { padding: "6px 8px", display: "flex", gap: "12px" },
-  footer: {
-    padding: "5px 14px",
-    borderTop: "1px solid #e0e0e0",
-    display: "flex",
-    justifyContent: "space-between",
-    fontSize: "6.5pt",
-    color: "#999",
-  },
+// Print styles injected into <head>
+const PRINT_STYLES = `
+  @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Libre+Franklin:wght@300;400;500;600&display=swap');
+
+  @page { size: A4 portrait; margin: 0; }
+
+  @media print {
+    body { margin: 0; padding: 0; background: white; }
+    html, body { height: 100%; }
+    body * { visibility: hidden !important; }
+    #printArea, #printArea * { visibility: visible !important; }
+    #printArea { 
+      position: fixed !important; 
+      top: 0 !important; 
+      left: 0 !important; 
+      margin: 0 !important;
+      box-shadow: none !important; 
+    }
+    .no-print { display: none !important; }
+  }
+`;
+
+// Colour tokens
+const C = {
+  navy:       "#1a3a6b",
+  navyLight:  "#e8f0fb",
+  gold:       "#e8c96a",
+  text:       "#111827",
+  subtext:    "#6b7280",
+  border:     "#d1d5db",
+  borderDash: "#e5e7eb",
+  bg:         "#f9fafb",
+  white:      "#ffffff",
 };
 
-const Field = ({ label, value, flex = 1 }: { label: string; value?: string | null; flex?: number }) => (
-  <div style={{ ...s.field, flex }}>
-    <span style={s.label}>{label}</span>
-    <span style={value ? s.value : s.valueEmpty}>{value || ""}</span>
+// Shared style fragments
+const font = {
+  sans:  "'Libre Franklin', 'Segoe UI', Arial, sans-serif",
+  serif: "'EB Garamond', Georgia, serif",
+};
+
+// Sub-components
+
+interface FieldProps {
+  label: string;
+  value?: string | null;
+  span?: 1 | 2;
+}
+
+const Field = ({ label, value, span = 1 }: FieldProps) => (
+  <div style={{ gridColumn: span === 2 ? "span 2" : undefined, display: "flex", flexDirection: "column", gap: 0 }}>
+    <span style={{
+      fontFamily: font.sans,
+      fontSize: 9,
+      letterSpacing: 1,
+      textTransform: "uppercase" as const,
+      color: C.subtext,
+      fontWeight: 300,
+    }}>
+      {label}
+    </span>
+    <div style={{
+      fontFamily: value ? font.sans : font.sans,
+      fontSize: value ? 11 : 9,
+      fontStyle: value ? "normal" : "italic",
+      color: value ? "#000000" : C.subtext,
+      fontWeight: value ? 500 : 300,
+      borderBottom: `0.5px solid ${C.border}`,
+      paddingBottom: 1,
+      paddingTop: 1,
+      minHeight: 14,
+      lineHeight: 1.4,
+    }}>
+      {value || "\u00A0"}
+    </div>
   </div>
 );
 
+interface SectionHeaderProps { title: string }
+const SectionHeader = ({ title }: SectionHeaderProps) => (
+  <div style={{
+    background: C.navyLight,
+    borderLeft: `4px solid ${C.navy}`,
+    padding: "4px 8px",
+    fontSize: 9,
+    letterSpacing: 2,
+    textTransform: "uppercase" as const,
+    fontWeight: 600,
+    color: C.navy,
+    fontFamily: font.sans,
+    margin: "4px 0 10px",
+    borderRadius: "0 2px 2px 0",
+  }}>
+    {title}
+  </div>
+);
+
+interface FormGridProps { children: React.ReactNode; cols?: 2 | 3 }
+const FormGrid = ({ children, cols = 2 }: FormGridProps) => (
+  <div style={{
+    display: "grid",
+    gridTemplateColumns: `repeat(${cols}, 1fr)`,
+    gap: "4px 12px",
+    padding: "10px 0",
+    marginBottom: 2,
+  }}>
+    {children}
+  </div>
+);
+
+interface SigBlockProps { label: string }
+const SigBlock = ({ label }: SigBlockProps) => (
+  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+    <div style={{ width: "100%", height: 22, borderBottom: `1px solid ${C.border}` }} />
+    <span style={{
+      fontFamily: font.sans,
+      fontSize: 9,
+      letterSpacing: 1,
+      textTransform: "uppercase" as const,
+      color: C.subtext,
+      textAlign: "center",
+    }}>
+      {label}
+    </span>
+  </div>
+);
+
+// Main component
 const ApplicationPrintDocument = ({ app }: ApplicationPrintDocumentProps) => {
+  useEffect(() => {
+    const existing = document.getElementById("asd-print-styles");
+    if (existing) existing.remove();
+    const el = document.createElement("style");
+    el.id = "asd-print-styles";
+    el.textContent = PRINT_STYLES;
+    document.head.appendChild(el);
+    return () => { el.parentNode?.removeChild(el); };
+  }, []);
+
+  // Normalise field aliases
   const d = {
-    appNo: app.appNo || app.app_no || "",
-    firstName: app.firstName || app.first_name || "",
-    lastName: app.lastName || app.last_name || "",
-    dob: app.dob, gender: app.gender,
-    bloodGroup: app.bloodGroup || app.blood_group,
-    nationality: app.nationality,
-    aadhar: app.aadhar,
-    studentPhone: app.studentPhone || app.student_phone,
-    address: app.address,
-    applyClass: app.applyClass || app.apply_class || "",
-    academicYear: app.academicYear || app.academic_year || "",
-    stream: app.stream,
-    prevSchool: app.prevSchool || app.prev_school,
-    prevClass: app.prevClass || app.prev_class,
-    prevBoard: app.prevBoard || app.prev_board,
-    prevPercentage: app.prevPercentage || app.prev_percentage,
-    achievements: app.achievements,
-    fatherName: app.fatherName || app.father_name || "",
-    fatherOcc: app.fatherOcc || app.father_occ,
-    fatherPhone: app.fatherPhone || app.father_phone || "",
-    fatherEmail: app.fatherEmail || app.father_email,
-    motherName: app.motherName || app.mother_name || "",
-    motherOcc: app.motherOcc || app.mother_occ,
-    motherPhone: app.motherPhone || app.mother_phone,
-    motherEmail: app.motherEmail || app.mother_email,
-    income: app.income,
+    appNo:         app.appNo         || app.app_no          || "",
+    firstName:     app.firstName     || app.first_name      || "",
+    lastName:      app.lastName      || app.last_name       || "",
+    dob:           app.dob,
+    gender:        app.gender,
+    bloodGroup:    app.bloodGroup    || app.blood_group,
+    nationality:   app.nationality,
+    aadhar:        app.aadhar,
+    studentPhone:  app.studentPhone  || app.student_phone,
+    address:       app.address,
+    applyClass:    app.applyClass    || app.apply_class     || "",
+    academicYear:  app.academicYear  || app.academic_year   || "",
+    stream:        app.stream,
+    prevSchool:    app.prevSchool    || app.prev_school,
+    prevClass:     app.prevClass     || app.prev_class,
+    prevBoard:     app.prevBoard     || app.prev_board,
+    prevPercentage:app.prevPercentage|| app.prev_percentage,
+    achievements:  app.achievements,
+    fatherName:    app.fatherName    || app.father_name     || "",
+    fatherOcc:     app.fatherOcc     || app.father_occ,
+    fatherPhone:   app.fatherPhone   || app.father_phone    || "",
+    fatherEmail:   app.fatherEmail   || app.father_email,
+    motherName:    app.motherName    || app.mother_name     || "",
+    motherOcc:     app.motherOcc     || app.mother_occ,
+    motherPhone:   app.motherPhone   || app.mother_phone,
+    motherEmail:   app.motherEmail   || app.mother_email,
+    income:        app.income,
     emergencyName: app.emergencyName || app.emergency_name,
-    emergencyPhone: app.emergencyPhone || app.emergency_phone,
-    medical: app.medical,
-    referral: app.referral,
-    remarks: app.remarks,
-    photo: app.photo,
-    submissionDate: app.submissionDate || app.submission_date,
+    emergencyPhone:app.emergencyPhone|| app.emergency_phone,
+    medical:       app.medical,
+    remarks:       app.remarks,
+    photo:         app.photo,
+    submissionDate:app.submissionDate|| app.submission_date,
   };
 
-  const fullName = `${d.firstName} ${d.lastName}`.trim();
+  const fullName     = `${d.firstName} ${d.lastName}`.trim();
+  const academicYear = d.academicYear || String(new Date().getFullYear());
+
+  // Mobile scale calculation: 210mm = ~793px at 96dpi
+  const [scale, setScale] = React.useState(1);
+  React.useEffect(() => {
+    const calcScale = () => {
+      const screenWidth = window.innerWidth;
+      const pageWidth = 793; // 210mm in px
+      if (screenWidth < 850) {
+        setScale(Math.min(1, (screenWidth - 32) / pageWidth));
+      } else {
+        setScale(1);
+      }
+    };
+    calcScale();
+    window.addEventListener("resize", calcScale);
+    return () => window.removeEventListener("resize", calcScale);
+  }, []);
 
   return (
-    <div id="printArea" style={s.page}>
-
-      {/* ── HEADER ── */}
-      <div style={s.header}>
-        <div style={s.headerLeft}>
-          <div style={s.logoBox}>
-            <img src={logo} alt="Logo" style={s.logoImg} />
+    <div style={{
+      width: "100%",
+      overflow: scale < 1 ? "visible" : "auto",
+      display: "flex",
+      justifyContent: "center",
+      padding: scale < 1 ? "16px" : "0",
+      minHeight: "100vh",
+    }}>
+    <div
+      id="printArea"
+      style={{
+        width: "210mm",
+        height: "297mm",
+        overflow: "hidden",
+        background: C.white,
+        fontFamily: font.sans,
+        fontSize: 7.5,
+        color: C.text,
+        margin: "0 auto",
+        padding: "0 10px",
+        boxSizing: "border-box",
+        boxShadow: "0 4px 32px rgba(0,0,0,0.10)",
+        flexShrink: 0,
+        transform: `scale(${scale})`,
+        transformOrigin: "top center",
+        marginBottom: scale < 1 ? `calc(-297mm * (1 - ${scale}))` : "0",
+      }}
+    >
+      {/* HEADER */}
+      <div style={{
+        borderBottom: `1px solid ${C.border}`,
+        padding: "20px 14px 10px",
+        display: "grid",
+        gridTemplateColumns: "1fr auto",
+        alignItems: "center",
+        gap: 12,
+      }}>
+        {/* Left: institution identity + app meta */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div>
+              <div style={{
+                fontFamily: font.serif,
+                fontSize: 25,
+                fontWeight: 600,
+                letterSpacing: 1.5,
+                textTransform: "uppercase",
+                color: C.navy,
+                lineHeight: 1.2,
+              }}>
+                Ahlussuffa Dars
+              </div>
+              <div style={{
+                fontFamily: font.sans,
+                fontSize: 10,
+                letterSpacing: 1,
+                textTransform: "uppercase",
+                color: C.subtext,
+                fontWeight: 300,
+                marginTop: 1,
+              }}>
+                Where Faith Meets Knowledge · Kannur, Kerala
+              </div>
+            </div>
           </div>
-          <div style={s.schoolBlock}>
-            <div style={s.schoolName}>Ahlussuffa</div>
-            <div style={s.schoolSub}>Where Faith Meets Knowledge · Kannur, Kerala</div>
-            <div style={s.formTitle}>Student Admission Form</div>
+          <div style={{ display: "flex", gap: 16, marginTop: 2 }}>
+            <div>
+              <span style={{ fontFamily: font.sans, fontSize: 10, letterSpacing: 0.5, textTransform: "uppercase", color: C.subtext, fontWeight: 500 }}>Application No. </span>
+              <span style={{
+                display: "inline-block",
+                background: C.navy,
+                color: C.gold,
+                fontFamily: font.sans,
+                fontSize: 10,
+                fontWeight: 500,
+                letterSpacing: 1,
+                padding: "1px 6px",
+                borderRadius: 2,
+                verticalAlign: "middle",
+              }}>
+                {d.appNo || "PENDING"}
+              </span>
+            </div>
+            <div>
+              <span style={{ fontFamily: font.sans, fontSize: 10, letterSpacing: 0.5, textTransform: "uppercase", color: C.subtext, fontWeight: 500 }}>Submitted : </span>
+              <span style={{ fontFamily: font.sans, fontSize: 10, fontWeight: "bold", letterSpacing: 0.5, textTransform: "uppercase", color: C.text }}>
+                {formatDate(d.submissionDate, "full") || "—"}
+              </span>
+            </div>
           </div>
         </div>
 
-        <div style={s.headerMeta}>
-          <div style={s.metaLabel}>Application No.</div>
-          <div style={s.metaVal}>{d.appNo || "—"}</div>
-          <div style={{ ...s.metaLabel, marginTop: "4px" }}>Date</div>
-          <div style={{ color: "#fff", fontSize: "7.5pt" }}>{formatDate(d.submissionDate, "full") || "—"}</div>
-        </div>
-
-        <div style={s.photoBox}>
-          {d.photo
-            ? <img src={d.photo} alt="Student" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            : <span style={{ fontSize: "6pt", color: "rgba(255,255,255,0.4)", textAlign: "center" }}>Photo</span>
-          }
+        {/* Right: photo box - expanded */}
+        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+          <div style={{
+            width: 96,
+            height: 96,
+            border: `1px solid ${C.border}`,
+            borderRadius: "100%",
+            background: C.bg,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 2,
+            overflow: "hidden",
+          }}>
+            {d.photo ? (
+              <img src={d.photo} alt="Student" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            ) : (
+              <>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="8" r="4" fill={C.border} />
+                  <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke={C.border} strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+                <span style={{ fontFamily: font.sans, fontSize: 7, color: C.subtext, letterSpacing: 0.5, textTransform: "uppercase" }}>
+                  Photo
+                </span>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
-      <div style={s.goldBar} />
+      {/* FORM TITLE BAND */}
+      <div style={{
+        background: C.navy,
+        color: C.white,
+        textAlign: "center",
+        padding: "4px 14px",
+        fontFamily: font.sans,
+        fontSize: 9,
+        margin: "0 10px",
+        letterSpacing: 2,
+        textTransform: "uppercase",
+        fontWeight: 500,
+      }}>
+        Student Admission Application Form · Academic Year {academicYear}
+      </div>
 
-      {/* ── BODY ── */}
-      <div style={s.body}>
+      {/* BODY */}
+      <div style={{ padding: "20px 14px 10px" }}>
 
-        {/* Personal */}
-        <div>
-          <div style={s.sectionHead}>▸ Personal Information</div>
-          <div style={s.row}>
-            <Field label="Full Name" value={fullName} flex={2} />
-            <Field label="Date of Birth" value={formatDate(d.dob, "full")} />
-            <Field label="Gender" value={d.gender} />
-          </div>
-          <div style={s.row}>
-            <Field label="Blood Group" value={d.bloodGroup} />
-            <Field label="Nationality" value={d.nationality} />
-            <Field label="Aadhar Number" value={d.aadhar} />
-            <Field label="Phone" value={d.studentPhone} />
-          </div>
-          <div style={s.row}>
-            <Field label="Residential Address" value={d.address} flex={4} />
-          </div>
-        </div>
+        {/* Personal Information */}
+        <SectionHeader title="Personal Information" />
+        <FormGrid>
+          <Field label="Full Name" value={fullName} span={2} />
+          <Field label="Date of Birth" value={formatDate(d.dob, "full")} />
+          <Field label="Gender" value={d.gender} />
+          <Field label="Blood Group" value={d.bloodGroup} />
+          <Field label="Nationality" value={d.nationality} />
+          <Field label="Aadhaar Number" value={d.aadhar} />
+          <Field label="Phone" value={d.studentPhone} />
+          <Field label="Residential Address" value={d.address} span={2} />
+        </FormGrid>
 
-        {/* Academic */}
-        <div>
-          <div style={s.sectionHead}>▸ Academic Details</div>
-          <div style={s.row}>
-            <Field label="Applying for Class" value={d.applyClass} />
-            <Field label="Academic Year" value={d.academicYear} />
-            <Field label="Stream / Section" value={d.stream} />
-          </div>
-          <div style={s.row}>
-            <Field label="Previous School" value={d.prevSchool} flex={2} />
-            <Field label="Previous Class" value={d.prevClass} />
-            <Field label="Board" value={d.prevBoard} />
-            <Field label="Result (%)" value={d.prevPercentage} />
-          </div>
-          {d.achievements && (
-            <div style={s.row}>
-              <Field label="Achievements / Extracurricular" value={d.achievements} flex={4} />
-            </div>
-          )}
-        </div>
+        {/* Academic Details */}
+        <SectionHeader title="Academic Details" />
+        <FormGrid>
+          <Field label="Applying for Class" value={d.applyClass} />
+          <Field label="Academic Year" value={d.academicYear} />
+          <Field label="Stream / Section" value={d.stream} />
+          <Field label="Previous School" value={d.prevSchool} />
+          <Field label="Previous Class" value={d.prevClass} />
+          <Field label="Board" value={d.prevBoard} />
+          <Field label="Result (%)" value={d.prevPercentage} />
+          <Field label="Achievements" value={d.achievements} />
+        </FormGrid>
 
-        {/* Parent */}
-        <div>
-          <div style={s.sectionHead}>▸ Parent / Guardian Information</div>
-          <div style={s.row}>
-            <Field label="Father's Name" value={d.fatherName} flex={2} />
-            <Field label="Occupation" value={d.fatherOcc} />
-            <Field label="Phone" value={d.fatherPhone} />
-            <Field label="Email" value={d.fatherEmail} />
-          </div>
-          <div style={s.row}>
-            <Field label="Mother's Name" value={d.motherName} flex={2} />
-            <Field label="Occupation" value={d.motherOcc} />
-            <Field label="Phone" value={d.motherPhone} />
-            <Field label="Email" value={d.motherEmail} />
-          </div>
-          <div style={s.row}>
-            <Field label="Annual Family Income" value={d.income} />
-            <Field label="Emergency Contact Name" value={d.emergencyName} />
-            <Field label="Emergency Phone" value={d.emergencyPhone} />
-          </div>
-          {(d.medical || d.remarks) && (
-            <div style={s.row}>
-              {d.medical && <Field label="Medical / Allergies" value={d.medical} flex={2} />}
-              {d.remarks && <Field label="Remarks" value={d.remarks} flex={2} />}
-            </div>
-          )}
-        </div>
+        {/* Parent / Guardian */}
+        <SectionHeader title="Parent / Guardian Information" />
+        <FormGrid>
+          <Field label="Father's Name" value={d.fatherName} />
+          <Field label="Father's Occupation" value={d.fatherOcc} />
+          <Field label="Father's Phone" value={d.fatherPhone} />
+          <Field label="Father's Email" value={d.fatherEmail} />
+          <Field label="Mother's Name" value={d.motherName} />
+          <Field label="Mother's Occupation" value={d.motherOcc} />
+          <Field label="Mother's Phone" value={d.motherPhone} />
+          <Field label="Mother's Email" value={d.motherEmail} />
+          <Field label="Annual Family Income" value={d.income} />
+          <Field label="Emergency Contact" value={d.emergencyName} />
+          <Field label="Emergency Phone" value={d.emergencyPhone} />
+          <Field label="Medical / Allergies" value={d.medical} />
+          {d.remarks && <Field label="Remarks" value={d.remarks} span={2} />}
+        </FormGrid>
 
         {/* Declaration */}
-        <div style={s.declaration}>
-          <strong style={{ fontSize: "7.5pt", textTransform: "uppercase", letterSpacing: "0.06em" }}>Declaration</strong>
-          <p style={{ margin: "3px 0 0" }}>
-            I hereby declare that all information furnished in this application is true, complete and correct to the best of my
-            knowledge and belief. I agree to abide by the rules, regulations and discipline of Ahlussuffa institution. I understand
-            that any false statement may result in disqualification of my application.
+        <SectionHeader title="Declaration" />
+        <div style={{
+          border: `0.5px solid ${C.border}`,
+          padding: "6px 8px",
+          background: C.bg,
+          borderRadius: 2,
+        }}>
+          <p style={{
+            fontFamily: font.sans,
+            fontSize: 10,
+            lineHeight: 1.3,
+            margin: 0,
+            color: C.subtext,
+            fontStyle: "italic",
+          }}>
+            I hereby declare that all information furnished in this application is true, complete and correct to the
+            best of my knowledge and belief. I agree to abide by the rules, regulations and discipline of Ahlussuffa
+            Institution. I understand that any false statement may result in disqualification of my application.
           </p>
         </div>
 
         {/* Signatures */}
-        <div style={s.sigRow}>
-          <div style={s.sigBlock}>
-            <div style={s.sigLine}>Parent / Guardian Signature</div>
-          </div>
-          <div style={s.sigBlock}>
-            <div style={s.sigLine}>Applicant's Signature</div>
-          </div>
-          <div style={s.sigBlock}>
-            <div style={s.sigLine}>Date</div>
-          </div>
-        </div>
-
-        {/* Office Use Only */}
-        <div style={s.officeBox}>
-          <div style={s.officeHead}>
-            <span>★</span>
-            <span>For Office Use Only</span>
-          </div>
-          <div style={s.officeBody}>
-            <Field label="Admission Status" value="" />
-            <Field label="Admission No." value="" />
-            <Field label="Class Assigned" value="" />
-            <Field label="Fee Received (₹)" value="" />
-            <Field label="Verified By" value="" />
-            <Field label="Date" value="" />
-          </div>
-          <div style={{ padding: "0 8px 6px", display: "flex", gap: "10px" }}>
-            <Field label="Remarks" value="" flex={3} />
-            <Field label="Authorised Signature" value="" flex={1} />
-          </div>
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr 1fr",
+          gap: "0 12px",
+          marginTop: 32,
+          paddingBottom: 2,
+        }}>
+          <SigBlock label="Parent / Guardian Signature" />
+          <SigBlock label="Applicant's Signature" />
+          <SigBlock label="Date" />
         </div>
 
       </div>
 
-      {/* ── FOOTER ── */}
-      <div style={s.footer}>
-        <span>Ahlussuffa — Where Faith Meets Knowledge · Kannur, Kerala</span>
-        <span>This is a computer-generated document.</span>
+      {/* FOOTER */}
+      <div style={{
+        borderTop: `1px solid ${C.border}`,
+        padding: "4px 14px",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        fontFamily: font.sans,
+        fontSize: 7,
+        color: C.subtext,
+      }}>
+        <span>Ahlussuffa Dars · Kannur, Kerala</span>
+        <span style={{ fontFamily: font.serif, fontStyle: "italic", fontSize: 8, color: C.text }}>
+          Where Faith Meets Knowledge
+        </span>
+        <span>Computer-generated · Valid upon official seal</span>
       </div>
-
+    </div>
     </div>
   );
 };
 
 export default ApplicationPrintDocument;
+
