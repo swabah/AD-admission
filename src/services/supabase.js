@@ -75,6 +75,7 @@ export const getAllApplications = async () => {
 	const { data, error } = await supabase
 		.from(SUPABASE_TABLE_NAME)
 		.select("*")
+		.neq("status", "deleted") // Filter out soft-deleted records
 		.order("submitted_at", { ascending: false })
 		.limit(100);
 
@@ -115,6 +116,7 @@ export const getApplicationById = async (id) => {
 		.from(SUPABASE_TABLE_NAME)
 		.select("*")
 		.eq("id", id)
+		.neq("status", "deleted")
 		.single();
 
 	if (error) throw error;
@@ -126,6 +128,7 @@ export const searchApplicationsByPhoneAndDob = async (phone, dob) => {
 	const { data, error } = await supabase
 		.from(SUPABASE_TABLE_NAME)
 		.select("*")
+		.neq("status", "deleted")
 		.or(`father_phone.eq.${phone},mother_phone.eq.${phone},student_phone.eq.${phone}`)
 		.eq("dob", dob)
 		.order("submitted_at", { ascending: false });
@@ -175,11 +178,13 @@ export const updateApplicationStatus = async (id, status) => {
 	return data;
 };
 
-// Delete an application
+// Delete an application (Soft Delete due to RLS)
 export const deleteApplication = async (id) => {
+	// Instead of a hard delete which is blocked by Supabase anon key RLS,
+	// we perform a soft delete by updating the status to 'deleted'.
 	const { error } = await supabase
 		.from(SUPABASE_TABLE_NAME)
-		.delete()
+		.update({ status: 'deleted' })
 		.eq("id", id);
 
 	if (error) throw error;

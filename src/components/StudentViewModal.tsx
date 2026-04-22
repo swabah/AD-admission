@@ -1,29 +1,5 @@
-/**
- * StudentViewModal Component
- * Displays student details in a modern modal with card-based layout
- */
-
 import { formatDate } from "../utils/formatters";
-
-// ─── Design tokens (matching AdminPage) ──────────────────────────────────────
-const T = {
-  navy:       "#0f2044",
-  navyMid:    "#1a3a6b",
-  navyLight:  "#e8f0fb",
-  gold:       "#c8922a",
-  goldLight:  "#fdf3e0",
-  text:       "#111827",
-  sub:        "#6b7280",
-  border:     "#e5e7eb",
-  bg:         "#f8f9fc",
-  white:      "#ffffff",
-};
-
-const font = {
-  display: "'DM Serif Display', Georgia, serif",
-  sans:    "'DM Sans', 'Segoe UI', system-ui, sans-serif",
-  mono:    "'JetBrains Mono', monospace",
-};
+import { User, GraduationCap, Users, AlertCircle, X } from "lucide-react";
 
 // ─── Interfaces ──────────────────────────────────────────────────────────────
 interface RawStudentData {
@@ -66,69 +42,41 @@ interface StudentViewModalProps {
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 const Field = ({ label, value, mono }: { label: string; value?: string | null; mono?: boolean }) => (
-  <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-    <span style={{
-      fontFamily: font.sans, fontSize: 10, fontWeight: 500,
-      letterSpacing: 0.8, textTransform: "uppercase" as const,
-      color: T.sub,
-    }}>
+  <div className="flex flex-col gap-1 bg-slate-50 p-3 rounded-xl border border-slate-100 h-full">
+    <span className="font-sans text-[10px] font-bold tracking-wider uppercase text-slate-400">
       {label}
     </span>
-    <span style={{
-      fontFamily: mono ? font.mono : font.sans,
-      fontSize: 13, fontWeight: 500, color: value ? T.text : T.sub,
-      fontStyle: value ? "normal" : "italic",
-    }}>
+    <span className={`${mono ? 'font-mono' : 'font-sans'} text-[13px] font-semibold ${value ? 'text-[#0a1628]' : 'text-slate-400 italic'}`}>
       {value || "Not provided"}
     </span>
   </div>
 );
 
-const Section = ({ title, icon, children }: { title: string; icon: string; children: React.ReactNode }) => (
-  <div style={{
-    background: T.white, borderRadius: 14,
-    border: `1px solid ${T.border}`,
-    overflow: "hidden",
-  }}>
-    <div style={{
-      display: "flex", alignItems: "center", gap: 10,
-      padding: "14px 20px",
-      borderBottom: `1px solid ${T.border}`,
-      background: T.bg,
-    }}>
-      <span style={{ fontSize: 16 }}>{icon}</span>
-      <span style={{
-        fontFamily: font.sans, fontSize: 13, fontWeight: 600,
-        color: T.navyMid, letterSpacing: 0.3,
-      }}>
+const Section = ({ title, icon: Icon, children, className = "" }: { title: string; icon: any; children: React.ReactNode; className?: string }) => (
+  <div className={`bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow ${className}`}>
+    <div className="flex items-center gap-3 px-5 py-3 border-b border-slate-100 bg-slate-50/50">
+      <Icon className="w-5 h-5 text-[#c8922a]" />
+      <span className="font-sans text-[13px] font-bold text-[#0a1628] tracking-wide uppercase">
         {title}
       </span>
     </div>
-    <div className="modal-section-grid" style={{
-      display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
-      gap: "14px 20px", padding: "18px 20px",
-    }}>
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 p-4">
       {children}
     </div>
   </div>
 );
 
 const StatusBadge = ({ status }: { status?: string }) => {
-  const cfg: Record<string, { label: string; color: string; bg: string }> = {
-    submitted: { label: "Submitted", color: "#2563eb", bg: "#dbeafe" },
-    reviewing: { label: "Reviewing", color: "#7c3aed", bg: "#ede9fe" },
-    approved:  { label: "Approved",  color: "#059669", bg: "#d1fae5" },
-    rejected:  { label: "Rejected",  color: "#dc2626", bg: "#fee2e2" },
+  const cfg: Record<string, { label: string; textClass: string; bgClass: string; dotClass: string }> = {
+    submitted: { label: "Submitted", textClass: "text-blue-600", bgClass: "bg-blue-100", dotClass: "bg-blue-600" },
+    reviewing: { label: "Reviewing", textClass: "text-purple-600", bgClass: "bg-purple-100", dotClass: "bg-purple-600" },
+    approved:  { label: "Approved", textClass: "text-emerald-600", bgClass: "bg-emerald-100", dotClass: "bg-emerald-600" },
+    rejected:  { label: "Rejected", textClass: "text-red-600", bgClass: "bg-red-100", dotClass: "bg-red-600" },
   };
   const c = cfg[status || "submitted"] || cfg.submitted;
   return (
-    <span style={{
-      display: "inline-flex", alignItems: "center", gap: 5,
-      fontFamily: font.sans, fontSize: 11, fontWeight: 500,
-      color: c.color, background: c.bg,
-      padding: "3px 10px", borderRadius: 20,
-    }}>
-      <span style={{ width: 6, height: 6, borderRadius: "50%", background: c.color, display: "inline-block" }} />
+    <span className={`inline-flex items-center gap-1.5 font-sans text-xs font-bold px-3 py-1 rounded-full shadow-sm ${c.textClass} ${c.bgClass}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${c.dotClass}`} />
       {c.label}
     </span>
   );
@@ -182,119 +130,58 @@ const StudentViewModal = ({ app, onClose }: StudentViewModalProps) => {
   const hue = fullName.split("").reduce((a, c) => a + c.charCodeAt(0), 0) % 360;
 
   return (
-    <>
-      <style>{`
-        @keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes modalSlideUp { from { opacity: 0; transform: translateY(24px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
-        .modal-overlay-new { animation: modalFadeIn 0.2s ease forwards; }
-        .modal-card-new { animation: modalSlideUp 0.3s ease forwards; }
-        .modal-scroll::-webkit-scrollbar { width: 6px; }
-        .modal-scroll::-webkit-scrollbar-track { background: transparent; }
-        .modal-scroll::-webkit-scrollbar-thumb { background: ${T.border}; border-radius: 3px; }
-        .modal-scroll::-webkit-scrollbar-thumb:hover { background: ${T.sub}; }
-        @media (max-width: 640px) {
-          .modal-card-new { border-radius: 0 !important; max-height: 100vh !important; }
-          .modal-header-inner { padding: 16px !important; gap: 12px !important; }
-          .modal-header-inner .modal-avatar { width: 48px !important; height: 48px !important; font-size: 16px !important; border-radius: 10px !important; }
-          .modal-header-inner .modal-name { font-size: 17px !important; }
-          .modal-body-inner { padding: 14px 16px 20px !important; gap: 12px !important; }
-          .modal-section-grid { grid-template-columns: 1fr !important; gap: 10px 0 !important; }
-        }
-      `}</style>
-
+    <div
+      className="fixed inset-0 z-[1000] bg-[#0a1628]/60 backdrop-blur-sm flex items-start sm:items-center justify-center p-0 sm:p-6 animate-in fade-in duration-200"
+      onClick={onClose}
+    >
       <div
-        className="modal-overlay-new"
-        onClick={onClose}
-        style={{
-          position: "fixed", inset: 0, zIndex: 1000,
-          background: "rgba(15,32,68,0.45)",
-          backdropFilter: "blur(4px)",
-          display: "flex", alignItems: "flex-start", justifyContent: "center",
-          padding: "24px 0 0",
-        }}
+        className="bg-[#faf8f5] w-full max-w-5xl h-[100dvh] sm:h-auto sm:max-h-[90vh] rounded-none sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-slate-200/50 animate-in slide-in-from-bottom-8 sm:slide-in-from-bottom-4 duration-300"
+        onClick={e => e.stopPropagation()}
       >
-        <div
-          className="modal-card-new modal-scroll"
-          onClick={e => e.stopPropagation()}
-          style={{
-            background: T.bg, borderRadius: 20,
-            width: "100%", maxWidth: 720, maxHeight: "90vh",
-            overflow: "auto",
-            boxShadow: "0 24px 64px rgba(15,32,68,0.18)",
-            border: `1px solid ${T.border}`,
-          }}
-        >
-          {/* ── Header ── */}
-          <div className="modal-header-inner" style={{
-            background: T.navy, borderRadius: "20px 20px 0 0",
-            padding: "24px 28px",
-            display: "flex", alignItems: "center", gap: 18,
-            position: "sticky", top: 0, zIndex: 2,
-          }}>
-            {/* Avatar / Photo */}
-            {d.photo ? (
-              <div className="modal-avatar" style={{
-                width: 64, height: 64, borderRadius: 14,
-                overflow: "hidden", flexShrink: 0,
-                border: `2px solid ${T.gold}`,
-              }}>
-                <img src={d.photo} alt="Student" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-              </div>
-            ) : (
-              <div className="modal-avatar" style={{
-                width: 64, height: 64, borderRadius: 14,
-                background: `hsl(${hue}, 55%, 35%)`,
-                color: `hsl(${hue}, 55%, 88%)`,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontFamily: font.display, fontSize: 22, flexShrink: 0,
-                border: `2px solid ${T.gold}`,
-              }}>
-                {initials}
-              </div>
-            )}
-
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div className="modal-name" style={{ fontFamily: font.display, fontSize: 22, color: T.white, lineHeight: 1.2 }}>
-                {fullName}
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 6, flexWrap: "wrap" as const }}>
-                <span style={{
-                  fontFamily: font.mono, fontSize: 11, fontWeight: 500,
-                  background: T.gold, color: T.navy,
-                  padding: "2px 8px", borderRadius: 4,
-                }}>
-                  {d.appNo}
-                </span>
-                <span style={{
-                  fontFamily: font.sans, fontSize: 12, color: "rgba(255,255,255,0.7)",
-                }}>
-                  Class {d.applyClass} · {d.academicYear}
-                </span>
-                <StatusBadge status={d.status} />
-              </div>
+        {/* Header */}
+        <div className="bg-gradient-to-r from-[#0a1628] to-[#132238] p-6 sm:p-8 flex items-center gap-5 sm:gap-6 relative z-10 shrink-0">
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djI2SDI0VjM0SDJWMjRoMjJWMEgzNnYyNGgyMnYxMEgzNnoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-[0.03]"></div>
+          
+          {d.photo ? (
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl border-2 border-[#c8922a] overflow-hidden shrink-0 shadow-lg relative z-10 bg-[#0a1628]">
+              <img src={d.photo} alt="Student" className="w-full h-full object-cover" />
             </div>
-
-            <button
-              onClick={onClose}
-              style={{
-                width: 36, height: 36, borderRadius: 10,
-                background: "rgba(255,255,255,0.1)", border: "none",
-                color: "rgba(255,255,255,0.7)", cursor: "pointer",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 18, flexShrink: 0,
-                transition: "all 0.15s",
-              }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.2)"; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.1)"; }}
+          ) : (
+            <div 
+              className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl border-2 border-[#c8922a] shrink-0 flex items-center justify-center font-display text-2xl sm:text-3xl font-bold shadow-lg relative z-10"
+              style={{ background: `hsl(${hue}, 55%, 35%)`, color: `hsl(${hue}, 55%, 88%)` }}
             >
-              ✕
-            </button>
+              {initials}
+            </div>
+          )}
+
+          <div className="flex-1 min-w-0 relative z-10">
+            <h2 className="font-display text-2xl sm:text-3xl text-white font-bold leading-tight truncate">{fullName}</h2>
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-2">
+              <span className="font-mono text-xs font-bold bg-[#c8922a] text-[#0a1628] px-2.5 py-1 rounded shadow-sm">
+                {d.appNo}
+              </span>
+              <span className="font-sans text-xs font-semibold text-white/80 bg-white/10 px-2.5 py-1 rounded backdrop-blur-sm">
+                Class {d.applyClass} · {d.academicYear}
+              </span>
+              <StatusBadge status={d.status} />
+            </div>
           </div>
 
-          {/* ── Body ── */}
-          <div className="modal-body-inner" style={{ padding: "20px 24px 28px", display: "flex", flexDirection: "column", gap: 16 }}>
+          <button
+            onClick={onClose}
+            className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 text-white/70 hover:text-white flex items-center justify-center shrink-0 transition-all border border-white/10 relative z-10"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Body (Bento Grid) */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 hide-scrollbar bg-[#faf8f5]">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+            
             {/* Personal Information */}
-            <Section title="Personal Information" icon="👤">
+            <Section title="Personal Info" icon={User} className="md:col-span-2">
               <Field label="Application No" value={d.appNo} mono />
               <Field label="Full Name" value={fullName} />
               <Field label="Date of Birth" value={d.dob} />
@@ -303,50 +190,71 @@ const StudentViewModal = ({ app, onClose }: StudentViewModalProps) => {
               <Field label="Nationality" value={d.nationality} />
               <Field label="Religion" value={d.religion} />
               <Field label="Category" value={d.category} />
-              <Field label="Aadhar Number" value={d.aadhar} mono />
+              <Field label="Aadhar" value={d.aadhar} mono />
               <Field label="Phone" value={d.studentPhone} mono />
-              <Field label="Address" value={d.address} />
+              <div className="col-span-2">
+                <Field label="Address" value={d.address} />
+              </div>
             </Section>
 
             {/* Academic Information */}
-            <Section title="Academic Information" icon="🎓">
-              <Field label="Applying for Class" value={d.applyClass} />
+            <Section title="Academic Details" icon={GraduationCap}>
+              <Field label="Applying Class" value={d.applyClass} />
               <Field label="Academic Year" value={d.academicYear} />
               <Field label="Stream" value={d.stream} />
               <Field label="Medium" value={d.medium} />
-              <Field label="Previous School" value={d.prevSchool} />
-              <Field label="Previous Class" value={d.prevClass} />
-              <Field label="Previous Board" value={d.prevBoard} />
-              <Field label="Previous Percentage" value={d.prevPercentage} />
-              <Field label="Achievements" value={d.achievements} />
-            </Section>
-
-            {/* Parent Information */}
-            <Section title="Parent / Guardian Information" icon="👨‍👩‍👦">
-              <Field label="Father's Name" value={d.fatherName} />
-              <Field label="Father's Occupation" value={d.fatherOcc} />
-              <Field label="Father's Phone" value={d.fatherPhone} mono />
-              <Field label="Father's Email" value={d.fatherEmail} />
-              <Field label="Mother's Name" value={d.motherName} />
-              <Field label="Mother's Occupation" value={d.motherOcc} />
-              <Field label="Mother's Phone" value={d.motherPhone} mono />
-              <Field label="Mother's Email" value={d.motherEmail} />
-              <Field label="Annual Family Income" value={d.income} />
+              <div className="col-span-2">
+                <Field label="Previous School" value={d.prevSchool} />
+              </div>
+              <Field label="Prev Class" value={d.prevClass} />
+              <Field label="Prev Board" value={d.prevBoard} />
+              <Field label="Percentage" value={d.prevPercentage} />
+              <div className="col-span-2 sm:col-span-3 md:col-span-3">
+                <Field label="Achievements" value={d.achievements} />
+              </div>
             </Section>
 
             {/* Emergency & Additional */}
-            <Section title="Emergency & Additional" icon="🚑">
-              <Field label="Emergency Contact" value={d.emergencyName} />
+            <Section title="Emergency & Other" icon={AlertCircle}>
+              <div className="col-span-2">
+                <Field label="Emergency Contact" value={d.emergencyName} />
+              </div>
               <Field label="Emergency Phone" value={d.emergencyPhone} mono />
-              <Field label="Medical Conditions" value={d.medical} />
+              <div className="col-span-2 sm:col-span-3 md:col-span-3">
+                <Field label="Medical Conditions" value={d.medical} />
+              </div>
               <Field label="Referral" value={d.referral} />
-              <Field label="Remarks" value={d.remarks} />
               <Field label="Submission Date" value={formatDate(d.submissionDate, "full")} />
+              <div className="col-span-2 sm:col-span-3 md:col-span-3">
+                <Field label="Remarks" value={d.remarks} />
+              </div>
             </Section>
+
+            {/* Parent Information */}
+            <Section title="Parent / Guardian Info" icon={Users} className="md:col-span-2">
+              <div className="col-span-2 sm:col-span-1">
+                <Field label="Father's Name" value={d.fatherName} />
+              </div>
+              <Field label="Father's Phone" value={d.fatherPhone} mono />
+              <Field label="Father's Occ" value={d.fatherOcc} />
+              <Field label="Father's Email" value={d.fatherEmail} />
+              
+              <div className="col-span-2 sm:col-span-1">
+                <Field label="Mother's Name" value={d.motherName} />
+              </div>
+              <Field label="Mother's Phone" value={d.motherPhone} mono />
+              <Field label="Mother's Occ" value={d.motherOcc} />
+              <Field label="Mother's Email" value={d.motherEmail} />
+              
+              <div className="col-span-2 sm:col-span-4">
+                <Field label="Annual Family Income" value={d.income} />
+              </div>
+            </Section>
+
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

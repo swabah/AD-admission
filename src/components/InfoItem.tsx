@@ -1,39 +1,35 @@
 /**
  * InfoItem Component
- * Shared component for displaying label-value pairs
+ * Shared component for displaying label-value pairs using shadcn
  */
 
-const font = {
-  sans: "'DM Sans', 'Segoe UI', system-ui, sans-serif",
-  mono: "'JetBrains Mono', monospace",
-};
+import { cn } from "@/lib/utils";
 
 interface InfoItemProps {
   label: string;
   value: string | null | undefined;
   mono?: boolean;
+  className?: string;
 }
 
-const InfoItem = ({ label, value, mono }: InfoItemProps) => {
+export function InfoItem({ label, value, mono, className }: InfoItemProps) {
   if (!value || value === "—") return null;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-      <span style={{
-        fontFamily: font.sans, fontSize: 10, fontWeight: 500,
-        letterSpacing: 0.8, textTransform: "uppercase" as const,
-        color: "#6b7280",
-      }}>
+    <div className={cn("flex flex-col gap-0.5", className)}>
+      <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
         {label}
       </span>
-      <span style={{
-        fontFamily: mono ? font.mono : font.sans,
-        fontSize: 13, fontWeight: 500, color: "#111827",
-      }}>
+      <span
+        className={cn(
+          "text-sm font-medium text-foreground",
+          mono && "font-mono"
+        )}
+      >
         {value}
       </span>
     </div>
   );
-};
+}
 
 export default InfoItem;
