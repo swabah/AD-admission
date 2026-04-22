@@ -26,7 +26,6 @@ export const addApplication = async (data) => {
 		first_name: data.firstName,
 		last_name: data.lastName,
 		dob: data.dob,
-		gender: data.gender,
 		blood_group: data.bloodGroup,
 		nationality: data.nationality,
 		aadhar: data.aadhar,
@@ -56,6 +55,7 @@ export const addApplication = async (data) => {
 		remarks: data.remarks,
 		agree_check: data.agreeCheck,
 		photo: data.photo,
+		admission_type: data.admissionType || "new",
 		submitted_at: new Date().toISOString(),
 		status: "submitted",
 	};
@@ -121,6 +121,47 @@ export const getApplicationById = async (id) => {
 	return data;
 };
 
+// Search applications by phone and date of birth (for locate feature)
+export const searchApplicationsByPhoneAndDob = async (phone, dob) => {
+	const { data, error } = await supabase
+		.from(SUPABASE_TABLE_NAME)
+		.select("*")
+		.or(`father_phone.eq.${phone},mother_phone.eq.${phone},student_phone.eq.${phone}`)
+		.eq("dob", dob)
+		.order("submitted_at", { ascending: false });
+
+	if (error) throw error;
+
+	// Convert snake_case back to camelCase for frontend
+	return data.map((app) => ({
+		...app,
+		appNo: app.app_no,
+		firstName: app.first_name,
+		lastName: app.last_name,
+		bloodGroup: app.blood_group,
+		studentPhone: app.student_phone,
+		applyClass: app.apply_class,
+		academicYear: app.academic_year,
+		prevSchool: app.prev_school,
+		prevClass: app.prev_class,
+		prevBoard: app.prev_board,
+		prevPercentage: app.prev_percentage,
+		fatherName: app.father_name,
+		fatherOcc: app.father_occ,
+		fatherPhone: app.father_phone,
+		fatherEmail: app.father_email,
+		motherName: app.mother_name,
+		motherOcc: app.mother_occ,
+		motherPhone: app.mother_phone,
+		motherEmail: app.mother_email,
+		emergencyName: app.emergency_name,
+		emergencyPhone: app.emergency_phone,
+		agreeCheck: app.agree_check,
+		submissionDate: app.submitted_at,
+		admissionType: app.admission_type,
+	}));
+};
+
 // Update application status
 export const updateApplicationStatus = async (id, status) => {
 	const { data, error } = await supabase
@@ -129,7 +170,7 @@ export const updateApplicationStatus = async (id, status) => {
 		.eq("id", id)
 		.select()
 		.single();
-
+ 
 	if (error) throw error;
 	return data;
 };

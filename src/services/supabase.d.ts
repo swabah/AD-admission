@@ -1,0 +1,47 @@
+export interface ApplicationData {
+  appNo: string;
+  firstName: string;
+  lastName: string;
+  dob: string;
+  gender?: string;
+  bloodGroup?: string;
+  nationality?: string;
+  aadhar?: string;
+  studentPhone?: string;
+  address: string;
+  applyClass: string;
+  academicYear: string;
+  stream?: string;
+  prevSchool?: string;
+  prevClass?: string;
+  prevBoard?: string;
+  prevPercentage?: string;
+  achievements?: string;
+  fatherName: string;
+  fatherOcc?: string;
+  fatherPhone: string;
+  fatherEmail?: string;
+  motherName: string;
+  motherOcc?: string;
+  motherPhone?: string;
+  motherEmail?: string;
+  income?: string;
+  emergencyName?: string;
+  emergencyPhone?: string;
+  medical?: string;
+  referral?: string;
+  remarks?: string;
+  agreeCheck: boolean;
+  photo?: string | null;
+  submissionDate: Date;
+  admissionType?: "new" | "local";
+}
+
+export declare const supabase: any;
+export declare const SUPABASE_TABLE_NAME: string;
+export declare function addApplication(data: ApplicationData): Promise<any>;
+export declare function getAllApplications(): Promise<any[]>;
+export declare function getApplicationById(id: string): Promise<any>;
+export declare function searchApplicationsByPhoneAndDob(phone: string, dob: string): Promise<any[]>;
+export declare function updateApplicationStatus(id: string, status: string): Promise<any>;
+export declare function deleteApplication(id: string): Promise<{ success: boolean }>;

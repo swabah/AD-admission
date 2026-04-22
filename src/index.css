@@ -9,11 +9,14 @@
   --gold-pale: #fdf3e3;
   --cream: #faf8f5;
   --white: #ffffff;
+  --text: #0a1628;
   --text-primary: #0a1628;
   --text-secondary: #4a5568;
   --text-muted: #8896a8;
   --border-light: #e8e4dd;
   --border-mid: #d4cfc7;
+  --card-bg: #ffffff;
+  --card-border: #e8e4dd;
   --surface: #ffffff;
   --surface-alt: #f7f5f2;
   --input-bg: #fdfcfb;
@@ -23,6 +26,8 @@
   --success-bg: #f0faf5;
   --blue: #1d6fa4;
   --blue-light: #e8f4fb;
+  --font-display: "Playfair Display", serif;
+  --font-body: "DM Sans", sans-serif;
   --shadow-sm:
     0 1px 3px rgba(10, 22, 40, 0.08), 0 1px 2px rgba(10, 22, 40, 0.04);
   --shadow-md:
@@ -2641,5 +2646,664 @@ main {
   .application-card {
     break-inside: avoid;
     page-break-inside: avoid;
+  }
+}
+
+/* ===== REDESIGNED HOME PAGE STYLES ===== */
+
+.home-page {
+  min-height: 100vh;
+  background: var(--cream);
+}
+
+/* Hero Section */
+.hero-section {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #06101f 0%, #0a1628 45%, #0f2040 100%);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  overflow: hidden;
+}
+
+.hero-section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(ellipse at 20% 80%, rgba(200, 146, 42, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(29, 111, 164, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.hero-bg-pattern {
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  background-image: 
+    radial-gradient(circle at 25% 25%, white 1px, transparent 1px),
+    radial-gradient(circle at 75% 75%, white 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  max-width: 600px;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-logo {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 28px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 4px solid var(--gold);
+  box-shadow: 0 8px 32px rgba(200, 146, 42, 0.3);
+  background: var(--white);
+}
+
+.hero-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-title {
+  font-family: "Playfair Display", serif;
+  font-size: clamp(36px, 8vw, 56px);
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 12px;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
+  letter-spacing: -0.02em;
+}
+
+.hero-tagline {
+  font-size: clamp(18px, 4vw, 24px);
+  color: var(--gold-light);
+  font-weight: 400;
+  margin-bottom: 8px;
+  font-family: "Playfair Display", serif;
+  font-style: italic;
+}
+
+.hero-location {
+  font-size: clamp(14px, 3vw, 16px);
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 28px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(200, 146, 42, 0.3);
+  border-radius: 50px;
+  color: var(--white);
+  font-size: 14px;
+  font-weight: 500;
+  backdrop-filter: blur(10px);
+}
+
+.pulse-dot {
+  width: 10px;
+  height: 10px;
+  background: #22c55e;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.1); }
+}
+
+.hero-scroll-hint {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  animation: bounce 2s infinite;
+}
+
+.scroll-arrow {
+  font-size: 20px;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(10px); }
+}
+
+/* Section Container */
+.section-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Admission Options Section */
+.admission-options {
+  padding: 100px 0;
+  background: var(--cream);
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.section-label {
+  display: inline-block;
+  padding: 8px 16px;
+  background: var(--gold-pale);
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  border-radius: 50px;
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-family: "Playfair Display", serif;
+  font-size: clamp(32px, 6vw, 42px);
+  color: var(--navy);
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.section-desc {
+  font-size: 18px;
+  color: var(--text-secondary);
+  max-width: 500px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* Admission Cards */
+.admission-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 32px;
+}
+
+.admission-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--white);
+  border-radius: var(--radius-xl);
+  padding: 40px 32px;
+  border: 1px solid var(--border-light);
+  text-decoration: none;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.admission-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-lg);
+  border-color: transparent;
+}
+
+.admission-card--new:hover {
+  box-shadow: 0 20px 60px rgba(10, 22, 40, 0.2);
+}
+
+.admission-card--local:hover {
+  box-shadow: 0 20px 60px rgba(200, 146, 42, 0.2);
+}
+
+.card-glow {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(200, 146, 42, 0.1) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.admission-card:hover .card-glow {
+  opacity: 1;
+}
+
+.card-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  color: var(--white);
+}
+
+.card-icon--new {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+  box-shadow: 0 8px 24px rgba(10, 22, 40, 0.25);
+}
+
+.card-icon--local {
+  background: linear-gradient(135deg, var(--gold) 0%, #b5801f 100%);
+  box-shadow: 0 8px 24px rgba(200, 146, 42, 0.3);
+}
+
+.card-title {
+  font-family: "Playfair Display", serif;
+  font-size: 26px;
+  color: var(--navy);
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.card-desc {
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-bottom: 20px;
+  flex-grow: 1;
+}
+
+.card-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 28px 0;
+}
+
+.card-features li {
+  font-size: 14px;
+  color: var(--text-secondary);
+  padding: 8px 0 8px 24px;
+  position: relative;
+}
+
+.card-features li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: var(--success);
+  font-weight: 600;
+}
+
+.card-action {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: var(--navy);
+  color: var(--white);
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  font-size: 15px;
+  margin-top: auto;
+  transition: all 0.3s ease;
+}
+
+.admission-card--new .card-action {
+  background: var(--navy);
+}
+
+.admission-card--local .card-action {
+  background: var(--gold);
+}
+
+.admission-card:hover .card-action {
+  transform: translateX(4px);
+}
+
+.card-action svg {
+  transition: transform 0.3s ease;
+}
+
+.admission-card:hover .card-action svg {
+  transform: translateX(4px);
+}
+
+/* Locate Section */
+.locate-section {
+  padding: 60px 0 100px;
+  background: var(--cream);
+}
+
+.locate-box {
+  display: flex;
+  align-items: center;
+  gap: 48px;
+  background: linear-gradient(135deg, var(--navy-light) 0%, #1e3a5f 100%);
+  border-radius: var(--radius-xl);
+  padding: 48px 60px;
+  color: var(--white);
+  position: relative;
+  overflow: hidden;
+}
+
+.locate-box::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(200, 146, 42, 0.2) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.locate-icon {
+  flex-shrink: 0;
+  width: 80px;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold-light);
+  position: relative;
+  z-index: 1;
+}
+
+.locate-content {
+  flex-grow: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.locate-title {
+  font-family: "Playfair Display", serif;
+  font-size: 28px;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.locate-desc {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 24px;
+  max-width: 500px;
+  line-height: 1.6;
+}
+
+.locate-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  background: var(--gold);
+  color: var(--white);
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  font-size: 15px;
+}
+
+.locate-btn:hover {
+  background: var(--gold-light);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(200, 146, 42, 0.3);
+}
+
+/* Info Section */
+.info-section {
+  padding: 80px 0;
+  background: var(--surface-alt);
+  border-top: 1px solid var(--border-light);
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.info-card {
+  background: var(--white);
+  padding: 32px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-light);
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.info-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-mid);
+}
+
+.info-icon {
+  font-size: 32px;
+  margin-bottom: 16px;
+}
+
+.info-card h4 {
+  font-family: "DM Sans", sans-serif;
+  font-size: 18px;
+  color: var(--navy);
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.info-card p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* Footer */
+.home-footer {
+  background: var(--navy);
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.home-footer p {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.footer-tagline {
+  color: var(--gold-light) !important;
+  font-family: "Playfair Display", serif;
+  font-style: italic;
+}
+
+/* ===== RESPONSIVE STYLES FOR HOME PAGE ===== */
+
+@media (max-width: 1024px) {
+  .admission-cards {
+    grid-template-columns: 1fr;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  
+  .locate-box {
+    flex-direction: column;
+    text-align: center;
+    padding: 40px 32px;
+  }
+  
+  .locate-desc {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-section {
+    min-height: auto;
+    padding: 80px 20px 60px;
+  }
+  
+  .hero-logo {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 24px;
+  }
+  
+  .hero-scroll-hint {
+    display: none;
+  }
+  
+  .admission-options {
+    padding: 60px 0;
+  }
+  
+  .section-header {
+    margin-bottom: 40px;
+  }
+  
+  .admission-card {
+    padding: 32px 24px;
+  }
+  
+  .card-icon {
+    width: 64px;
+    height: 64px;
+  }
+  
+  .card-title {
+    font-size: 22px;
+  }
+  
+  .locate-section {
+    padding: 40px 0 60px;
+  }
+  
+  .locate-box {
+    padding: 32px 24px;
+    gap: 24px;
+  }
+  
+  .locate-icon {
+    width: 64px;
+    height: 64px;
+  }
+  
+  .locate-title {
+    font-size: 24px;
+  }
+  
+  .info-section {
+    padding: 60px 0;
+  }
+  
+  .info-card {
+    padding: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-logo {
+    width: 80px;
+    height: 80px;
+    border-width: 3px;
+  }
+  
+  .hero-badge {
+    padding: 10px 16px;
+    font-size: 12px;
+  }
+  
+  .section-container {
+    padding: 0 16px;
+  }
+  
+  .admission-cards {
+    gap: 20px;
+  }
+  
+  .admission-card {
+    padding: 28px 20px;
+    border-radius: var(--radius-lg);
+  }
+  
+  .card-icon {
+    width: 56px;
+    height: 56px;
+  }
+  
+  .card-icon svg {
+    width: 28px;
+    height: 28px;
+  }
+  
+  .card-title {
+    font-size: 20px;
+  }
+  
+  .card-desc {
+    font-size: 14px;
+  }
+  
+  .card-features li {
+    font-size: 13px;
+  }
+  
+  .card-action {
+    padding: 14px 16px;
+    font-size: 14px;
+  }
+  
+  .locate-title {
+    font-size: 20px;
+  }
+  
+  .locate-desc {
+    font-size: 14px;
+  }
+  
+  .locate-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 14px 20px;
+  }
+  
+  .info-grid {
+    gap: 16px;
+  }
+  
+  .info-card {
+    padding: 20px;
   }
 }

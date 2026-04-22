@@ -2,7 +2,6 @@ export interface FormData {
   firstName: string;
   lastName: string;
   dob: string;
-  gender: string;
   bloodGroup: string;
   nationality: string;
   aadhar: string;
@@ -47,8 +46,15 @@ export const validateStep = (
     if (!formData.firstName?.trim()) errors.firstName = "First name is required";
     if (!formData.lastName?.trim()) errors.lastName = "Last name is required";
     if (!formData.dob) errors.dob = "Date of birth is required";
-    if (!formData.gender) errors.gender = "Please select a gender";
     if (!formData.address?.trim()) errors.address = "Residential address is required";
+    if (!formData.aadhar?.trim()) {
+      errors.aadhar = "Aadhar number is required";
+    } else {
+      const aadharClean = formData.aadhar.replace(/\s/g, "");
+      if (!/^\d{12}$/.test(aadharClean)) {
+        errors.aadhar = "Aadhar must be exactly 12 digits";
+      }
+    }
   }
 
   if (step === 2) {
