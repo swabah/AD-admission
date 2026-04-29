@@ -1,10 +1,13 @@
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Lock, ChevronRight, Mail, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import logo from "../../assets/logo.jpg";
 import { authenticateAdmin } from "../../services/supabase";
+import { loginSchema, type LoginFormData } from "../../utils/formSchema";
 
 interface LoginScreenProps {
 	onLogin: () => void;
@@ -12,44 +15,27 @@ interface LoginScreenProps {
 }
 
 export const LoginScreen = ({ onLogin, onLoading }: LoginScreenProps) => {
-	const [email, setEmail] = useState("");
-	const [password, setPassword] = useState("");
 	const [shake, setShake] = useState(false);
-	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
-	const validateForm = () => {
-		if (!email.trim()) {
-			setError("Admin email required");
-			return false;
-		}
-		if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-			setError("Invalid email format");
-			return false;
-		}
-		if (!password.trim()) {
-			setError("Password required");
-			return false;
-		}
-		return true;
-	};
+	const {
+		register,
+		handleSubmit,
+		formState: { errors, isSubmitting },
+	} = useForm<LoginFormData>({
+		resolver: zodResolver(loginSchema),
+	});
 
 	const triggerShake = () => {
 		setShake(true);
 		setTimeout(() => setShake(false), 500);
 	};
 
-	const attempt = async () => {
-		if (isLoading) return;
+	const onSubmit = async (data: LoginFormData) => {
 		setError(null);
-		if (!validateForm()) {
-			triggerShake();
-			return;
-		}
-		setIsLoading(true);
 		onLoading(true);
 		try {
-			const result = await authenticateAdmin(email, password);
+			const result = await authenticateAdmin(data.email, data.password);
 			if (result.success) {
 				onLogin();
 			} else {
@@ -60,7 +46,6 @@ export const LoginScreen = ({ onLogin, onLoading }: LoginScreenProps) => {
 			setError("Auth failed. Check connection.");
 			triggerShake();
 		} finally {
-			setIsLoading(false);
 			onLoading(false);
 		}
 	};
@@ -88,11 +73,11 @@ export const LoginScreen = ({ onLogin, onLoading }: LoginScreenProps) => {
 					</p>
 				</div>
 
-				<div className="space-y-5">
-					{error && (
+				<form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+					{(error || errors.email || errors.password) && (
 						<div className="p-3 bg-rose-50 border border-rose-100 rounded-xl text-rose-600 text-[11px] font-bold flex items-center gap-2 animate-in fade-in zoom-in-95">
 							<AlertCircle className="w-3.5 h-3.5 shrink-0" />
-							{error}
+							{error || errors.email?.message || errors.password?.message}
 						</div>
 					)}
 
@@ -105,11 +90,9 @@ export const LoginScreen = ({ onLogin, onLoading }: LoginScreenProps) => {
 							<Input
 								id="email"
 								type="email"
-								value={email}
+								{...register("email")}
 								placeholder="admin@ahlussuffa.com"
-								onChange={e => setEmail(e.target.value)}
-								onKeyDown={e => e.key === "Enter" && attempt()}
-								disabled={isLoading}
+								disabled={isSubmitting}
 								className="pl-11 h-11 rounded-xl bg-slate-50/50 focus:bg-white border-slate-100 focus:border-[#0a1628] transition-all text-sm font-medium"
 							/>
 						</div>
@@ -124,26 +107,24 @@ export const LoginScreen = ({ onLogin, onLoading }: LoginScreenProps) => {
 							<Input
 								id="password"
 								type="password"
-								value={password}
+								{...register("password")}
 								placeholder="••••••••"
-								onChange={e => setPassword(e.target.value)}
-								onKeyDown={e => e.key === "Enter" && attempt()}
-								disabled={isLoading}
+								disabled={isSubmitting}
 								className="pl-11 h-11 rounded-xl bg-slate-50/50 focus:bg-white border-slate-100 focus:border-[#0a1628] transition-all text-sm font-medium"
 							/>
 						</div>
 					</div>
 
 					<Button
-						type="button"
-						onClick={attempt}
-						loading={isLoading}
+						type="submit"
+						loading={isSubmitting}
+						disabled={isSubmitting}
 						className="w-full h-11 bg-[#0a1628] hover:bg-[#132238] text-white font-bold rounded-xl shadow-lg shadow-[#0a1628]/10 group transition-all mt-2"
 					>
-						{isLoading ? "Authenticating..." : "Sign In"}
-						{!isLoading && <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-0.5 transition-transform" />}
+						{isSubmitting ? "Authenticating..." : "Sign In"}
+						{!isSubmitting && <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-0.5 transition-transform" />}
 					</Button>
-				</div>
+				</form>
 
 				<div className="text-center mt-8 pt-6 border-t border-slate-50">
 					<p className="text-[9px] text-slate-300 uppercase font-black tracking-[0.2em]">

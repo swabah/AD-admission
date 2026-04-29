@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { searchApplicationsByPhoneAndDob } from "../services/supabase";
 import {
 	Search,
@@ -15,6 +17,7 @@ import ApplicationPrintDocument from "../components/ApplicationPrintDocument";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Badge } from "../components/ui/badge";
+import { locateSchema, type LocateFormData } from "../utils/formSchema";
 import {
 	Card,
 	CardContent,
@@ -28,34 +31,35 @@ import type { ApplicationData } from "../services/supabase";
 type Application = ApplicationData & { id: string };
 
 const LocateApplicationPage = () => {
-	const [phone, setPhone] = useState("");
-	const [dob, setDob] = useState("");
+	const {
+		register,
+		handleSubmit,
+		formState: { errors, isSubmitting },
+	} = useForm<LocateFormData>({
+		resolver: zodResolver(locateSchema),
+	});
+
 	const [applications, setApplications] = useState<Application[]>([]);
 	const [selectedApp, setSelectedApp] = useState<Application | null>(null);
-	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [searched, setSearched] = useState(false);
 
-	const handleSearch = async (e: React.FormEvent) => {
-		e.preventDefault();
+	const onSearch = async (data: LocateFormData) => {
 		setError(null);
-		setLoading(true);
 		setSearched(true);
-		const normalizedPhone = phone
+		const normalizedPhone = data.phone
 			.replace(/\s/g, "")
 			.replace(/[-+()]/g, "")
 			.replace(/^91/, "");
 		try {
 			const results = await searchApplicationsByPhoneAndDob(
 				normalizedPhone,
-				dob,
+				data.dob,
 			);
 			setApplications(results as Application[]);
 			if (results.length === 0) setError("No records found.");
 		} catch (err) {
 			setError("Search failed. Try again.");
-		} finally {
-			setLoading(false);
 		}
 	};
 
@@ -121,7 +125,7 @@ const LocateApplicationPage = () => {
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="p-8 sm:p-12 pt-0">
-						<form onSubmit={handleSearch} className="space-y-6">
+						<form onSubmit={handleSubmit(onSearch)} className="space-y-6">
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 								<div className="space-y-2">
 									<label htmlFor="tel" className="text-[10px] uppercase font-bold tracking-widest text-slate-400 ml-1">
@@ -130,12 +134,15 @@ const LocateApplicationPage = () => {
 									<Input
 										type="tel"
 										id="tel"
-										value={phone}
-										onChange={(e) => setPhone(e.target.value)}
+										{...register("phone")}
 										placeholder="+91..."
-										required
 										className="h-14 rounded-2xl bg-slate-50/50 border-transparent focus:border-[#0a1628] focus:bg-white transition-all text-base font-medium pl-6"
 									/>
+									{errors.phone && (
+										<p className="text-xs text-rose-500 font-bold ml-1">
+											{errors.phone.message}
+										</p>
+									)}
 								</div>
 								<div className="space-y-2">
 									<label htmlFor="date" className="text-[10px] uppercase font-bold tracking-widest text-slate-400 ml-1">
@@ -144,20 +151,23 @@ const LocateApplicationPage = () => {
 									<Input
 										type="date"
 										id="date"
-										value={dob}
-										onChange={(e) => setDob(e.target.value)}
-										required
+										{...register("dob")}
 										className="h-14 rounded-2xl bg-slate-50/50 border-transparent focus:border-[#0a1628] focus:bg-white transition-all text-base font-medium px-6"
 									/>
+									{errors.dob && (
+										<p className="text-xs text-rose-500 font-bold ml-1">
+											{errors.dob.message}
+										</p>
+									)}
 								</div>
 							</div>
-							<Button type="submit" loading={loading} className="w-full h-14 bg-[#0a1628] hover:bg-[#132238] text-white font-bold rounded-2xl text-lg shadow-xl shadow-[#0a1628]/10 transition-all hover:-translate-y-1 mt-4">
+							<Button type="submit" loading={isSubmitting} disabled={isSubmitting} className="w-full h-14 bg-[#0a1628] hover:bg-[#132238] text-white font-bold rounded-2xl text-lg shadow-xl shadow-[#0a1628]/10 transition-all hover:-translate-y-1 mt-4">
 								<Search className="w-5 h-5 mr-2" /> Search Records
 							</Button>
 						</form>
-						{error && (
+						{(error || errors.root) && (
 							<div className="mt-8 p-4 bg-rose-50 border border-rose-100 text-rose-600 text-sm font-bold rounded-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
-								<AlertCircle className="w-5 h-5 shrink-0" /> {error}
+								<AlertCircle className="w-5 h-5 shrink-0" /> {error || errors.root?.message}
 							</div>
 						)}
 					</CardContent>

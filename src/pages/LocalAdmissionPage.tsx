@@ -1,9 +1,11 @@
 import { useState, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { addApplication } from "../services/supabase";
 import { downloadApplicationPDF } from "../utils/pdfDownloader";
 import logo from "../assets/logo.jpg";
-import { validatePhoto } from "../utils/formValidation";
+import { localAdmissionSchema, type LocalAdmissionFormData } from "../utils/formSchema";
 import { formatApplicationNo } from "../utils/formatters";
 import { InputField } from "../components/InputField";
 import { Button } from "../components/ui/button";
@@ -23,73 +25,45 @@ import {
 	AlertCircle,
 } from "lucide-react";
 
-interface FormData {
-	firstName: string;
-	lastName: string;
-	dob: string;
-	studentPhone: string;
-	applyClass: string;
-	academicYear: string;
-	prevClass: string;
-	fatherName: string;
-	fatherPhone: string;
-	address: string;
-	photo?: string | null;
-}
-
 const LocalAdmissionPage = () => {
 	const navigate = useNavigate();
 	const photoInputRef = useRef<HTMLInputElement>(null);
 	const [photoDataURL, setPhotoDataURL] = useState<string | null>(null);
-	const [formData, setFormData] = useState<FormData>({
-		firstName: "",
-		lastName: "",
-		dob: "",
-		studentPhone: "",
-		applyClass: "",
-		academicYear: "2026–27",
-		prevClass: "",
-		fatherName: "",
-		fatherPhone: "",
-		address: "",
+	const [photoError, setPhotoError] = useState<string | null>(null);
+
+	const {
+		register,
+		handleSubmit,
+		getValues,
+		formState: { errors, isSubmitting },
+	} = useForm<LocalAdmissionFormData>({
+		resolver: zodResolver(localAdmissionSchema),
+		defaultValues: {
+			academicYear: "2026–27",
+		},
 	});
 
-	const [errors, setErrors] = useState<Record<string, string | null>>({});
-	const [loading, setLoading] = useState(false);
 	const [submitted, setSubmitted] = useState(false);
 	const [appNo, setAppNo] = useState("");
 	const [submitError, setSubmitError] = useState<string | null>(null);
 
-	const handleInputChange = (
-		e: React.ChangeEvent<
-			HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-		>,
-	) => {
-		const { id, value } = e.target;
-		setFormData((prev) => ({ ...prev, [id]: value }));
-		if (errors[id]) setErrors((prev) => ({ ...prev, [id]: null }));
-	};
-
 	const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		if (file) {
-			const photoError = validatePhoto(file);
-			if (photoError) {
-				alert(photoError);
+			if (file.size > 2 * 1024 * 1024) {
+				setPhotoError("Image size must be less than 2MB");
 				return;
 			}
-
 			const reader = new FileReader();
 			reader.onloadend = () => {
 				setPhotoDataURL(reader.result as string);
+				setPhotoError(null);
 			};
 			reader.readAsDataURL(file);
 		}
 	};
 
-	const handleSubmit = async (e: React.FormEvent) => {
-		e.preventDefault();
-		setLoading(true);
+	const onSubmit = async (data: LocalAdmissionFormData) => {
 		setSubmitError(null);
 
 		try {
@@ -97,7 +71,7 @@ const LocalAdmissionPage = () => {
 			setAppNo(applicationNo);
 
 			await addApplication({
-				...formData,
+				...data,
 				appNo: applicationNo,
 				submissionDate: new Date().toISOString(),
 				admissionType: "local",
@@ -111,12 +85,11 @@ const LocalAdmissionPage = () => {
 		} catch (err) {
 			console.error("Submission error:", err);
 			setSubmitError("Failed to submit application. Please try again.");
-		} finally {
-			setLoading(false);
 		}
 	};
 
 	if (submitted) {
+		const formData = getValues();
 		return (
 			<div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
 				<Card className="max-w-md w-full text-center p-8 rounded-3xl shadow-xl border-slate-100">
@@ -201,7 +174,7 @@ const LocalAdmissionPage = () => {
 							</div>
 						)}
 
-						<form onSubmit={handleSubmit} className="space-y-8">
+						<form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-12">
 								<div className="space-y-8">
 									<h3 className="text-sm font-bold uppercase tracking-widest text-[#c8922a] border-b border-slate-100 pb-2">
@@ -211,17 +184,15 @@ const LocalAdmissionPage = () => {
 										<InputField
 											label="First Name"
 											id="firstName"
-											formData={formData as any}
-											handleInputChange={handleInputChange}
-											errors={errors}
+											registration={register("firstName")}
+											error={errors.firstName?.message}
 											required
 										/>
 										<InputField
 											label="Last Name"
 											id="lastName"
-											formData={formData as any}
-											handleInputChange={handleInputChange}
-											errors={errors}
+											registration={register("lastName")}
+											error={errors.lastName?.message}
 											required
 										/>
 									</div>
@@ -229,17 +200,16 @@ const LocalAdmissionPage = () => {
 										label="Date of Birth"
 										id="dob"
 										type="date"
-										formData={formData as any}
-										handleInputChange={handleInputChange}
-										errors={errors}
+										registration={register("dob")}
+										error={errors.dob?.message}
 										required
 									/>
 									<InputField
 										label="Student Phone"
 										id="studentPhone"
-										formData={formData as any}
-										handleInputChange={handleInputChange}
-										errors={errors}
+										type="tel"
+										registration={register("studentPhone")}
+										error={errors.studentPhone?.message}
 									/>
 								</div>
 
@@ -250,27 +220,24 @@ const LocalAdmissionPage = () => {
 									<InputField
 										label="Father's Name"
 										id="fatherName"
-										formData={formData as any}
-										handleInputChange={handleInputChange}
-										errors={errors}
+										registration={register("fatherName")}
+										error={errors.fatherName?.message}
 										required
 									/>
 									<InputField
 										label="Father's Phone"
 										id="fatherPhone"
 										type="tel"
-										formData={formData as any}
-										handleInputChange={handleInputChange}
-										errors={errors}
+										registration={register("fatherPhone")}
+										error={errors.fatherPhone?.message}
 										required
 									/>
 									<InputField
 										label="Residential Address"
 										id="address"
 										type="textarea"
-										formData={formData as any}
-										handleInputChange={handleInputChange}
-										errors={errors}
+										registration={register("address")}
+										error={errors.address?.message}
 										required
 									/>
 								</div>
@@ -293,17 +260,15 @@ const LocalAdmissionPage = () => {
 											"Plus Two",
 											"Degree",
 										]}
-										formData={formData as any}
-										handleInputChange={handleInputChange}
-										errors={errors}
+										registration={register("applyClass")}
+										error={errors.applyClass?.message}
 										required
 									/>
 									<InputField
 										label="Previous Class"
 										id="prevClass"
-										formData={formData as any}
-										handleInputChange={handleInputChange}
-										errors={errors}
+										registration={register("prevClass")}
+										error={errors.prevClass?.message}
 										required
 									/>
 									<InputField
@@ -311,9 +276,8 @@ const LocalAdmissionPage = () => {
 										id="academicYear"
 										type="select"
 										options={["2026–27"]}
-										formData={formData as any}
-										handleInputChange={handleInputChange}
-										errors={errors}
+										registration={register("academicYear")}
+										error={errors.academicYear?.message}
 										required
 									/>
 								</div>
@@ -354,6 +318,11 @@ const LocalAdmissionPage = () => {
 										>
 											{photoDataURL ? "Change Photo" : "Upload Photo"}
 										</Button>
+										{photoError && (
+											<p className="text-xs text-rose-500 font-medium">
+												{photoError}
+											</p>
+										)}
 										<p className="text-[11px] text-slate-400 font-medium">
 											JPG or PNG. Max size 2MB. Ensure clear face visibility.
 										</p>
@@ -364,7 +333,8 @@ const LocalAdmissionPage = () => {
 							<div className="pt-10 border-t border-slate-100 flex justify-center sm:justify-start">
 								<Button
 									type="submit"
-									loading={loading}
+									loading={isSubmitting}
+									disabled={isSubmitting}
 									className="w-full sm:w-auto px-12 h-14 rounded-xl bg-[#0a1628] hover:bg-[#132238] text-white font-bold text-lg shadow-xl shadow-[#0a1628]/10 transition-all hover:-translate-y-1"
 								>
 									Submit Re-admission <Send className="w-5 h-5 ml-2" />

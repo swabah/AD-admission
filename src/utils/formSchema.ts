@@ -56,3 +56,32 @@ export const admissionSchema = z.object({
 });
 
 export type AdmissionFormData = z.infer<typeof admissionSchema>;
+
+export const localAdmissionSchema = z.object({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  dob: z.string().min(1, "Date of birth is required"),
+  studentPhone: phoneSchema.optional(),
+  applyClass: z.string().min(1, "Please select the class"),
+  academicYear: z.string().min(1, "Please select the academic year"),
+  prevClass: z.string().min(1, "Previous class is required"),
+  fatherName: z.string().min(1, "Father's name is required"),
+  fatherPhone: requiredPhoneSchema,
+  address: z.string().min(1, "Residential address is required"),
+});
+
+export type LocalAdmissionFormData = z.infer<typeof localAdmissionSchema>;
+
+export const locateSchema = z.object({
+  phone: z.string().min(1, "Phone number is required"),
+  dob: z.string().min(1, "Date of birth is required"),
+});
+
+export type LocateFormData = z.infer<typeof locateSchema>;
+
+export const loginSchema = z.object({
+  email: z.string().min(1, "Email is required").email("Invalid email format"),
+  password: z.string().min(1, "Password is required"),
+});
+
+export type LoginFormData = z.infer<typeof loginSchema>;
