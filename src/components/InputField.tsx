@@ -1,8 +1,8 @@
 import { AlertTriangle } from "lucide-react";
-import type { ChangeEvent } from "react";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { cn } from "@/lib/utils";
+import type { UseFormRegisterReturn } from "react-hook-form";
 
 interface InputFieldOption {
 	value: string;
@@ -26,11 +26,8 @@ interface InputFieldProps {
 	className?: string;
 	maxLength?: number;
 	options?: (string | InputFieldOption)[];
-	formData: any;
-	handleInputChange: (
-		e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
-	) => void;
-	errors: Record<string, string | null>;
+	error?: string | null;
+	registration?: UseFormRegisterReturn;
 }
 
 export const InputField = ({
@@ -42,12 +39,9 @@ export const InputField = ({
 	className = "",
 	maxLength,
 	options,
-	formData,
-	handleInputChange,
-	errors,
+	error,
+	registration,
 }: InputFieldProps) => {
-	const error = errors[id];
-	const value = formData[id] ?? "";
 	const displayPlaceholder = placeholder || `Enter ${label.toLowerCase()}`;
 
 	const baseClasses = "bg-slate-50 transition-all text-[15px] rounded-xl placeholder:text-slate-400";
@@ -68,8 +62,7 @@ export const InputField = ({
 				<textarea
 					id={id}
 					placeholder={displayPlaceholder}
-					value={value}
-					onChange={handleInputChange}
+					{...registration}
 					className={cn(
 						"flex min-h-[100px] w-full rounded-xl border border-input bg-slate-50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
 						baseClasses,
@@ -81,8 +74,7 @@ export const InputField = ({
 				<div className="relative">
 					<select
 						id={id}
-						value={value}
-						onChange={handleInputChange}
+						{...registration}
 						className={cn(
 							"flex h-12 w-full items-center justify-between rounded-xl border border-input bg-slate-50 px-4 py-3 text-[15px] ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 appearance-none cursor-pointer",
 							baseClasses,
@@ -125,8 +117,7 @@ export const InputField = ({
 					id={id}
 					placeholder={displayPlaceholder}
 					maxLength={maxLength}
-					value={value}
-					onChange={handleInputChange}
+					{...registration}
 					className={cn("h-12 px-4", baseClasses, errorClasses)}
 				/>
 			)}
