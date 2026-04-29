@@ -39,6 +39,7 @@ import {
 	ArrowLeft,
 	Menu,
 } from "lucide-react";
+import printLogo from "../assets/horizontal-logo.png";
 
 // ─── Shared tiny components ───────────────────────────────────────────────────
 const STATUS_CFG: Record<
@@ -301,9 +302,11 @@ const AdminPage = () => {
 		setDropdownOpen(null);
 
 		try {
-			// Ensure photo is preloaded
+			// Ensure photo and logo are preloaded
 			const photo = app.photo || app.photoUrl;
-			if (photo) await preloadImage(photo);
+			const preloads = [preloadImage(printLogo)];
+			if (photo) preloads.push(preloadImage(photo));
+			await Promise.all(preloads);
 
 			setSelectedApp(app);
 			// Small delay for React to render the print component
@@ -324,9 +327,11 @@ const AdminPage = () => {
 		setDropdownOpen(null);
 
 		try {
-			// Ensure photo is preloaded
+			// Ensure photo and logo are preloaded
 			const photo = app.photo || app.photoUrl;
-			if (photo) await preloadImage(photo);
+			const preloads = [preloadImage(printLogo)];
+			if (photo) preloads.push(preloadImage(photo));
+			await Promise.all(preloads);
 
 			// Use requestAnimationFrame to ensure the component is rendered before generating PDF
 			await new Promise((resolve) => {
