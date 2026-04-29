@@ -36,8 +36,10 @@ export interface FormErrors {
   [key: string]: string | null;
 }
 
-export const validatePhone = (phone: string): string | null => {
-  if (!phone?.trim()) return "Phone number is required";
+export const validatePhone = (phone: string, required = true): string | null => {
+  if (!phone?.trim()) {
+    return required ? "Phone number is required" : null;
+  }
   const phoneClean = phone.replace(/\s/g, "").replace(/[-+()]/g, "");
   // Accept 10 digits or 10 digits with +91 prefix (total 12 digits)
   if (!/^[0-9]{10}$/.test(phoneClean) && !/^[0-9]{12}$/.test(phoneClean)) {
@@ -60,6 +62,7 @@ export const validateStep = (
     if (!formData.firstName?.trim()) errors.firstName = "First name is required";
     if (!formData.lastName?.trim()) errors.lastName = "Last name is required";
     if (!formData.dob) errors.dob = "Date of birth is required";
+    if (!formData.bloodGroup) errors.bloodGroup = "Blood group is required";
     if (!formData.address?.trim()) errors.address = "Residential address is required";
     if (!formData.aadhar?.trim()) {
       errors.aadhar = "Aadhar number is required";
@@ -76,6 +79,8 @@ export const validateStep = (
   if (step === 2) {
     if (!formData.applyClass) errors.applyClass = "Please select the class you are applying for";
     if (!formData.academicYear) errors.academicYear = "Please select the academic year";
+    if (!formData.prevSchool?.trim()) errors.prevSchool = "Previous school name is required";
+    if (!formData.prevPercentage?.trim()) errors.prevPercentage = "Previous year percentage is required";
   }
 
 	if (step === 3) {
@@ -85,7 +90,7 @@ export const validateStep = (
 		if (fatherPhoneError) errors.fatherPhone = fatherPhoneError;
 		if (!formData.motherName?.trim())
 			errors.motherName = "Mother's name is required";
-		const motherPhoneError = validatePhone(formData.motherPhone || "");
+		const motherPhoneError = validatePhone(formData.motherPhone || "", false);
 		if (motherPhoneError) errors.motherPhone = motherPhoneError;
 		if (formData.emergencyPhone?.trim()) {
 			const emergencyPhoneError = validatePhone(formData.emergencyPhone);
