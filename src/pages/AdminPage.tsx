@@ -271,15 +271,23 @@ const AdminPage = () => {
 	};
 
 	const shareApplication = async (app: ApplicationData) => {
+		const name = `${app.firstName} ${app.lastName}`;
 		const shareData = {
-			title: `Application ${app.appNo}`,
-			text: `${app.firstName} ${app.lastName}`,
-			url: window.location.href,
+			title: `Application: ${name}`,
+			text: `*Ahlussuffa Admission Portal*\n\n*Student Details:*\n- Name: ${name}\n- Application No: ${app.appNo}\n- Applying for: ${app.applyClass}\n- Academic Year: ${app.academicYear}\n- Current Status: ${app.status?.toUpperCase()}\n\nYou can track your application status using the link below:`,
+			url: `${window.location.origin}/locate`,
 		};
-		if (navigator.share) await navigator.share(shareData);
-		else {
-			navigator.clipboard.writeText(JSON.stringify(shareData, null, 2));
-			alert("Copied!");
+
+		if (navigator.share) {
+			try {
+				await navigator.share(shareData);
+			} catch (err) {
+				console.error("Share failed:", err);
+			}
+		} else {
+			const fullText = `${shareData.text}\n\n${shareData.url}`;
+			navigator.clipboard.writeText(fullText);
+			alert("Application details and link copied to clipboard!");
 		}
 	};
 
