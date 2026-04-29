@@ -9,6 +9,9 @@ interface AdminSidebarProps {
 	onExportPDF: () => void;
 	onRefresh: () => void;
 	onLogout: () => void;
+	isLoading: boolean;
+	processingAction: string | null;
+	bulkPrintReady?: boolean;
 	mobileMenuOpen?: boolean;
 }
 
@@ -26,7 +29,7 @@ const StatItem = ({ label, value, icon: Icon, accentClass, bgAccentClass }: {
 	</div>
 );
 
-export const AdminSidebar = ({ applications, onExport, onExportPDF, onRefresh, onLogout, mobileMenuOpen }: AdminSidebarProps) => {
+export const AdminSidebar = ({ applications, onExport, onExportPDF, onRefresh, onLogout, mobileMenuOpen, bulkPrintReady, processingAction }: AdminSidebarProps) => {
 	const stats = [
 		{ label: "Total Applications", value: applications.length, icon: Users, accentClass: "text-blue-600", bgAccentClass: "bg-blue-100" },
 		{ label: "Pending Review", value: applications.filter(a => !a.status || a.status === "submitted").length, icon: Clock, accentClass: "text-amber-600", bgAccentClass: "bg-amber-100" },
@@ -59,9 +62,10 @@ export const AdminSidebar = ({ applications, onExport, onExportPDF, onRefresh, o
 				<Button 
 					variant="ghost" 
 					onClick={onExportPDF} 
-					className="w-full justify-start gap-3 text-white/70 hover:text-white hover:bg-white/10"
+					className={`w-full justify-start gap-3 transition-all ${bulkPrintReady ? "text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10" : "text-white/70 hover:text-white hover:bg-white/10"}`}
 				>
-					<Printer className="w-4 h-4" /> Export Bulk PDF
+					<Printer className="w-4 h-4" /> 
+					{processingAction === "bulk-print" ? "Cooking..." : bulkPrintReady ? "Ready to Print" : "Bulk Print"}
 				</Button>
 				<Button 
 					variant="ghost" 

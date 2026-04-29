@@ -16,10 +16,6 @@ const BulkApplicationPrintDocument: React.FC<BulkApplicationPrintDocumentProps> 
 			{applications.map((app, index) => (
 				<div 
 					key={app.id || index} 
-					style={{ 
-						pageBreakAfter: index === applications.length - 1 ? "auto" : "always",
-						marginBottom: index === applications.length - 1 ? 0 : "20mm" 
-					}}
 					className="print-page-wrapper"
 				>
 					<ApplicationPrintDocument app={app} showStatus={showStatus} />
@@ -28,15 +24,34 @@ const BulkApplicationPrintDocument: React.FC<BulkApplicationPrintDocumentProps> 
 			
 			<style>{`
 				@media print {
-					.bulk-print-container {
-						padding: 0 !important;
+					.bulk-print-wrapper {
+						position: static !important;
+						display: block !important;
+						opacity: 1 !important;
+						visibility: visible !important;
+						width: 210mm !important;
+						height: auto !important;
 						margin: 0 !important;
+						padding: 0 !important;
 					}
+
+					.bulk-print-container {
+						display: block !important;
+						width: 210mm !important;
+						margin: 0 !important;
+						padding: 0 !important;
+					}
+
 					.print-page-wrapper {
+						display: block !important;
+						width: 210mm !important;
+						height: 297mm !important;
+						overflow: hidden !important;
 						page-break-after: always !important;
 						break-after: page !important;
-						margin-bottom: 0 !important;
+						margin: 0 !important;
 						padding: 0 !important;
+						background: white !important;
 					}
 				}
 			`}</style>

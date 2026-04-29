@@ -110,10 +110,17 @@ const AdminPage = () => {
 	const [bulkDownloadApps, setBulkDownloadApps] = useState<ApplicationData[]>(
 		[],
 	);
+	const [bulkPrintReady, setBulkPrintReady] = useState(false);
 	const [classFilter, setClassFilter] = useState("all");
 	const [sortBy, setSortBy] = useState("date");
 	const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 	const [selectedApps, setSelectedApps] = useState<string[]>([]);
+	
+	// Reset bulk print ready state when selection or tab changes
+	useEffect(() => {
+		setBulkPrintReady(false);
+	}, [selectedApps, activeTab]);
+
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 	const [processingAction, setProcessingAction] = useState<string | null>(null);
 	const [confirmDialog, setConfirmDialog] = useState<{
@@ -334,67 +341,102 @@ const AdminPage = () => {
 	};
 
 	const exportData = () => {
-		if (!applications.length) return;
-		const rows = tabApplications.map((app) => ({
-			"App No": app.appNo,
-			"First Name": app.firstName,
-			"Last Name": app.lastName,
-			DOB: app.dob,
-			Class: app.applyClass,
-			Stream: app.stream || "—",
-			Year: app.academicYear,
-			Status: app.status || "submitted",
-			"Submission Date": app.submissionDate,
-			"Father Name": app.fatherName,
-			"Father Phone": app.fatherPhone,
-			"Mother Name": app.motherName || "—",
-			"Mother Phone": app.motherPhone || "—",
-			Nationality: app.nationality || "—",
-			Aadhar: app.aadhar || "—",
-			Address: app.address || "—",
-			"Previous School": app.prevSchool || "—",
-			"Previous Class": app.prevClass || "—",
-			"Previous %": app.prevPercentage || "—",
-			"Income Group": app.income || "—",
-			Medical: app.medical || "—",
-			Referral: app.referral || "—",
-			Remarks: app.remarks || "—",
+		const appsToExport = selectedApps.length > 0 
+			? applications.filter(app => selectedApps.includes(app.id!))
+			: tabApplications;
+
+		if (!appsToExport.length) return;
+
+		const rows = appsToExport.map((app) => ({
+			"Application No": app.appNo || "",
+			"Full Name": `${app.firstName || ""} ${app.lastName || ""}`.trim(),
+			"Date of Birth": app.dob ? new Date(app.dob).toLocaleDateString("en-IN") : "",
+			"Applied Class": app.applyClass || "",
+			"Academic Year": app.academicYear || "",
+			"Stream/Section": app.stream || "",
+			"Current Status": (app.status || "submitted").toUpperCase(),
+			"Submission Date": app.submissionDate 
+				? new Date(app.submissionDate as string).toLocaleDateString("en-IN") 
+				: "",
+			"Father Name": app.fatherName || "",
+			"Father Phone": app.fatherPhone || "",
+			"Mother Name": app.motherName || "",
+			"Mother Phone": app.motherPhone || "",
+			"Residential Address": app.address?.replace(/\n/g, " ") || "",
+			"Nationality": app.nationality || "",
+			"Aadhar No": app.aadhar || "",
+			"Previous School": app.prevSchool || "",
+			"Previous Class": app.prevClass || "",
+			"Result %": app.prevPercentage || "",
+			"Family Income": app.income || "",
+			"Medical Info": app.medical || "",
+			"Referral Source": app.referral || "",
+			"Admin Remarks": app.remarks || "",
 		}));
-		const csv = [
-			Object.keys(rows[0]).join(","),
-			...rows.map((r) =>
-				Object.values(r)
-					.map((v) => `"${v ?? ""}"`)
+
+		const headers = Object.keys(rows[0]);
+		const csvContent = [
+			headers.join(","),
+			...rows.map((row) =>
+				headers
+					.map((header) => {
+						const val = (row as any)[header];
+						// Escape quotes and wrap in quotes if contains comma/newline
+						const escaped = String(val ?? "").replace(/"/g, '""');
+						return `"${escaped}"`;
+					})
 					.join(","),
 			),
-		].join("\n");
-		const a = Object.assign(document.createElement("a"), {
-			href: URL.createObjectURL(new Blob([csv], { type: "text/csv" })),
-			download: `applications_${new Date().toISOString().split("T")[0]}.csv`,
-		});
-		a.click();
+		].join("\r\n");
+
+		// Add UTF-8 BOM for Excel
+		const BOM = "\uFEFF";
+		const blob = new Blob([BOM + csvContent], { type: "text/csv;charset=utf-8;" });
+		
+		const filename = selectedApps.length > 0 
+			? `selected_applications_${new Date().toISOString().split("T")[0]}.csv`
+			: `applications_${activeTab}_${new Date().toISOString().split("T")[0]}.csv`;
+
+		const link = document.createElement("a");
+		link.href = URL.createObjectURL(blob);
+		link.download = filename;
+		link.click();
+		URL.revokeObjectURL(link.href);
 	};
 
-	const handleBulkDownloadPDF = async () => {
-		if (!tabApplications.length) return;
-		if (tabApplications.length > 50) {
+	const handleBulkPrint = async () => {
+		const appsToPrint = selectedApps.length > 0 
+			? applications.filter(app => selectedApps.includes(app.id!))
+			: tabApplications;
+
+		if (!appsToPrint.length) return;
+
+		// If already ready, just print
+		if (bulkPrintReady) {
+			window.print();
+			// We don't reset here immediately so the user can print again if they want
+			// but selection changes will reset it.
+			return;
+		}
+
+		if (appsToPrint.length > 50) {
 			if (
 				!confirm(
-					`You are about to export ${tabApplications.length} applications. This might take a while and could consume significant memory. Continue?`,
+					`You are about to print ${appsToPrint.length} applications. This might take a while. Continue?`,
 				)
 			)
 				return;
 		}
 
-		setProcessingAction("bulk-download");
-		setBulkDownloadApps(tabApplications);
+		setProcessingAction("bulk-print");
+		setBulkDownloadApps(appsToPrint); // Render the area
 
 		try {
 			// Preload global assets
 			await preloadImage(printLogo);
 
 			// Preload all student photos
-			const photoPreloads = tabApplications
+			const photoPreloads = appsToPrint
 				.map((app) => app.photo || app.photoUrl)
 				.filter(Boolean)
 				.map((url) => preloadImage(url as string));
@@ -403,36 +445,18 @@ const AdminPage = () => {
 				await Promise.all(photoPreloads);
 			}
 
-			// Delay to ensure all components in the bulk list are rendered
+			// Wait for components to render
 			await new Promise((resolve) => {
-				requestAnimationFrame(async () => {
-					await new Promise((r) => setTimeout(r, 1500)); // Longer delay for bulk
-					try {
-						const element = document.getElementById("bulkPrintArea");
-						if (!element) throw new Error("Bulk print element not found");
-
-						// Import html2pdf dynamically
-						const html2pdf = (await import("html2pdf.js")).default;
-
-						const opt = {
-							margin: 0,
-							filename: `bulk_applications_${new Date().toISOString().split("T")[0]}.pdf`,
-							image: { type: "jpeg" as const, quality: 0.98 },
-							html2canvas: { scale: 2, useCORS: true, logging: false },
-							jsPDF: { unit: "mm", format: "a4", orientation: "portrait" as const },
-							pagebreak: { mode: ["css" as const, "legacy" as const] },
-						};
-
-						await html2pdf().set(opt).from(element).save();
-					} catch (error) {
-						console.error("Bulk PDF download failed:", error);
-						alert("Failed to generate bulk PDF. Please try a smaller set.");
-					}
-					resolve(null);
+				requestAnimationFrame(() => {
+					setTimeout(resolve, 1500);
 				});
 			});
+
+			setBulkPrintReady(true);
+		} catch (err) {
+			console.error("Bulk print preparation failed:", err);
+			alert("Failed to prepare documents for printing.");
 		} finally {
-			setBulkDownloadApps([]);
 			setProcessingAction(null);
 		}
 	};
@@ -548,7 +572,7 @@ const AdminPage = () => {
 
 	if (selectedApp)
 		return (
-			<div className="font-sans min-h-screen bg-[#faf8f5]">
+			<div className="font-sans min-h-screen bg-[#faf8f5] single-print-wrapper">
 				<div className="no-print sticky top-0 z-50 bg-[#0a1628] border-b border-[#c8922a]/30 px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-4 shadow-sm backdrop-blur-md">
 					<button
 						type="button"
@@ -565,7 +589,7 @@ const AdminPage = () => {
 						<Printer className="w-4 h-4" /> Print
 					</button>
 				</div>
-				<div className="py-8">
+				<div className="print-content-container">
 					<ApplicationPrintDocument app={selectedApp} />
 				</div>
 			</div>
@@ -589,15 +613,17 @@ const AdminPage = () => {
 					<ApplicationPrintDocument app={downloadingApp} />
 				</div>
 			)}
-			<div className="flex min-h-screen font-sans bg-slate-50 text-slate-800">
+			<div className="flex min-h-screen font-sans bg-slate-50 text-slate-800 no-print">
 				{/* Sidebar */}
 				<AdminSidebar
 					applications={applications}
 					onExport={exportData}
-					onExportPDF={handleBulkDownloadPDF}
+					onExportPDF={handleBulkPrint}
 					onRefresh={() => fetchApplications(1)}
 					onLogout={handleLogout}
 					mobileMenuOpen={mobileMenuOpen}
+					bulkPrintReady={bulkPrintReady}
+					processingAction={processingAction}
 				/>
 
 				{/* Mobile Overlay */}
@@ -615,10 +641,11 @@ const AdminPage = () => {
 					<AdminTopbar
 						onMenuClick={() => setMobileMenuOpen(true)}
 						onExportCSV={exportData}
-						onExportPDF={handleBulkDownloadPDF}
+						onExportPDF={handleBulkPrint}
 						onRefresh={() => fetchApplications(1)}
 						isLoading={loading}
 						processingAction={processingAction}
+						bulkPrintReady={bulkPrintReady}
 					/>
 
 					<div className="flex-1 overflow-y-auto bg-slate-50">
@@ -687,6 +714,21 @@ const AdminPage = () => {
 										>
 											<Trash2 className="w-4 h-4" /> Delete
 										</button>
+
+										<div className="h-6 w-px bg-blue-200 mx-1 shrink-0" />
+
+										<Button
+											type="button"
+											variant="outline"
+											size="sm"
+											loading={processingAction === "bulk-print"}
+											disabled={processingAction !== null && processingAction !== "bulk-print"}
+											onClick={handleBulkPrint}
+											className={`flex items-center gap-1.5 bg-white border-blue-200 rounded-lg text-sm font-semibold shadow-sm whitespace-nowrap transition-all ${bulkPrintReady ? "text-emerald-700 border-emerald-200 bg-emerald-50 hover:bg-emerald-100" : "text-blue-700 hover:bg-blue-50"}`}
+										>
+											<Printer className="w-4 h-4" /> 
+											{processingAction === "bulk-print" ? "Cooking..." : bulkPrintReady ? "Ready to Print" : "Bulk Print"}
+										</Button>
 										<button
 											type="button"
 											onClick={() => setSelectedApps([])}
@@ -1168,14 +1210,7 @@ const AdminPage = () => {
 
 			{/* Bulk Download Area (Hidden) */}
 			{bulkDownloadApps.length > 0 && (
-				<div className="fixed -left-[9999px] top-0 opacity-0 pointer-events-none no-print">
-					<BulkApplicationPrintDocument applications={bulkDownloadApps} />
-				</div>
-			)}
-
-			{/* Bulk Download Area (Hidden) */}
-			{bulkDownloadApps.length > 0 && (
-				<div className="fixed -left-[9999px] top-0 opacity-0 pointer-events-none no-print">
+				<div className="fixed -left-[9999px] top-0 opacity-0 pointer-events-none bulk-print-wrapper">
 					<BulkApplicationPrintDocument applications={bulkDownloadApps} />
 				</div>
 			)}

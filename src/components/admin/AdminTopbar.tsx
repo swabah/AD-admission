@@ -9,6 +9,7 @@ interface AdminTopbarProps {
 	onRefresh: () => void;
 	isLoading: boolean;
 	processingAction: string | null;
+	bulkPrintReady?: boolean;
 }
 
 export const AdminTopbar = ({
@@ -18,6 +19,7 @@ export const AdminTopbar = ({
 	onRefresh,
 	isLoading,
 	processingAction,
+	bulkPrintReady,
 }: AdminTopbarProps) => (
 	<header className="shrink-0 bg-white border-b border-slate-200 px-4 lg:px-8 py-4 flex items-center justify-between z-10 shadow-sm">
 		<div className="flex items-center gap-4">
@@ -43,11 +45,11 @@ export const AdminTopbar = ({
 			<button
 				type="button"
 				onClick={onExportPDF}
-				disabled={processingAction !== null}
-				className="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-semibold text-[#0a1628] bg-white border border-slate-200 hover:bg-slate-50 rounded-lg shadow-sm transition-colors disabled:opacity-50"
+				disabled={processingAction !== null && processingAction !== "bulk-print"}
+				className={`hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-semibold border rounded-lg shadow-sm transition-all disabled:opacity-50 ${bulkPrintReady ? "text-emerald-700 bg-emerald-50 border-emerald-200 hover:bg-emerald-100" : "text-[#0a1628] bg-white border-slate-200 hover:bg-slate-50"}`}
 			>
 				<Printer className="w-4 h-4" />{" "}
-				{processingAction === "bulk-download" ? "..." : "Bulk PDF"}
+				{processingAction === "bulk-print" ? "Cooking..." : bulkPrintReady ? "Ready to Print" : "Bulk Print"}
 			</button>
 			<Button
 				type="button"

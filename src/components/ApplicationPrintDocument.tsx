@@ -78,10 +78,8 @@ interface ApplicationPrintDocumentProps {
 //
 //  2. #printArea gets overflow:hidden + explicit 210×297 mm so the fixed
 //     element never bleeds into a second page.
-//
-//  3. All wrapper elements that surround #printArea in the DOM are hidden via
-//     visibility:hidden (already done) AND their heights are zeroed out so
-//     they cannot push the page count up.
+//  1. All wrapper elements that surround .printable-document in the DOM are hidden 
+//     via visibility:hidden so they cannot push the page count up.
 //
 const PRINT_STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Libre+Franklin:wght@300;400;500;600&display=swap');
@@ -92,50 +90,54 @@ const PRINT_STYLES = `
   }
 
   @media print {
-    /* ── Lock the root to exactly one A4 page ────────────────────────── */
-    html {
-      margin:     0 !important;
-      padding:    0 !important;
-      width:      210mm !important;
-      height:     297mm !important;
-      max-height: 297mm !important;
-      overflow:   hidden !important;
-      background: white !important;
-    }
-
-    body {
-      margin:     0 !important;
-      padding:    0 !important;
-      width:      210mm !important;
-      height:     297mm !important;
-      max-height: 297mm !important;
-      overflow:   hidden !important;
-      background: white !important;
-    }
-
-    /* ── Hide everything, then reveal only printArea ──────────────────── */
+    /* ── Show only printable content ──────────────────── */
     body * {
       visibility: hidden !important;
     }
 
-    #printArea,
-    #printArea * {
+    .printable-document,
+    .printable-document *,
+    .bulk-print-wrapper,
+    .bulk-print-wrapper *,
+    .single-print-wrapper,
+    .single-print-wrapper * {
       visibility: visible !important;
     }
 
-    /* ── Pin printArea to the page origin ─────────────────────────────── */
-    #printArea {
-      position:   fixed !important;
-      top:        0 !important;
-      left:       0 !important;
-      margin:     0 !important;
-      width:      210mm !important;
-      height:     297mm !important;
-      max-height: 297mm !important;
-      overflow:   hidden !important;
-      box-shadow: none !important;
-      transform:  none !important;
+    /* ── Hide elements with no-print class ─────────────── */
+    .no-print {
+      display: none !important;
+      height: 0 !important;
+      overflow: hidden !important;
+    }
+
+    /* ── Ensure single print wrapper doesn't add height ── */
+    .single-print-wrapper,
+    .print-content-container {
+      min-height: 0 !important;
+      height: auto !important;
       background: white !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+
+    .single-print-wrapper > div {
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+
+    /* ── Document container ─────────────────────────────── */
+    .printable-document {
+      position:   relative !important;
+      margin:     0 auto !important;
+      width:      210mm !important;
+      height:     296mm !important; /* Slightly less than 297 to avoid bleed */
+      max-height: 296mm !important;
+      overflow:   hidden !important;
+      background: white !important;
+      transform:  scale(1) !important;
+      transform-origin: top center !important;
+      box-sizing: border-box !important;
     }
 
     .no-print {
@@ -374,6 +376,7 @@ const ApplicationPrintDocument = ({
 		>
 			<div
 				id="printArea"
+				className="printable-document"
 				style={{
 					width:           "210mm",
 					height:          "297mm",

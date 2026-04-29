@@ -143,3 +143,42 @@
     scrollbar-width: none;
   }
 }
+
+@media print {
+  .no-print,
+  button,
+  .admin-sidebar,
+  .admin-topbar,
+  header,
+  nav,
+  footer {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+  }
+
+  .bulk-print-wrapper {
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
+    opacity: 1 !important;
+    display: block !important;
+    pointer-events: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Hide the main dashboard when bulk printing */
+  .flex.min-h-screen:has(.bulk-print-wrapper) {
+     display: none !important;
+  }
+  
+  /* Alternative if :has is not supported or for clarity */
+  main:has(+ .bulk-print-wrapper), 
+  aside:has(+ main + .bulk-print-wrapper) {
+     display: none !important;
+  }
+}
