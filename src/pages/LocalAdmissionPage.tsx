@@ -96,6 +96,7 @@ const LocalAdmissionPage = () => {
 			});
 
 			setSubmitted(true);
+			window.scrollTo({ top: 0, behavior: "smooth" });
 		} catch (err) {
 			console.error("Submission error:", err);
 			setSubmitError("Failed to submit application. Please try again.");
@@ -140,7 +141,14 @@ const LocalAdmissionPage = () => {
 						<div className="bg-white p-1 rounded-xl shadow-lg border border-white/20">
 							<img src={logo} alt="Logo" className="w-10 h-10 object-contain" />
 						</div>
-						<h1 className="text-white text-2xl font-display font-bold">Local Re-admission</h1>
+						<div>
+							<h1 className="text-white text-2xl font-display font-bold leading-none mb-1.5">
+								Local Re-admission
+							</h1>
+							<p className="text-[#c8922a] text-[10px] uppercase font-bold tracking-[0.2em]">
+								Session 2026–27
+							</p>
+						</div>
 					</div>
 					<Link to="/apply" className="text-white/60 hover:text-white text-xs font-bold flex items-center gap-2 transition-colors group">
 						<ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Back to Portal
@@ -156,16 +164,16 @@ const LocalAdmissionPage = () => {
 					</CardHeader>
 					<CardContent className="space-y-8 px-0 sm:px-6">
 						{submitError && (
-							<div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm font-medium border border-red-100">
-								{submitError}
+							<div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm font-medium border border-red-100 flex items-center gap-2">
+								<AlertCircle className="w-4 h-4" /> {submitError}
 							</div>
 						)}
 
 						<form onSubmit={handleSubmit} className="space-y-8">
-							<div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-								<div className="space-y-6">
-									<h3 className="text-sm font-bold uppercase tracking-widest text-[#c8922a]">Student Information</h3>
-									<div className="grid grid-cols-2 gap-4">
+							<div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+								<div className="space-y-8">
+									<h3 className="text-sm font-bold uppercase tracking-widest text-[#c8922a] border-b border-slate-100 pb-2">Student Information</h3>
+									<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 										<InputField label="First Name" id="firstName" formData={formData as any} handleInputChange={handleInputChange} errors={errors} required />
 										<InputField label="Last Name" id="lastName" formData={formData as any} handleInputChange={handleInputChange} errors={errors} required />
 									</div>
@@ -173,17 +181,17 @@ const LocalAdmissionPage = () => {
 									<InputField label="Student Phone" id="studentPhone" formData={formData as any} handleInputChange={handleInputChange} errors={errors} />
 								</div>
 
-								<div className="space-y-6">
-									<h3 className="text-sm font-bold uppercase tracking-widest text-[#c8922a]">Parent Information</h3>
+								<div className="space-y-8">
+									<h3 className="text-sm font-bold uppercase tracking-widest text-[#c8922a] border-b border-slate-100 pb-2">Parent Information</h3>
 									<InputField label="Father's Name" id="fatherName" formData={formData as any} handleInputChange={handleInputChange} errors={errors} required />
-									<InputField label="Father's Phone" id="fatherPhone" formData={formData as any} handleInputChange={handleInputChange} errors={errors} required />
+									<InputField label="Father's Phone" id="fatherPhone" type="tel" formData={formData as any} handleInputChange={handleInputChange} errors={errors} required />
 									<InputField label="Residential Address" id="address" type="textarea" formData={formData as any} handleInputChange={handleInputChange} errors={errors} required />
 								</div>
 							</div>
 
-							<div className="space-y-6">
-								<h3 className="text-sm font-bold uppercase tracking-widest text-[#c8922a]">Academic Details</h3>
-								<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+							<div className="space-y-8">
+								<h3 className="text-sm font-bold uppercase tracking-widest text-[#c8922a] border-b border-slate-100 pb-2">Academic Details</h3>
+								<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 									<InputField 
 										label="Applying For Class" 
 										id="applyClass" 
@@ -208,29 +216,34 @@ const LocalAdmissionPage = () => {
 								</div>
 							</div>
 
-							<div className="space-y-4">
-								<h3 className="text-sm font-bold uppercase tracking-widest text-[#c8922a]">Student Photograph</h3>
-								<div className="flex items-center gap-6 p-6 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
-									<div className="w-24 h-24 rounded-xl bg-white border border-slate-200 flex items-center justify-center overflow-hidden shadow-sm relative group">
+							<div className="space-y-6 pt-4">
+								<h3 className="text-sm font-bold uppercase tracking-widest text-[#c8922a] border-b border-slate-100 pb-2">Student Photograph</h3>
+								<div className="flex flex-col sm:flex-row items-center gap-6 p-8 border-2 border-dashed border-slate-200 rounded-3xl bg-slate-50/50">
+									<div className="w-32 h-40 rounded-2xl bg-white border border-slate-200 flex items-center justify-center overflow-hidden shadow-sm relative group">
 										{photoDataURL ? (
 											<img src={photoDataURL} alt="Student" className="w-full h-full object-cover" />
 										) : (
-											<Camera className="w-8 h-8 text-slate-300" />
+											<Camera className="w-10 h-10 text-slate-300" />
 										)}
 										<input type="file" ref={photoInputRef} onChange={handlePhotoChange} accept="image/*" className="hidden" />
 									</div>
-									<div className="space-y-2">
-										<Button type="button" variant="outline" onClick={() => photoInputRef.current?.click()} className="h-10 rounded-xl font-bold bg-white">
+									<div className="space-y-3 text-center sm:text-left">
+										<p className="text-sm font-bold text-[#0a1628]">Recent Passport Size Photo</p>
+										<Button type="button" variant="outline" onClick={() => photoInputRef.current?.click()} className="h-11 rounded-xl font-bold bg-white border-slate-200 hover:bg-slate-50 transition-all">
 											{photoDataURL ? "Change Photo" : "Upload Photo"}
 										</Button>
-										<p className="text-[11px] text-slate-400 font-medium">JPG or PNG. Max size 2MB.</p>
+										<p className="text-[11px] text-slate-400 font-medium">JPG or PNG. Max size 2MB. Ensure clear face visibility.</p>
 									</div>
 								</div>
 							</div>
 
-							<div className="pt-8 border-t border-slate-100">
-								<Button type="submit" disabled={loading} className="w-full md:w-auto px-12 h-14 rounded-xl bg-[#0a1628] hover:bg-[#132238] text-white font-bold text-lg shadow-lg shadow-[#0a1628]/10 transition-all hover:-translate-y-0.5">
-									{loading ? "Submitting..." : "Submit Re-admission"} <Send className="w-5 h-5 ml-2" />
+							<div className="pt-10 border-t border-slate-100 flex justify-center sm:justify-start">
+								<Button 
+									type="submit" 
+									loading={loading}
+									className="w-full sm:w-auto px-12 h-14 rounded-xl bg-[#0a1628] hover:bg-[#132238] text-white font-bold text-lg shadow-xl shadow-[#0a1628]/10 transition-all hover:-translate-y-1"
+								>
+									Submit Re-admission <Send className="w-5 h-5 ml-2" />
 								</Button>
 							</div>
 						</form>
