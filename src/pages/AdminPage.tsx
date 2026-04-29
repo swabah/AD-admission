@@ -39,6 +39,13 @@ import {
 	ArrowLeft,
 	Menu,
 } from "lucide-react";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+	DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import printLogo from "../assets/horizontal-logo.png";
 
 // ─── Shared tiny components ───────────────────────────────────────────────────
@@ -274,7 +281,7 @@ const AdminPage = () => {
 		const name = `${app.firstName} ${app.lastName}`;
 		const shareData = {
 			title: `Application: ${name}`,
-			text: `*Ahlussuffa Admission Portal*\n\n*Student Details:*\n- Name: ${name}\n- Application No: ${app.appNo}\n- Applying for: ${app.applyClass}\n- Academic Year: ${app.academicYear}\n- Current Status: ${app.status?.toUpperCase()}\n\nYou can track your application status using the link below:`,
+			text: `*Ahlussuffa Admission Portal*\n\n*Student Details:*\n- Name: ${name}\n- DOB: ${app.dob}\n- Phone: ${app.fatherPhone}\n- Application No: ${app.appNo}\n- Applying for: ${app.applyClass}\n- Academic Year: ${app.academicYear}\n- Current Status: ${app.status?.toUpperCase()}\n\nYou can track your application status using the link below:`,
 			url: `${window.location.origin}/locate`,
 		};
 
@@ -841,90 +848,63 @@ const AdminPage = () => {
 																	/>
 																	<AppNoChip value={app.appNo || "—"} />
 																</div>
-																<div className="action-dropdown">
-																	<button
-																		type="button"
-																		onClick={(e) => {
-																			if (dropdownOpen === id) {
-																				setDropdownOpen(null);
-																				return;
-																			}
-																			const r = (
-																				e.currentTarget as HTMLElement
-																			).getBoundingClientRect();
-																			setDropdownPos({
-																				top: r.bottom + 4,
-																				left: r.right - 180,
-																			});
-																			setDropdownOpen(id);
-																		}}
-																		className="p-1.5 text-slate-400 hover:text-[#0a1628] hover:bg-slate-100 rounded-lg transition-colors focus:outline-none"
-																	>
-																		<MoreVertical className="w-5 h-5" />
-																	</button>
-																	{dropdownOpen === id && (
-																		<div
-																			className="fixed z-50 w-48 bg-white border border-slate-200 rounded-xl shadow-sm py-1 animate-in fade-in zoom-in-95"
-																			style={{
-																				top: dropdownPos.top,
-																				left: dropdownPos.left,
-																			}}
+																<DropdownMenu>
+																	<DropdownMenuTrigger asChild>
+																		<button
+																			type="button"
+																			className="p-1.5 text-slate-400 hover:text-[#0a1628] hover:bg-slate-100 rounded-lg transition-colors focus:outline-none"
 																		>
-																			<button
-																				type="button"
-																				onClick={() => {
-																					setViewModalApp(app);
-																					setDropdownOpen(null);
-																				}}
-																				className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#0a1628] font-medium transition-colors"
-																			>
-																				<Eye className="w-4 h-4 text-slate-400" />{" "}
-																				View Details
-																			</button>
-																			<button
-																				type="button"
-																				onClick={() => handlePrint(app)}
-																				disabled={processingAction !== null}
-																				className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#0a1628] font-medium transition-colors"
-																			>
-																				<Printer className="w-4 h-4 text-slate-400" />{" "}
-																			</button>
-																			<button
-																				type="button"
-																				onClick={() =>
-																					handleDirectDownload(app)
-																				}
-																				className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#0a1628] font-medium transition-colors"
-																			>
-																				<Download className="w-4 h-4 text-slate-400" />{" "}
-																				Download PDF
-																			</button>
-																			<button
-																				type="button"
-																				onClick={() => {
-																					shareApplication(app);
-																					setDropdownOpen(null);
-																				}}
-																				className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#0a1628] font-medium transition-colors"
-																			>
-																				<Share2 className="w-4 h-4 text-slate-400" />{" "}
-																				Share Link
-																			</button>
-																			<div className="h-px bg-slate-100 my-1"></div>
-																			<button
-																				type="button"
-																				onClick={() => {
-																					handleDelete(id, app.photoUrl);
-																					setDropdownOpen(null);
-																				}}
-																				className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 font-medium transition-colors"
-																			>
-																				<Trash2 className="w-4 h-4 text-red-400" />{" "}
-																				Delete Application
-																			</button>
-																		</div>
-																	)}
-																</div>
+																			<MoreVertical className="w-5 h-5" />
+																		</button>
+																	</DropdownMenuTrigger>
+																	<DropdownMenuContent
+																		align="end"
+																		className="w-48 rounded-xl"
+																	>
+																		<DropdownMenuItem
+																			onClick={() => setViewModalApp(app)}
+																			className="gap-2 py-2.5 font-medium cursor-pointer"
+																		>
+																			<Eye className="w-4 h-4 text-slate-400" /> View
+																			Details
+																		</DropdownMenuItem>
+																		<DropdownMenuItem
+																			onClick={() => handlePrint(app)}
+																			disabled={processingAction !== null}
+																			className="gap-2 py-2.5 font-medium cursor-pointer"
+																		>
+																			<Printer className="w-4 h-4 text-slate-400" />{" "}
+																			{processingAction === `print-${id}`
+																				? "Preparing..."
+																				: "Print Form"}
+																		</DropdownMenuItem>
+																		<DropdownMenuItem
+																			onClick={() => handleDirectDownload(app)}
+																			disabled={processingAction !== null}
+																			className="gap-2 py-2.5 font-medium cursor-pointer"
+																		>
+																			<Download className="w-4 h-4 text-slate-400" />{" "}
+																			{processingAction === `download-${id}`
+																				? "Downloading..."
+																				: "Download PDF"}
+																		</DropdownMenuItem>
+																		<DropdownMenuItem
+																			onClick={() => shareApplication(app)}
+																			className="gap-2 py-2.5 font-medium cursor-pointer"
+																		>
+																			<Share2 className="w-4 h-4 text-slate-400" />{" "}
+																			Share Link
+																		</DropdownMenuItem>
+																		<DropdownMenuSeparator />
+																		<DropdownMenuItem
+																			onClick={() => handleDelete(id, app.photoUrl)}
+																			className="gap-2 py-2.5 font-medium text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer"
+																		>
+																			<Trash2 className="w-4 h-4 text-red-400" />{" "}
+																			Delete Application
+																		</DropdownMenuItem>
+																	</DropdownMenuContent>
+																</DropdownMenu>
 															</div>
 
 															<div className="flex items-center gap-4 mb-4">
@@ -1092,100 +1072,64 @@ const AdminPage = () => {
 																		: "—"}
 																</td>
 																<td className="p-4 text-center relative">
-																	<div
-																		className="action-dropdown"
-																		ref={dropdownRef}
-																	>
-																		<button
-																			type="button"
-																			onClick={(e) => {
-																				if (dropdownOpen === id) {
-																					setDropdownOpen(null);
-																					return;
-																				}
-																				const r = (
-																					e.currentTarget as HTMLElement
-																				).getBoundingClientRect();
-																				setDropdownPos({
-																					top: r.bottom + 4,
-																					left: r.right - 180,
-																				});
-																				setDropdownOpen(id);
-																			}}
-																			className="p-1.5 text-slate-400 hover:text-[#0a1628] hover:bg-slate-200 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-[#0a1628]"
-																		>
-																			<MoreVertical className="w-5 h-5" />
-																		</button>
-																		{dropdownOpen === id && (
-																			<div
-																				className="fixed z-50 w-48 bg-white border border-slate-200 rounded-xl shadow-sm py-1 animate-in fade-in zoom-in-95"
-																				style={{
-																					top: dropdownPos.top,
-																					left: dropdownPos.left,
-																				}}
+																	<DropdownMenu>
+																		<DropdownMenuTrigger asChild>
+																			<button
+																				type="button"
+																				className="p-1.5 text-slate-400 hover:text-[#0a1628] hover:bg-slate-200 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-[#0a1628]"
 																			>
-																				<button
-																					type="button"
-																					onClick={() => {
-																						setViewModalApp(app);
-																						setDropdownOpen(null);
-																					}}
-																					className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#0a1628] font-medium transition-colors"
-																				>
-																					<Eye className="w-4 h-4 text-slate-400" />{" "}
-																					View Details
-																				</button>
-																				<button
-																					type="button"
-																					onClick={() => {
-																						setSelectedApp(app);
-																						setTimeout(
-																							() => window.print(),
-																							100,
-																						);
-																						setDropdownOpen(null);
-																					}}
-																					className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#0a1628] font-medium transition-colors"
-																				>
-																					<Printer className="w-4 h-4 text-slate-400" />{" "}
-																					Print Form
-																				</button>
-																				<button
-																					type="button"
-																					onClick={() =>
-																						handleDirectDownload(app)
-																					}
-																					className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#0a1628] font-medium transition-colors"
-																				>
-																					<Download className="w-4 h-4 text-slate-400" />{" "}
-																					Download PDF
-																				</button>
-																				<button
-																					type="button"
-																					onClick={() => {
-																						shareApplication(app);
-																						setDropdownOpen(null);
-																					}}
-																					className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#0a1628] font-medium transition-colors"
-																				>
-																					<Share2 className="w-4 h-4 text-slate-400" />{" "}
-																					Share Link
-																				</button>
-																				<div className="h-px bg-slate-100 my-1"></div>
-																				<button
-																					type="button"
-																					onClick={() => {
-																						handleDelete(id, app.photoUrl);
-																						setDropdownOpen(null);
-																					}}
-																					className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 font-medium transition-colors"
-																				>
-																					<Trash2 className="w-4 h-4 text-red-400" />{" "}
-																					Delete Application
-																				</button>
-																			</div>
-																		)}
-																	</div>
+																				<MoreVertical className="w-5 h-5" />
+																			</button>
+																		</DropdownMenuTrigger>
+																		<DropdownMenuContent
+																			align="end"
+																			className="w-48 rounded-xl"
+																		>
+																			<DropdownMenuItem
+																				onClick={() => setViewModalApp(app)}
+																				className="gap-2 py-2.5 font-medium cursor-pointer"
+																			>
+																				<Eye className="w-4 h-4 text-slate-400" /> View
+																				Details
+																			</DropdownMenuItem>
+																			<DropdownMenuItem
+																				onClick={() => handlePrint(app)}
+																				disabled={processingAction !== null}
+																				className="gap-2 py-2.5 font-medium cursor-pointer"
+																			>
+																				<Printer className="w-4 h-4 text-slate-400" />{" "}
+																				{processingAction === `print-${id}`
+																					? "Preparing..."
+																					: "Print Form"}
+																			</DropdownMenuItem>
+																			<DropdownMenuItem
+																				onClick={() => handleDirectDownload(app)}
+																				disabled={processingAction !== null}
+																				className="gap-2 py-2.5 font-medium cursor-pointer"
+																			>
+																				<Download className="w-4 h-4 text-slate-400" />{" "}
+																				{processingAction === `download-${id}`
+																					? "Downloading..."
+																					: "Download PDF"}
+																			</DropdownMenuItem>
+																			<DropdownMenuItem
+																				onClick={() => shareApplication(app)}
+																				className="gap-2 py-2.5 font-medium cursor-pointer"
+																			>
+																				<Share2 className="w-4 h-4 text-slate-400" />{" "}
+																				Share Link
+																			</DropdownMenuItem>
+																			<DropdownMenuSeparator />
+																			<DropdownMenuItem
+																				onClick={() => handleDelete(id, app.photoUrl)}
+																				className="gap-2 py-2.5 font-medium text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer"
+																			>
+																				<Trash2 className="w-4 h-4 text-red-400" />{" "}
+																				Delete Application
+																			</DropdownMenuItem>
+																		</DropdownMenuContent>
+																	</DropdownMenu>
+
 																</td>
 															</tr>
 														);
