@@ -68,14 +68,28 @@ const NewAdmissionPage = () => {
 	const nextStep = async () => {
 		let fieldsToValidate: (keyof AdmissionFormData)[] = [];
 		if (currentStep === 1) {
-			fieldsToValidate = ["firstName", "lastName", "dob", "bloodGroup", "nationality", "aadhar", "address"];
+			fieldsToValidate = [
+				"firstName",
+				"lastName",
+				"dob",
+				"bloodGroup",
+				"nationality",
+				"aadhar",
+				"address",
+			];
 			if (!photoDataURL) {
 				setPhotoError("Student photo is required");
 				window.scrollTo({ top: 0, behavior: "smooth" });
 				return;
 			}
 		} else if (currentStep === 2) {
-			fieldsToValidate = ["applyClass", "academicYear", "prevSchool", "prevClass", "prevPercentage"];
+			fieldsToValidate = [
+				"applyClass",
+				"academicYear",
+				"prevSchool",
+				"prevClass",
+				"prevPercentage",
+			];
 		} else if (currentStep === 3) {
 			fieldsToValidate = ["fatherName", "fatherPhone", "motherName"];
 		}
@@ -174,7 +188,11 @@ const NewAdmissionPage = () => {
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
 					<div className="flex items-center gap-2.5 sm:gap-5">
 						<div className="bg-white p-1 rounded-xl shadow-lg border border-white/20 shrink-0">
-							<img src={logo} alt="Logo" className="w-8 h-8 sm:w-10 sm:h-10 object-contain" />
+							<img
+								src={logo}
+								alt="Logo"
+								className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
+							/>
 						</div>
 						<div className="min-w-0">
 							<h1 className="text-white text-base sm:text-2xl font-display font-bold leading-none mb-1 sm:mb-1.5 truncate">
@@ -190,7 +208,9 @@ const NewAdmissionPage = () => {
 						className="text-white/60 hover:text-white text-[10px] sm:text-xs font-bold flex items-center gap-1 transition-colors group shrink-0"
 					>
 						<ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-						<span className="hidden xs:inline">Back <span className="hidden sm:inline">to Portal</span></span>
+						<span className="hidden xs:inline">
+							Back <span className="hidden sm:inline">to Portal</span>
+						</span>
 					</Link>
 				</div>
 			</header>
@@ -298,7 +318,16 @@ const NewAdmissionPage = () => {
 												label="Blood Group"
 												id="bloodGroup"
 												type="select"
-												options={["A+", "B+", "O+", "AB+", "A-", "B-", "O-", "AB-"]}
+												options={[
+													"A+",
+													"B+",
+													"O+",
+													"AB+",
+													"A-",
+													"B-",
+													"O-",
+													"AB-",
+												]}
 												registration={register("bloodGroup")}
 												error={errors.bloodGroup?.message}
 												required
@@ -346,7 +375,14 @@ const NewAdmissionPage = () => {
 											label="Applying for Class"
 											id="applyClass"
 											type="select"
-											options={["Class 8", "Class 9", "Class 10", "Plus One", "Plus Two", "Degree"]}
+											options={[
+												"Class 8",
+												"Class 9",
+												"Class 10",
+												"Plus One",
+												"Plus Two",
+												"Degree",
+											]}
 											registration={register("applyClass")}
 											error={errors.applyClass?.message}
 											required
@@ -381,7 +417,15 @@ const NewAdmissionPage = () => {
 											label="Previous Board"
 											id="prevBoard"
 											type="select"
-											options={["SSLC", "CBSE", "ICSE", "HSE", "VHSE", "THSE", "Other"]}
+											options={[
+												{ value: "Kerala State", label: "Kerala State Board" },
+												{ value: "CBSE", label: "CBSE" },
+												{ value: "ICSE", label: "ICSE / ISC" },
+												{ value: "VHSE", label: "VHSE (Kerala)" },
+												{ value: "THSE", label: "THSE (Kerala)" },
+												{ value: "NIOS", label: "NIOS (Open School)" },
+												{ value: "Other", label: "Other Board" },
+											]}
 											registration={register("prevBoard")}
 											error={errors.prevBoard?.message}
 										/>
@@ -546,14 +590,20 @@ const NewAdmissionPage = () => {
 										<div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-8 text-sm">
 											{/* Review items remain static or use getValues() */}
 											<div className="flex justify-between border-b pb-1">
-												<span className="text-muted-foreground">Full Name:</span>
+												<span className="text-muted-foreground">
+													Full Name:
+												</span>
 												<span className="font-medium">
 													{getValues("firstName")} {getValues("lastName")}
 												</span>
 											</div>
 											<div className="flex justify-between border-b pb-1">
-												<span className="text-muted-foreground">Applied Class:</span>
-												<span className="font-medium">{getValues("applyClass")}</span>
+												<span className="text-muted-foreground">
+													Applied Class:
+												</span>
+												<span className="font-medium">
+													{getValues("applyClass")}
+												</span>
 											</div>
 											<div className="flex justify-between border-b pb-1">
 												<span className="text-muted-foreground">DOB:</span>
@@ -561,7 +611,9 @@ const NewAdmissionPage = () => {
 											</div>
 											<div className="flex justify-between border-b pb-1">
 												<span className="text-muted-foreground">Father:</span>
-												<span className="font-medium">{getValues("fatherName")}</span>
+												<span className="font-medium">
+													{getValues("fatherName")}
+												</span>
 											</div>
 										</div>
 
@@ -572,9 +624,9 @@ const NewAdmissionPage = () => {
 												className="mt-1 h-4 w-4 rounded border-slate-300 text-[#0a1628] focus:ring-[#0a1628]"
 											/>
 											<span className="text-sm leading-relaxed text-slate-600">
-												I hereby declare that the information provided is true to
-												 the best of my knowledge. I understand that any false 
-												 information may lead to rejection of this application.
+												I hereby declare that the information provided is true
+												to the best of my knowledge. I understand that any false
+												information may lead to rejection of this application.
 											</span>
 										</label>
 										{errors.agreeCheck && (
@@ -597,10 +649,10 @@ const NewAdmissionPage = () => {
 									<ChevronLeft className="w-4 h-4 mr-2" /> Previous
 								</Button>
 								{currentStep < 4 ? (
-									<Button 
+									<Button
 										type="button"
 										variant="navy"
-										onClick={nextStep} 
+										onClick={nextStep}
 										className="rounded-xl h-12 px-8 font-bold w-full sm:w-auto order-1 sm:order-2"
 									>
 										Next Step <ChevronRight className="w-4 h-4 ml-2" />
