@@ -100,7 +100,9 @@ const NewAdmissionPage = () => {
 				setCurrentStep((prev) => prev + 1);
 				setIsNavigating(false);
 				window.scrollTo({ top: 0, behavior: "smooth" });
-			}, 250);
+			}, 150);
+		} else {
+			window.scrollTo({ top: 0, behavior: "smooth" });
 		}
 	};
 
@@ -111,7 +113,7 @@ const NewAdmissionPage = () => {
 				setCurrentStep((prev) => prev - 1);
 				setIsNavigating(false);
 				window.scrollTo({ top: 0, behavior: "smooth" });
-			}, 250);
+			}, 150);
 		}
 	};
 
@@ -227,7 +229,9 @@ const NewAdmissionPage = () => {
 													? "Family"
 													: "Review"
 									}
-									onClick={setCurrentStep}
+									onClick={(step) => {
+										if (step < currentStep) setCurrentStep(step);
+									}}
 									isLast={step === 4}
 								/>
 							))}
@@ -472,14 +476,14 @@ const NewAdmissionPage = () => {
 							</div>
 						)}
 
-						<div className="flex justify-between pt-8 border-t border-slate-100">
+						<div className="flex flex-col sm:flex-row gap-4 justify-between pt-8 border-t border-slate-100">
 							<Button
 								type="button"
 								variant="outline"
 								onClick={prevStep}
 								disabled={currentStep === 1 || isSubmitting || isNavigating}
 								loading={isNavigating}
-								className="rounded-xl h-12 px-6 font-bold"
+								className="rounded-xl h-12 px-6 font-bold w-full sm:w-auto order-2 sm:order-1"
 							>
 								<ChevronLeft className="w-4 h-4 mr-2" /> Previous
 							</Button>
@@ -489,7 +493,7 @@ const NewAdmissionPage = () => {
 									onClick={nextStep} 
 									loading={isNavigating} 
 									disabled={isNavigating}
-									className="rounded-xl h-12 px-8 font-bold bg-[#0a1628]"
+									className="rounded-xl h-12 px-8 font-bold bg-[#0a1628] w-full sm:w-auto order-1 sm:order-2"
 								>
 									Next Step <ChevronRight className="w-4 h-4 ml-2" />
 								</Button>
@@ -499,7 +503,7 @@ const NewAdmissionPage = () => {
 									onClick={handleSubmit}
 									disabled={isSubmitting}
 									loading={isSubmitting}
-									className="rounded-xl h-12 px-10 font-bold bg-[#0a1628]"
+									className="rounded-xl h-12 px-10 font-bold bg-[#0a1628] w-full sm:w-auto order-1 sm:order-2"
 								>
 									Submit Application <Send className="w-4 h-4 ml-2" />
 								</Button>
