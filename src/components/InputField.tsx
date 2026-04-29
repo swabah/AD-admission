@@ -26,7 +26,7 @@ interface InputFieldProps {
 	className?: string;
 	maxLength?: number;
 	options?: (string | InputFieldOption)[];
-	formData: Record<string, string | number | boolean | null | undefined>;
+	formData: any;
 	handleInputChange: (
 		e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
 	) => void;
@@ -48,8 +48,9 @@ export const InputField = ({
 }: InputFieldProps) => {
 	const error = errors[id];
 	const value = formData[id] ?? "";
+	const displayPlaceholder = placeholder || `Enter ${label.toLowerCase()}`;
 
-	const baseClasses = "bg-slate-50 transition-all text-[15px] rounded-xl";
+	const baseClasses = "bg-slate-50 transition-all text-[15px] rounded-xl placeholder:text-slate-400";
 	const errorClasses = error
 		? "border-rose-300 ring-rose-100 bg-rose-50/30"
 		: "border-slate-200 focus:border-[#0a1628] focus:ring-[#0a1628]";
@@ -66,7 +67,7 @@ export const InputField = ({
 			{type === "textarea" ? (
 				<textarea
 					id={id}
-					placeholder={placeholder}
+					placeholder={displayPlaceholder}
 					value={value}
 					onChange={handleInputChange}
 					className={cn(
@@ -88,7 +89,7 @@ export const InputField = ({
 							errorClasses,
 						)}
 					>
-						{placeholder && <option value="">{placeholder}</option>}
+						{displayPlaceholder && <option value="">{displayPlaceholder}</option>}
 						{options?.map((opt) => {
 							const optValue = typeof opt === "string" ? opt : opt.value;
 							const optLabel = typeof opt === "string" ? opt : opt.label;
@@ -122,7 +123,7 @@ export const InputField = ({
 				<Input
 					type={type}
 					id={id}
-					placeholder={placeholder}
+					placeholder={displayPlaceholder}
 					maxLength={maxLength}
 					value={value}
 					onChange={handleInputChange}
