@@ -24,8 +24,11 @@ const LocateApplicationPage = () => {
  setLoading(true);
  setSearched(true);
  
+ // Normalize phone number: remove +91, spaces, dashes, parentheses
+ const normalizedPhone = phone.replace(/\s/g, "").replace(/[-+()]/g, "").replace(/^91/, "");
+ 
  try {
- const results = await searchApplicationsByPhoneAndDob(phone, dob);
+ const results = await searchApplicationsByPhoneAndDob(normalizedPhone, dob);
  setApplications(results as Application[]);
  if (results.length === 0) {
  setError("No applications found with this phone number and date of birth.");
