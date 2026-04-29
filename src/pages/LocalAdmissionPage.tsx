@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { addApplication } from "../services/supabase";
+import { addApplication, generateNextAppNo } from "../services/supabase";
 import { downloadApplicationPDF } from "../utils/pdfDownloader";
 import logo from "../assets/logo.jpg";
 import { localAdmissionSchema, type LocalAdmissionFormData } from "../utils/formSchema";
@@ -67,7 +67,7 @@ const LocalAdmissionPage = () => {
 		setSubmitError(null);
 
 		try {
-			const applicationNo = formatApplicationNo("L");
+			const applicationNo = await generateNextAppNo(undefined, "local");
 			setAppNo(applicationNo);
 
 			await addApplication({

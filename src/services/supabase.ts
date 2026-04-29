@@ -158,6 +158,42 @@ export const deletePhotoFromStorage = async (
 	}
 };
 
+// Generate next application number
+export const generateNextAppNo = async (
+	stream?: string,
+	admissionType: "new" | "local" = "new",
+): Promise<string> => {
+	try {
+		const { count, error } = await supabase
+			.from(SUPABASE_TABLE_NAME)
+			.select("*", { count: "exact", head: true });
+
+		if (error) {
+			console.error("Error fetching count for app no:", error);
+			// Fallback to timestamp if count fails
+			return `AS${Date.now().toString().slice(-6)}`;
+		}
+
+		const nextId = (count || 0) + 1;
+		const paddedId = nextId.toString().padStart(4, "0");
+
+		let streamCode = "NW"; // Default for New
+
+		if (admissionType === "local") {
+			streamCode = "LC";
+		} else {
+			if (stream === "Root Exc") streamCode = "RE";
+			else if (stream === "HS") streamCode = "HS";
+			else if (stream === "BS") streamCode = "BS";
+		}
+
+		return `AS${streamCode}${paddedId}`;
+	} catch (err) {
+		console.error("Exception generating app no:", err);
+		return `AS${Date.now().toString().slice(-6)}`;
+	}
+};
+
 // Add a new application
 export const addApplication = async (
 	data: ApplicationData,

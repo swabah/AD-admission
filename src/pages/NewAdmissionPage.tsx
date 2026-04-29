@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { addApplication } from "../services/supabase";
+import { addApplication, generateNextAppNo } from "../services/supabase";
 import { downloadApplicationPDF } from "../utils/pdfDownloader";
 import logo from "../assets/logo.jpg";
 import ApplicationPrintDocument from "../components/ApplicationPrintDocument";
@@ -119,7 +119,7 @@ const NewAdmissionPage = () => {
 		}
 
 		setSubmitError(null);
-		const newAppNo = formatApplicationNo();
+		const newAppNo = await generateNextAppNo(data.stream, "new");
 		setAppNo(newAppNo);
 
 		try {
