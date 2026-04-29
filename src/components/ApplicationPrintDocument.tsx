@@ -384,6 +384,7 @@ const ApplicationPrintDocument = ({
 					boxSizing:       "border-box" as const,
 					boxShadow:       scale < 1 ? "0 4px 32px rgba(0,0,0,0.10)" : "0 4px 32px rgba(0,0,0,0.10)",
 					flexShrink:      0,
+					position:        "relative",
 					// Scale for on-screen preview; reset to none in PRINT_STYLES
 					transform:       `scale(${scale})`,
 					transformOrigin: "top center",
@@ -618,8 +619,12 @@ const ApplicationPrintDocument = ({
 				{/* ── FOOTER ───────────────────────────────────────────────── */}
 				<div
 					style={{
+						position: "absolute",
+						bottom: "4px",
+						left: "14px",
+						right: "14px",
 						borderTop: `1px solid ${C.border}`,
-						padding: "4px 14px",
+						padding: "4px 0",
 						display: "flex",
 						justifyContent: "space-between",
 						alignItems: "center",

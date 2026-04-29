@@ -12,6 +12,7 @@ import StudentViewModal, {
 	type RawStudentData,
 } from "../components/StudentViewModal";
 import ApplicationPrintDocument from "../components/ApplicationPrintDocument";
+import BulkApplicationPrintDocument from "../components/BulkApplicationPrintDocument";
 import ConfirmDialog from "../components/ConfirmDialog";
 import {
 	LoginScreen,
@@ -161,6 +162,9 @@ const AdminPage = () => {
 	const [activeTab, setActiveTab] = useState("all");
 	const [searchTerm, setSearchTerm] = useState("");
 	const [statusFilter, setStatusFilter] = useState("all");
+	const [bulkDownloadApps, setBulkDownloadApps] = useState<ApplicationData[]>(
+		[],
+	);
 	const [classFilter, setClassFilter] = useState("all");
 	const [sortBy, setSortBy] = useState("date");
 	const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
@@ -373,13 +377,28 @@ const AdminPage = () => {
 		if (!applications.length) return;
 		const rows = tabApplications.map((app) => ({
 			"App No": app.appNo,
-			Name: `${app.firstName} ${app.lastName}`,
+			"First Name": app.firstName,
+			"Last Name": app.lastName,
+			DOB: app.dob,
 			Class: app.applyClass,
+			Stream: app.stream || "—",
 			Year: app.academicYear,
 			Status: app.status || "submitted",
-			Submitted: app.submissionDate,
-			Father: app.fatherName,
-			Phone: app.fatherPhone,
+			"Submission Date": app.submissionDate,
+			"Father Name": app.fatherName,
+			"Father Phone": app.fatherPhone,
+			"Mother Name": app.motherName || "—",
+			"Mother Phone": app.motherPhone || "—",
+			Nationality: app.nationality || "—",
+			Aadhar: app.aadhar || "—",
+			Address: app.address || "—",
+			"Previous School": app.prevSchool || "—",
+			"Previous Class": app.prevClass || "—",
+			"Previous %": app.prevPercentage || "—",
+			"Income Group": app.income || "—",
+			Medical: app.medical || "—",
+			Referral: app.referral || "—",
+			Remarks: app.remarks || "—",
 		}));
 		const csv = [
 			Object.keys(rows[0]).join(","),
@@ -394,6 +413,68 @@ const AdminPage = () => {
 			download: `applications_${new Date().toISOString().split("T")[0]}.csv`,
 		});
 		a.click();
+	};
+
+	const handleBulkDownloadPDF = async () => {
+		if (!tabApplications.length) return;
+		if (tabApplications.length > 50) {
+			if (
+				!confirm(
+					`You are about to export ${tabApplications.length} applications. This might take a while and could consume significant memory. Continue?`,
+				)
+			)
+				return;
+		}
+
+		setProcessingAction("bulk-download");
+		setBulkDownloadApps(tabApplications);
+
+		try {
+			// Preload global assets
+			await preloadImage(printLogo);
+
+			// Preload all student photos
+			const photoPreloads = tabApplications
+				.map((app) => app.photo || app.photoUrl)
+				.filter(Boolean)
+				.map((url) => preloadImage(url as string));
+
+			if (photoPreloads.length > 0) {
+				await Promise.all(photoPreloads);
+			}
+
+			// Delay to ensure all components in the bulk list are rendered
+			await new Promise((resolve) => {
+				requestAnimationFrame(async () => {
+					await new Promise((r) => setTimeout(r, 1500)); // Longer delay for bulk
+					try {
+						const element = document.getElementById("bulkPrintArea");
+						if (!element) throw new Error("Bulk print element not found");
+
+						// Import html2pdf dynamically
+						const html2pdf = (await import("html2pdf.js")).default;
+
+						const opt = {
+							margin: 0,
+							filename: `bulk_applications_${new Date().toISOString().split("T")[0]}.pdf`,
+							image: { type: "jpeg", quality: 0.98 },
+							html2canvas: { scale: 2, useCORS: true, logging: false },
+							jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+							pagebreak: { mode: ["css", "legacy"] },
+						};
+
+						await html2pdf().set(opt).from(element).save();
+					} catch (error) {
+						console.error("Bulk PDF download failed:", error);
+						alert("Failed to generate bulk PDF. Please try a smaller set.");
+					}
+					resolve(null);
+				});
+			});
+		} finally {
+			setBulkDownloadApps([]);
+			setProcessingAction(null);
+		}
 	};
 
 	const uniqueClasses = [
@@ -592,6 +673,7 @@ const AdminPage = () => {
 				<AdminSidebar
 					applications={applications}
 					onExport={exportData}
+					onExportPDF={handleBulkDownloadPDF}
 					onRefresh={() => fetchApplications(1)}
 					onLogout={handleLogout}
 					mobileMenuOpen={mobileMenuOpen}
@@ -629,7 +711,16 @@ const AdminPage = () => {
 								onClick={exportData}
 								className="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-semibold text-[#0a1628] bg-white border border-slate-200 hover:bg-slate-50 rounded-lg shadow-sm transition-colors"
 							>
-								<Download className="w-4 h-4" /> Export
+								<Download className="w-4 h-4" /> CSV
+							</button>
+							<button
+								type="button"
+								onClick={handleBulkDownloadPDF}
+								disabled={processingAction !== null}
+								className="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-semibold text-[#0a1628] bg-white border border-slate-200 hover:bg-slate-50 rounded-lg shadow-sm transition-colors disabled:opacity-50"
+							>
+								<Printer className="w-4 h-4" />{" "}
+								{processingAction === "bulk-download" ? "..." : "Bulk PDF"}
 							</button>
 							<Button
 								type="button"
@@ -1162,6 +1253,20 @@ const AdminPage = () => {
 					</div>
 				</main>
 			</div>
+
+			{/* Bulk Download Area (Hidden) */}
+			{bulkDownloadApps.length > 0 && (
+				<div className="fixed -left-[9999px] top-0 opacity-0 pointer-events-none no-print">
+					<BulkApplicationPrintDocument applications={bulkDownloadApps} />
+				</div>
+			)}
+
+			{/* Bulk Download Area (Hidden) */}
+			{bulkDownloadApps.length > 0 && (
+				<div className="fixed -left-[9999px] top-0 opacity-0 pointer-events-none no-print">
+					<BulkApplicationPrintDocument applications={bulkDownloadApps} />
+				</div>
+			)}
 
 			<ConfirmDialog
 				isOpen={confirmDialog.isOpen}
