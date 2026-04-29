@@ -72,8 +72,9 @@ export const validateStep = (
         errors.aadhar = "Aadhar must be exactly 12 digits";
       }
     }
-    const studentPhoneError = validatePhone(formData.studentPhone || "");
-    if (studentPhoneError) errors.studentPhone = studentPhoneError;
+    // studentPhone is not currently in Step 1 UI
+    // const studentPhoneError = validatePhone(formData.studentPhone || "");
+    // if (studentPhoneError) errors.studentPhone = studentPhoneError;
   }
 
   if (step === 2) {

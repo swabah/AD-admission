@@ -100,7 +100,7 @@ const NewAdmissionPage = () => {
 				setCurrentStep((prev) => prev + 1);
 				setIsNavigating(false);
 				window.scrollTo({ top: 0, behavior: "smooth" });
-			}, 150);
+			}, 350);
 		} else {
 			window.scrollTo({ top: 0, behavior: "smooth" });
 		}
@@ -113,7 +113,7 @@ const NewAdmissionPage = () => {
 				setCurrentStep((prev) => prev - 1);
 				setIsNavigating(false);
 				window.scrollTo({ top: 0, behavior: "smooth" });
-			}, 150);
+			}, 350);
 		}
 	};
 
