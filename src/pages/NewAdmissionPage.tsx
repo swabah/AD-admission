@@ -92,25 +92,27 @@ const NewAdmissionPage = () => {
 
 	const nextStep = () => {
 		const stepErrors = validateStep(currentStep, formData);
-		if (Object.keys(stepErrors).length > 0) {
-			setErrors(stepErrors);
-			return;
+		setErrors(stepErrors);
+		
+		if (isValidStep(stepErrors)) {
+			setIsNavigating(true);
+			setTimeout(() => {
+				setCurrentStep((prev) => prev + 1);
+				setIsNavigating(false);
+				window.scrollTo({ top: 0, behavior: "smooth" });
+			}, 250);
 		}
-		setIsNavigating(true);
-		setTimeout(() => {
-			setCurrentStep((prev) => prev + 1);
-			setIsNavigating(false);
-			window.scrollTo({ top: 0, behavior: "smooth" });
-		}, 300);
 	};
 
 	const prevStep = () => {
-		setIsNavigating(true);
-		setTimeout(() => {
-			setCurrentStep((prev) => prev - 1);
-			setIsNavigating(false);
-			window.scrollTo({ top: 0, behavior: "smooth" });
-		}, 300);
+		if (currentStep > 1) {
+			setIsNavigating(true);
+			setTimeout(() => {
+				setCurrentStep((prev) => prev - 1);
+				setIsNavigating(false);
+				window.scrollTo({ top: 0, behavior: "smooth" });
+			}, 250);
+		}
 	};
 
 	const handleSubmit = async () => {
@@ -470,24 +472,34 @@ const NewAdmissionPage = () => {
 							</div>
 						)}
 
-						<div className="flex justify-between pt-6 border-t">
+						<div className="flex justify-between pt-8 border-t border-slate-100">
 							<Button
-								variant="ghost"
+								type="button"
+								variant="outline"
 								onClick={prevStep}
 								disabled={currentStep === 1 || isSubmitting || isNavigating}
 								loading={isNavigating}
+								className="rounded-xl h-12 px-6 font-bold"
 							>
 								<ChevronLeft className="w-4 h-4 mr-2" /> Previous
 							</Button>
 							{currentStep < 4 ? (
-								<Button onClick={nextStep} loading={isNavigating} disabled={isNavigating}>
-									Next <ChevronRight className="w-4 h-4 ml-2" />
+								<Button 
+									type="button"
+									onClick={nextStep} 
+									loading={isNavigating} 
+									disabled={isNavigating}
+									className="rounded-xl h-12 px-8 font-bold bg-[#0a1628]"
+								>
+									Next Step <ChevronRight className="w-4 h-4 ml-2" />
 								</Button>
 							) : (
 								<Button
+									type="button"
 									onClick={handleSubmit}
 									disabled={isSubmitting}
 									loading={isSubmitting}
+									className="rounded-xl h-12 px-10 font-bold bg-[#0a1628]"
 								>
 									Submit Application <Send className="w-4 h-4 ml-2" />
 								</Button>
