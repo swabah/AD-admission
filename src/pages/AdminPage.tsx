@@ -11,6 +11,7 @@ import {
 import StudentViewModal, {
 	type RawStudentData,
 } from "../components/StudentViewModal";
+import EditApplicationModal from "../components/EditApplicationModal";
 import ApplicationPrintDocument from "../components/ApplicationPrintDocument";
 import BulkApplicationPrintDocument from "../components/BulkApplicationPrintDocument";
 import ConfirmDialog from "../components/ConfirmDialog";
@@ -29,6 +30,7 @@ import { downloadApplicationPDF } from "../utils/pdfDownloader";
 import {
 	Users,
 	Eye,
+	Pencil,
 	Check,
 	X,
 	Download,
@@ -101,6 +103,7 @@ const AdminPage = () => {
 	const [downloadingApp, setDownloadingApp] = useState<ApplicationData | null>(
 		null,
 	);
+	const [editModalApp, setEditModalApp] = useState<ApplicationData | null>(null);
 	const [activeTab, setActiveTab] = useState("all");
 	const [searchTerm, setSearchTerm] = useState("");
 	const [statusFilter, setStatusFilter] = useState("all");
@@ -575,6 +578,12 @@ const AdminPage = () => {
 				open={!!viewModalApp}
 				onOpenChange={(open) => !open && setViewModalApp(null)}
 			/>
+			<EditApplicationModal
+				app={editModalApp}
+				open={!!editModalApp}
+				onOpenChange={(open) => !open && setEditModalApp(null)}
+				onSuccess={() => fetchApplications(currentPage)}
+			/>
 			{downloadingApp && (
 				<div style={{ position: "absolute", left: "-9999px", top: "-9999px" }}>
 					<ApplicationPrintDocument app={downloadingApp} />
@@ -794,6 +803,13 @@ const AdminPage = () => {
 																		>
 																			<Eye className="w-4 h-4 text-slate-400" />{" "}
 																			View Details
+																		</DropdownMenuItem>
+																		<DropdownMenuItem
+																			onClick={() => setEditModalApp(app)}
+																			className="gap-2 py-2.5 font-medium cursor-pointer"
+																		>
+																			<Pencil className="w-4 h-4 text-slate-400" />{" "}
+																			Edit Details
 																		</DropdownMenuItem>
 																		<DropdownMenuItem
 																			onClick={() => handlePrint(app)}
@@ -1047,6 +1063,13 @@ const AdminPage = () => {
 																			>
 																				<Eye className="w-4 h-4 text-slate-400" />{" "}
 																				View Details
+																			</DropdownMenuItem>
+																			<DropdownMenuItem
+																				onClick={() => setEditModalApp(app)}
+																				className="gap-2 py-2.5 font-medium cursor-pointer"
+																			>
+																				<Pencil className="w-4 h-4 text-slate-400" />{" "}
+																				Edit Details
 																			</DropdownMenuItem>
 																			<DropdownMenuItem
 																				onClick={() => handlePrint(app)}

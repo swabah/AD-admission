@@ -545,6 +545,64 @@ export const verifyAdminToken = async (): Promise<boolean> => {
 	}
 };
 
+// Update an existing application
+export const updateApplication = async (
+	id: string,
+	data: Partial<ApplicationData>,
+): Promise<{ success: boolean; photoUrl?: string | null }> => {
+	// Upload photo to storage if provided as base64
+	let photoUrl: string | null = null;
+	if (data.photo && data.photo.startsWith("data:image")) {
+		photoUrl = await uploadPhotoToStorage(data.photo, data.appNo || "updated");
+	} else if (data.photoUrl) {
+		photoUrl = data.photoUrl;
+	}
+
+	// Convert camelCase to snake_case for Supabase
+	const snakeCaseData: Record<string, string | number | boolean | Date | null | undefined> = {};
+	
+	if (data.firstName !== undefined) snakeCaseData.first_name = data.firstName;
+	if (data.lastName !== undefined) snakeCaseData.last_name = data.lastName;
+	if (data.dob !== undefined) snakeCaseData.dob = data.dob;
+	if (data.bloodGroup !== undefined) snakeCaseData.blood_group = data.bloodGroup;
+	if (data.nationality !== undefined) snakeCaseData.nationality = data.nationality;
+	if (data.aadhar !== undefined) snakeCaseData.aadhar = data.aadhar;
+	if (data.studentPhone !== undefined) snakeCaseData.student_phone = data.studentPhone;
+	if (data.address !== undefined) snakeCaseData.address = data.address;
+	if (data.applyClass !== undefined) snakeCaseData.apply_class = data.applyClass;
+	if (data.academicYear !== undefined) snakeCaseData.academic_year = data.academicYear;
+	if (data.stream !== undefined) snakeCaseData.stream = data.stream;
+	if (data.prevSchool !== undefined) snakeCaseData.prev_school = data.prevSchool;
+	if (data.prevClass !== undefined) snakeCaseData.prev_class = data.prevClass;
+	if (data.prevBoard !== undefined) snakeCaseData.prev_board = data.prevBoard;
+	if (data.prevPercentage !== undefined) snakeCaseData.prev_percentage = data.prevPercentage;
+	if (data.achievements !== undefined) snakeCaseData.achievements = data.achievements;
+	if (data.fatherName !== undefined) snakeCaseData.father_name = data.fatherName;
+	if (data.fatherOcc !== undefined) snakeCaseData.father_occ = data.fatherOcc;
+	if (data.fatherPhone !== undefined) snakeCaseData.father_phone = data.fatherPhone;
+	if (data.fatherEmail !== undefined) snakeCaseData.father_email = data.fatherEmail;
+	if (data.motherName !== undefined) snakeCaseData.mother_name = data.motherName;
+	if (data.motherOcc !== undefined) snakeCaseData.mother_occ = data.motherOcc;
+	if (data.motherPhone !== undefined) snakeCaseData.mother_phone = data.motherPhone;
+	if (data.motherEmail !== undefined) snakeCaseData.mother_email = data.motherEmail;
+	if (data.income !== undefined) snakeCaseData.income = data.income;
+	if (data.emergencyName !== undefined) snakeCaseData.emergency_name = data.emergencyName;
+	if (data.emergencyPhone !== undefined) snakeCaseData.emergency_phone = data.emergencyPhone;
+	if (data.medical !== undefined) snakeCaseData.medical = data.medical;
+	if (data.referral !== undefined) snakeCaseData.referral = data.referral;
+	if (data.remarks !== undefined) snakeCaseData.remarks = data.remarks;
+	if (data.status !== undefined) snakeCaseData.status = data.status;
+	if (photoUrl) snakeCaseData.photo = photoUrl;
+
+	const { error } = await supabase
+		.from(SUPABASE_TABLE_NAME)
+		.update(snakeCaseData)
+		.eq("id", id);
+
+	if (error) throw error;
+	return { success: true, photoUrl };
+};
+
 // Logout admin
 export const logoutAdmin = async (): Promise<void> => {
 	await supabase.auth.signOut();
