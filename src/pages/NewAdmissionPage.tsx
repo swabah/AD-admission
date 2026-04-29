@@ -549,6 +549,15 @@ const NewAdmissionPage = () => {
 											<InputField
 												label="Annual Family Income"
 												id="income"
+												type="select"
+												options={[
+													"Below ₹50,000",
+													"₹50,000 - ₹1,00,000",
+													"₹1,00,000 - ₹2,50,000",
+													"₹2,50,000 - ₹5,00,000",
+													"₹5,00,000 - ₹10,00,000",
+													"Above ₹10,00,000",
+												]}
 												registration={register("income")}
 												error={errors.income?.message}
 											/>
