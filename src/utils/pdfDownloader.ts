@@ -29,5 +29,9 @@ export const downloadApplicationPDF = async (
 		.save()
 		.then(() => {
 			element.style.transform = originalTransform;
+		})
+		.catch((err) => {
+			element.style.transform = originalTransform;
+			throw err;
 		});
 };

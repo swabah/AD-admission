@@ -2,17 +2,12 @@ import React, { useEffect } from "react";
 import { formatDate } from "../utils/formatters";
 import logo from "../assets/horizontal-logo.png";
 
-interface RawApplicationData {
-	appNo?: string;
-	app_no?: string;
-	firstName?: string;
-	first_name?: string;
-	lastName?: string;
-	last_name?: string;
-	dob?: string;
-	gender?: string;
-	bloodGroup?: string;
-	blood_group?: string;
+export interface RawApplicationData {
+  appNo?: string; app_no?: string;
+  firstName?: string; first_name?: string;
+  lastName?: string; last_name?: string;
+  dob?: string;
+  bloodGroup?: string; blood_group?: string;
 	nationality?: string;
 	aadhar?: string;
 	studentPhone?: string;
@@ -54,10 +49,10 @@ interface RawApplicationData {
 	emergencyPhone?: string;
 	emergency_phone?: string;
 	medical?: string;
-	referral?: string;
 	remarks?: string;
 	photo?: string;
-	submissionDate?: string;
+	photoUrl?: string;
+	submissionDate?: string | Date;
 	submission_date?: string;
 	status?: string;
 }
@@ -257,7 +252,6 @@ const ApplicationPrintDocument = ({
 		firstName: app.firstName || app.first_name || "",
 		lastName: app.lastName || app.last_name || "",
 		dob: app.dob,
-		gender: app.gender,
 		bloodGroup: app.bloodGroup || app.blood_group,
 		nationality: app.nationality,
 		aadhar: app.aadhar,
@@ -284,7 +278,7 @@ const ApplicationPrintDocument = ({
 		emergencyPhone: app.emergencyPhone || app.emergency_phone,
 		medical: app.medical,
 		remarks: app.remarks,
-		photo: app.photo,
+		photo: app.photoUrl || app.photo,
 		submissionDate: app.submissionDate || app.submission_date,
 		status: app.status || "submitted",
 	};
@@ -540,7 +534,8 @@ const ApplicationPrintDocument = ({
 								/>
 							) : (
 								<>
-									<svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+									<svg width="20" height="20" viewBox="0 0 24 24" fill="none" role="img" aria-label="User placeholder">
+										<title>User placeholder</title>
 										<circle cx="12" cy="8" r="4" fill={C.border} />
 										<path
 											d="M4 20c0-4 3.6-7 8-7s8 3 8 7"
@@ -592,8 +587,7 @@ const ApplicationPrintDocument = ({
 					<SectionHeader title="Personal Information" />
 					<FormGrid>
 						<Field label="Full Name" value={fullName} span={2} />
-						<Field label="Date of Birth" value={formatDate(d.dob, "full")} />
-						<Field label="Gender" value={d.gender} />
+						<Field label="Date of Birth" value={d.dob} />
 						<Field label="Blood Group" value={d.bloodGroup} />
 						<Field label="Nationality" value={d.nationality} />
 						<Field label="Aadhaar Number" value={d.aadhar} />

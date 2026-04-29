@@ -1,15 +1,15 @@
 import { useState, useRef, type ChangeEvent } from "react";
-import React from "react";
 import { addApplication } from "../services/supabase";
 import { downloadApplicationPDF } from "../utils/pdfDownloader";
 import logo from "../assets/logo.jpg";
 import ApplicationPrintDocument from "../components/ApplicationPrintDocument";
 import { validateStep, validatePhoto } from "../utils/formValidation";
 import { formatApplicationNo } from "../utils/formatters";
+import { InputField } from "../components/InputField";
+import { FormStep } from "../components/FormStep";
 import {
 	Camera,
 	AlertTriangle,
-	CheckCircle2,
 	ChevronRight,
 	ChevronLeft,
 	Send,
@@ -24,7 +24,6 @@ interface FormData {
 	firstName: string;
 	lastName: string;
 	dob: string;
-	gender: string;
 	bloodGroup: string;
 	nationality: string;
 	aadhar: string;
@@ -61,67 +60,6 @@ interface FormErrors {
 
 
 
-	const InputField = ({
-		label,
-		id,
-		type = "text",
-		placeholder = "",
-		required = false,
-		className = "",
-		maxLength,
-		options,
-		formData,
-		handleInputChange,
-		errors,
-	}: any) => (
-		<div className={`flex flex-col gap-1.5 ${className}`}>
-			<label
-				htmlFor={id}
-				className="text-xs font-bold uppercase tracking-wider text-slate-500"
-			>
-				{label} {required && <span className="text-rose-500">*</span>}
-			</label>
-			{type === "textarea" ? (
-				<textarea
-					id={id}
-					placeholder={placeholder}
-					value={(formData as any)[id]}
-					onChange={handleInputChange}
-					className={`w-full px-4 py-3 bg-slate-50 border ${errors[id] ? "border-rose-300 ring-1 ring-rose-100 bg-rose-50/30" : "border-slate-200 focus:border-[#0a1628] focus:ring-1 focus:ring-[#0a1628]"} rounded-xl outline-none transition-all min-h-[100px] resize-y text-[15px]`}
-				/>
-			) : type === "select" ? (
-				<select
-					id={id}
-					value={(formData as any)[id]}
-					onChange={handleInputChange}
-					className={`w-full px-4 py-3 bg-slate-50 border ${errors[id] ? "border-rose-300 ring-1 ring-rose-100 bg-rose-50/30" : "border-slate-200 focus:border-[#0a1628] focus:ring-1 focus:ring-[#0a1628]"} rounded-xl outline-none transition-all text-[15px] appearance-none cursor-pointer`}
-				>
-					{placeholder && <option value="">{placeholder}</option>}
-					{options?.map((opt: any) => (
-						<option key={opt.value || opt} value={opt.value || opt}>
-							{opt.label || opt}
-						</option>
-					))}
-				</select>
-			) : (
-				<input
-					type={type}
-					id={id}
-					placeholder={placeholder}
-					maxLength={maxLength}
-					value={(formData as any)[id]}
-					onChange={handleInputChange}
-					className={`w-full px-4 py-3 bg-slate-50 border ${errors[id] ? "border-rose-300 ring-1 ring-rose-100 bg-rose-50/30" : "border-slate-200 focus:border-[#0a1628] focus:ring-1 focus:ring-[#0a1628]"} rounded-xl outline-none transition-all text-[15px]`}
-				/>
-			)}
-			{errors[id] && (
-				<div className="text-xs font-medium text-rose-500 flex items-center gap-1 mt-0.5">
-					<AlertTriangle className="w-3 h-3" /> {errors[id]}
-				</div>
-			)}
-		</div>
-	);
-
 const NewAdmissionPage = () => {
 	const photoInputRef = useRef<HTMLInputElement>(null);
 	const [currentStep, setCurrentStep] = useState(1);
@@ -130,7 +68,6 @@ const NewAdmissionPage = () => {
 		firstName: "",
 		lastName: "",
 		dob: "",
-		gender: "",
 		bloodGroup: "",
 		nationality: "Indian",
 		aadhar: "",
@@ -279,8 +216,8 @@ const NewAdmissionPage = () => {
 				appNo: newAppNo,
 				submissionDate: new Date(),
 				photo: photoDataURL,
-				admissionType: "new",
-			} as any);
+				admissionType: "new" as const,
+			} as FormData & { appNo: string; submissionDate: Date; photo: string | null; admissionType: "new" });
 			setShowPreview(true);
 			window.scrollTo({ top: 0, behavior: "smooth" });
 		} catch (error) {
@@ -302,7 +239,9 @@ const NewAdmissionPage = () => {
 					text: `Application No: ${appNo}`,
 					url: window.location.href,
 				});
-			} catch (err) {}
+			} catch {
+				// Share cancelled or failed silently
+			}
 		} else {
 			navigator.clipboard.writeText(window.location.href);
 			alert("Link copied to clipboard!");
@@ -385,35 +324,30 @@ const NewAdmissionPage = () => {
 			<div className="max-w-6xl mx-auto px-4 sm:px-6 relative z-10 -mt-12 pb-24">
 				<div className="bg-white rounded-3xl shadow-sm border border-slate-200/60 overflow-hidden">
 					{/* Progress Bar */}
-					<div className="bg-white border-b border-slate-100 sticky top-0 z-20 flex max-w-3xl mx-auto">
-						{[1, 2, 3].map((step) => (
-							<button
-								type="button"
-								key={step}
-								onClick={() =>
-									currentStep > step ? setCurrentStep(step) : null
-								}
-								className={`flex-1 py-5 text-center border-b-2 transition-all text-sm font-bold tracking-wide uppercase ${
-									currentStep === step
-										? "border-[#0a1628] text-[#0a1628]"
-										: currentStep > step
-											? "border-[#c8922a] text-[#c8922a] hover:bg-slate-50 cursor-pointer"
-											: "border-transparent text-slate-400 cursor-not-allowed"
-								}`}
-							>
-								<span className="hidden sm:inline-block mr-2 opacity-50">
-									Step {step}
-								</span>
-								<span className="hidden sm:inline-block opacity-30">—</span>
-								<span className="sm:ml-2">
-									{step === 1
-										? "Personal"
-										: step === 2
-											? "Academic"
-											: "Parent & Misc"}
-								</span>
-							</button>
-						))}
+					<div className="bg-white border-b border-slate-100 sticky top-0 z-20 p-4 sm:p-6">
+						<div className="flex max-w-3xl mx-auto gap-2">
+							<FormStep
+								step={1}
+								currentStep={currentStep}
+								label="Personal"
+								onClick={(step) => currentStep >= step && setCurrentStep(step)}
+								isLast={false}
+							/>
+							<FormStep
+								step={2}
+								currentStep={currentStep}
+								label="Academic"
+								onClick={(step) => currentStep >= step && setCurrentStep(step)}
+								isLast={false}
+							/>
+							<FormStep
+								step={3}
+								currentStep={currentStep}
+								label="Parent & Misc"
+								onClick={(step) => currentStep >= step && setCurrentStep(step)}
+								isLast={true}
+							/>
+						</div>
 					</div>
 
 					{/* Form Content */}
@@ -458,11 +392,14 @@ const NewAdmissionPage = () => {
 							<div className="flex flex-col md:flex-row gap-8 lg:gap-12">
 								{/* Photo Upload */}
 								<div className="shrink-0 flex flex-col gap-2">
-									<label className="text-xs font-bold uppercase tracking-wider text-slate-500">
+									<label htmlFor="photo-upload" className="text-xs font-bold uppercase tracking-wider text-slate-500">
 										Student Photo
 									</label>
-									<div
+									<button
+										type="button"
+										id="photo-upload"
 										onClick={() => photoInputRef.current?.click()}
+										onKeyDown={(e) => e.key === 'Enter' && photoInputRef.current?.click()}
 										className={`w-36 h-48 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer overflow-hidden transition-all group relative ${photoError ? "border-rose-300 bg-rose-50/50" : "border-slate-300 bg-slate-50 hover:bg-slate-100 hover:border-[#0a1628]/50"}`}
 									>
 										{photoDataURL ? (
@@ -486,7 +423,7 @@ const NewAdmissionPage = () => {
 												</div>
 											</div>
 										)}
-									</div>
+									</button>
 									<input
 										type="file"
 										accept="image/jpeg,image/png,image/webp"
@@ -875,6 +812,7 @@ const NewAdmissionPage = () => {
 
 							<div className="pt-8 border-t border-slate-100 flex justify-between items-center">
 								<button
+									type="button"
 									onClick={() => prevStep(3)}
 									disabled={isSubmitting}
 									className="text-slate-500 hover:text-[#0a1628] font-bold px-4 py-3 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-2 disabled:opacity-50"
@@ -882,6 +820,7 @@ const NewAdmissionPage = () => {
 									<ChevronLeft className="w-4 h-4" /> Back
 								</button>
 								<button
+									type="button"
 									onClick={submitForm}
 									disabled={isSubmitting}
 									className="bg-gradient-to-r from-[#c8922a] to-[#b5801f] hover:brightness-110 text-white px-8 py-4 rounded-xl font-bold text-[15px] transition-all flex items-center gap-2 shadow-sm hover:-translate-y-0.5 disabled:opacity-70 disabled:hover:translate-y-0 disabled:cursor-not-allowed"

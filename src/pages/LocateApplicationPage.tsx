@@ -5,25 +5,9 @@ import { Search, Printer, Download, ChevronLeft, Calendar, Phone, User, Info, Fi
 import logo from "../assets/logo.jpg";
 import ApplicationPrintDocument from "../components/ApplicationPrintDocument";
 
-interface Application {
- id: string;
- appNo: string;
- firstName: string;
- lastName: string;
- dob: string;
- studentPhone?: string;
- address: string;
- applyClass: string;
- academicYear: string;
- fatherName: string;
- fatherPhone: string;
- motherName: string;
- motherPhone?: string;
- photo?: string;
- submissionDate: string;
- status?: string;
- admissionType?: string;
-}
+import type { ApplicationData } from "../services/supabase";
+
+type Application = ApplicationData & { id: string };
 
 const LocateApplicationPage = () => {
  const [phone, setPhone] = useState("");
@@ -42,7 +26,7 @@ const LocateApplicationPage = () => {
  
  try {
  const results = await searchApplicationsByPhoneAndDob(phone, dob);
- setApplications(results);
+ setApplications(results as Application[]);
  if (results.length === 0) {
  setError("No applications found with this phone number and date of birth.");
  }
@@ -67,18 +51,24 @@ const LocateApplicationPage = () => {
 		const originalTransform = element.style.transform;
 		element.style.transform = "none";
 		
-		const safeName = `${selectedApp?.first_name || ''} ${selectedApp?.last_name || ''}`.trim().replace(/[^a-zA-Z0-9]/g, '_') || 'Student';
+		const safeName = `${selectedApp?.firstName || ''} ${selectedApp?.lastName || ''}`.trim().replace(/[^a-zA-Z0-9]/g, '_') || 'Student';
 		const opt = {
 			margin: 0,
-			filename: `${safeName}_${selectedApp?.app_no || selectedApp?.appNo || 'Form'}.pdf`,
-			image: { type: 'jpeg', quality: 0.98 },
+			filename: `${safeName}_${selectedApp?.appNo || 'Form'}.pdf`,
+			image: { type: 'jpeg' as const, quality: 0.98 },
 			html2canvas: { scale: 2, useCORS: true },
-			jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+			jsPDF: { unit: 'mm' as const, format: 'a4' as const, orientation: 'portrait' as const }
 		};
 		
-		html2pdf().from(element).set(opt).save().then(() => {
-			element.style.transform = originalTransform;
-		});
+		html2pdf().from(element).set(opt).save()
+			.then(() => {
+				element.style.transform = originalTransform;
+			})
+			.catch((err) => {
+				element.style.transform = originalTransform;
+				console.error("PDF download failed:", err);
+				alert("Failed to download PDF. Please try again.");
+			});
 	};
 
  if (selectedApp) {
@@ -110,7 +100,7 @@ const LocateApplicationPage = () => {
  </div>
  </div>
 	<div className="pt-8 pb-20">
-		<ApplicationPrintDocument app={selectedApp} showStatus={true} />
+		<ApplicationPrintDocument app={selectedApp as any} showStatus={true} />
 	</div>
  </div>
  );

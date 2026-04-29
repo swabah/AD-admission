@@ -1,12 +1,17 @@
 import { formatDate } from "../utils/formatters";
 import { User, GraduationCap, Users, AlertCircle, X } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 // ─── Interfaces ──────────────────────────────────────────────────────────────
-interface RawStudentData {
+export interface RawStudentData {
   appNo?: string; app_no?: string;
   firstName?: string; first_name?: string;
   lastName?: string; last_name?: string;
-  dob?: string; gender?: string;
+  dob?: string;
   bloodGroup?: string; blood_group?: string;
   nationality?: string; religion?: string; category?: string;
   aadhar?: string; studentPhone?: string; student_phone?: string;
@@ -32,12 +37,13 @@ interface RawStudentData {
   emergencyPhone?: string; emergency_phone?: string;
   medical?: string; referral?: string; remarks?: string;
   photo?: string; status?: string;
-  submissionDate?: string; submission_date?: string;
+  submissionDate?: string | Date; submission_date?: string;
 }
 
 interface StudentViewModalProps {
   app: RawStudentData;
-  onClose: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -52,7 +58,7 @@ const Field = ({ label, value, mono }: { label: string; value?: string | null; m
   </div>
 );
 
-const Section = ({ title, icon: Icon, children, className = "" }: { title: string; icon: any; children: React.ReactNode; className?: string }) => (
+const Section = ({ title, icon: Icon, children, className = "" }: { title: string; icon: React.ComponentType<{ className?: string }>; children: React.ReactNode; className?: string }) => (
   <div className={`bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow ${className}`}>
     <div className="flex items-center gap-3 px-5 py-3 border-b border-slate-100 bg-slate-50/50">
       <Icon className="w-5 h-5 text-[#c8922a]" />
@@ -83,13 +89,12 @@ const StatusBadge = ({ status }: { status?: string }) => {
 };
 
 // ─── Main component ──────────────────────────────────────────────────────────
-const StudentViewModal = ({ app, onClose }: StudentViewModalProps) => {
+const StudentViewModal = ({ app, open, onOpenChange }: StudentViewModalProps) => {
   const d = {
     appNo:         app.appNo         || app.app_no          || "",
     firstName:     app.firstName     || app.first_name      || "",
     lastName:      app.lastName      || app.last_name       || "",
     dob:           app.dob,
-    gender:        app.gender,
     bloodGroup:    app.bloodGroup    || app.blood_group,
     nationality:   app.nationality,
     religion:      app.religion,
@@ -130,14 +135,8 @@ const StudentViewModal = ({ app, onClose }: StudentViewModalProps) => {
   const hue = fullName.split("").reduce((a, c) => a + c.charCodeAt(0), 0) % 360;
 
   return (
-    <div
-      className="fixed inset-0 z-[1000] bg-[#0a1628]/60 backdrop-blur-sm flex items-start sm:items-center justify-center p-0 sm:p-6 animate-in fade-in duration-200"
-      onClick={onClose}
-    >
-      <div
-        className="bg-[#faf8f5] w-full max-w-5xl h-[100dvh] sm:h-auto sm:max-h-[90vh] rounded-none sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden border border-slate-200/50 animate-in slide-in-from-bottom-8 sm:slide-in-from-bottom-4 duration-300"
-        onClick={e => e.stopPropagation()}
-      >
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="bg-[#faf8f5] max-w-5xl h-[100dvh] sm:h-auto sm:max-h-[90vh] rounded-none sm:rounded-3xl border border-slate-200/50 p-0 overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-[#0a1628] to-[#132238] p-6 sm:p-8 flex items-center gap-5 sm:gap-6 relative z-10 shrink-0">
           <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djI2SDI0VjM0SDJWMjRoMjJWMEgzNnYyNGgyMnYxMEgzNnoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-[0.03]"></div>
@@ -156,7 +155,7 @@ const StudentViewModal = ({ app, onClose }: StudentViewModalProps) => {
           )}
 
           <div className="flex-1 min-w-0 relative z-10">
-            <h2 className="font-display text-2xl sm:text-3xl text-white font-bold leading-tight truncate">{fullName}</h2>
+            <DialogTitle className="font-display text-2xl sm:text-3xl text-white font-bold leading-tight truncate">{fullName}</DialogTitle>
             <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-2">
               <span className="font-mono text-xs font-bold bg-[#c8922a] text-[#0a1628] px-2.5 py-1 rounded shadow-sm">
                 {d.appNo}
@@ -169,7 +168,8 @@ const StudentViewModal = ({ app, onClose }: StudentViewModalProps) => {
           </div>
 
           <button
-            onClick={onClose}
+          type="button"
+            onClick={() => onOpenChange(false)}
             className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 text-white/70 hover:text-white flex items-center justify-center shrink-0 transition-all border border-white/10 relative z-10"
           >
             <X className="w-5 h-5" />
@@ -185,7 +185,6 @@ const StudentViewModal = ({ app, onClose }: StudentViewModalProps) => {
               <Field label="Application No" value={d.appNo} mono />
               <Field label="Full Name" value={fullName} />
               <Field label="Date of Birth" value={d.dob} />
-              <Field label="Gender" value={d.gender} />
               <Field label="Blood Group" value={d.bloodGroup} />
               <Field label="Nationality" value={d.nationality} />
               <Field label="Religion" value={d.religion} />
@@ -253,8 +252,8 @@ const StudentViewModal = ({ app, onClose }: StudentViewModalProps) => {
 
           </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

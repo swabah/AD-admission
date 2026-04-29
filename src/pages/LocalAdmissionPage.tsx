@@ -1,11 +1,11 @@
 import { useState, useRef, type ChangeEvent } from "react";
-import React from "react";
 import { addApplication } from "../services/supabase";
 import { downloadApplicationPDF } from "../utils/pdfDownloader";
 import logo from "../assets/logo.jpg";
 import ApplicationPrintDocument from "../components/ApplicationPrintDocument";
 import { validatePhoto } from "../utils/formValidation";
 import { formatApplicationNo } from "../utils/formatters";
+import { InputField } from "../components/InputField";
 import {
 	Camera,
 	AlertTriangle,
@@ -38,65 +38,6 @@ interface FormErrors {
 }
 
 
-
-	const InputField = ({
-		label,
-		id,
-		type = "text",
-		placeholder = "",
-		required = false,
-		className = "",
-		options,
-		formData,
-		handleInputChange,
-		errors,
-	}: any) => (
-		<div className={`flex flex-col gap-1.5 ${className}`}>
-			<label
-				htmlFor={id}
-				className="text-xs font-bold uppercase tracking-wider text-slate-500"
-			>
-				{label} {required && <span className="text-rose-500">*</span>}
-			</label>
-			{type === "textarea" ? (
-				<textarea
-					id={id}
-					placeholder={placeholder}
-					value={(formData as any)[id]}
-					onChange={handleInputChange}
-					className={`w-full px-4 py-3 bg-slate-50 border ${errors[id] ? "border-rose-300 ring-1 ring-rose-100 bg-rose-50/30" : "border-slate-200 focus:border-[#0a1628] focus:ring-1 focus:ring-[#0a1628]"} rounded-xl outline-none transition-all min-h-[100px] resize-y text-[15px]`}
-				/>
-			) : type === "select" ? (
-				<select
-					id={id}
-					value={(formData as any)[id]}
-					onChange={handleInputChange}
-					className={`w-full px-4 py-3 bg-slate-50 border ${errors[id] ? "border-rose-300 ring-1 ring-rose-100 bg-rose-50/30" : "border-slate-200 focus:border-[#0a1628] focus:ring-1 focus:ring-[#0a1628]"} rounded-xl outline-none transition-all text-[15px] appearance-none cursor-pointer`}
-				>
-					{placeholder && <option value="">{placeholder}</option>}
-					{options?.map((opt: any) => (
-						<option key={opt.value || opt} value={opt.value || opt}>
-							{opt.label || opt}
-						</option>
-					))}
-				</select>
-			) : (
-				<input
-					type={type}
-					id={id}
-					placeholder={placeholder}
-					value={(formData as any)[id]}
-					onChange={handleInputChange}
-					className={`w-full px-4 py-3 bg-slate-50 border ${errors[id] ? "border-rose-300 ring-1 ring-rose-100 bg-rose-50/30" : "border-slate-200 focus:border-[#0a1628] focus:ring-1 focus:ring-[#0a1628]"} rounded-xl outline-none transition-all text-[15px]`}
-				/>
-			)}
-			{errors[id] && (
-				<div className="text-xs font-medium text-rose-500 flex items-center gap-1 mt-0.5">
-					<AlertTriangle className="w-3 h-3" /> {errors[id]}
-				</div>
-			)}
-		</div>
-	);
 
 const LocalAdmissionPage = () => {
 	const photoInputRef = useRef<HTMLInputElement>(null);
@@ -240,8 +181,8 @@ const LocalAdmissionPage = () => {
 				appNo: newAppNo,
 				submissionDate: new Date(),
 				photo: photoDataURL,
-				admissionType: "local",
-			} as any);
+				admissionType: "local" as const,
+			} as FormData & { appNo: string; submissionDate: Date; photo: string | null; admissionType: "local" });
 			setShowPreview(true);
 			window.scrollTo({ top: 0, behavior: "smooth" });
 		} catch (error) {
@@ -263,7 +204,9 @@ const LocalAdmissionPage = () => {
 					text: `Application No: ${appNo}`,
 					url: window.location.href,
 				});
-			} catch (err) {}
+			} catch {
+				// Share cancelled or failed silently
+			}
 		} else {
 			navigator.clipboard.writeText(window.location.href);
 			alert("Link copied to clipboard!");
@@ -381,11 +324,14 @@ const LocalAdmissionPage = () => {
 							<div className="flex flex-col md:flex-row gap-8 lg:gap-12">
 								{/* Photo Upload */}
 								<div className="shrink-0 flex flex-col gap-2">
-									<label className="text-xs font-bold uppercase tracking-wider text-slate-500">
+									<label htmlFor="photo-upload" className="text-xs font-bold uppercase tracking-wider text-slate-500">
 										Student Photo
 									</label>
-									<div
+									<button
+										type="button"
+										id="photo-upload"
 										onClick={() => photoInputRef.current?.click()}
+										onKeyDown={(e) => e.key === 'Enter' && photoInputRef.current?.click()}
 										className={`w-36 h-48 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer overflow-hidden transition-all group relative ${photoError ? "border-rose-300 bg-rose-50/50" : "border-slate-300 bg-slate-50 hover:bg-slate-100 hover:border-[#1d6fa4]/50"}`}
 									>
 										{photoDataURL ? (
@@ -409,7 +355,7 @@ const LocalAdmissionPage = () => {
 												</div>
 											</div>
 										)}
-									</div>
+									</button>
 									<input
 										type="file"
 										accept="image/jpeg,image/png,image/webp"
@@ -579,6 +525,7 @@ const LocalAdmissionPage = () => {
 
 							<div className="pt-10 border-t border-slate-100 flex justify-end">
 								<button
+									type="button"
 									onClick={submitForm}
 									disabled={isSubmitting}
 									className="w-full sm:w-auto bg-gradient-to-r from-[#1d6fa4] to-[#165a88] hover:brightness-110 text-white px-10 py-4 rounded-xl font-bold text-[15px] transition-all flex items-center justify-center gap-2 shadow-sm hover:-translate-y-0.5 disabled:opacity-70 disabled:hover:translate-y-0 disabled:cursor-not-allowed"

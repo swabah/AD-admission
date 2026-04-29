@@ -1,37 +1,36 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
  deleteApplication,
  getAllApplications,
  updateApplicationStatus,
+ verifyAdminToken,
+ logoutAdmin,
+ type ApplicationData,
+ supabase,
 } from "../services/supabase";
-import logo from "../assets/logo.jpg";
-import StudentViewModal from "../components/StudentViewModal";
+import StudentViewModal, { type RawStudentData } from "../components/StudentViewModal";
 import ApplicationPrintDocument from "../components/ApplicationPrintDocument";
 import ConfirmDialog from "../components/ConfirmDialog";
+import {
+ LoginScreen,
+ AdminSidebar,
+ AdminStatsSkeleton,
+ AdminTableSkeleton,
+} from "../components/admin";
+import { Button } from "@/components/ui/button";
 import { downloadApplicationPDF } from "../utils/pdfDownloader";
-import { 
- Users, Clock, Eye, Check, X, Search, Download, RefreshCw, Printer, 
- Trash2, Share2, MoreVertical, ArrowDownAZ, ArrowUpAZ, Lock, 
- ChevronRight, ArrowLeft, Menu, LogOut 
+import {
+ Users, Clock, Eye, Check, X, Search, Download, RefreshCw, Printer,
+ Trash2, Share2, MoreVertical, ArrowDownAZ, ArrowUpAZ,
+ ArrowLeft, Menu
 } from "lucide-react";
 
 // ─── Shared tiny components ───────────────────────────────────────────────────
-
 const STATUS_CFG: Record<string, { label: string; textClass: string; bgClass: string; dotClass: string }> = {
  submitted: { label: "Submitted", textClass: "text-blue-600", bgClass: "bg-blue-100", dotClass: "bg-blue-600" },
  reviewing: { label: "Reviewing", textClass: "text-purple-600", bgClass: "bg-purple-100", dotClass: "bg-purple-600" },
  approved: { label: "Approved", textClass: "text-emerald-600", bgClass: "bg-emerald-100", dotClass: "bg-emerald-600" },
  rejected: { label: "Rejected", textClass: "text-red-600", bgClass: "bg-red-100", dotClass: "bg-red-600" },
-};
-
-const StatusBadge = ({ status }: { status: string }) => {
- const cfg = STATUS_CFG[status] || STATUS_CFG.submitted;
- return (
- <span className={`inline-flex items-center gap-1.5 font-sans text-[11px] font-medium px-2.5 py-1 rounded-full ${cfg.textClass} ${cfg.bgClass}`}>
- <span className={`w-1.5 h-1.5 rounded-full ${cfg.dotClass}`} />
- {cfg.label}
- </span>
- );
 };
 
 const AppNoChip = ({ value }: { value: string }) => (
@@ -44,7 +43,7 @@ const Avatar = ({ name }: { name: string }) => {
  const initials = (name || "?").split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase();
  const hue = (name || "").split("").reduce((a, c) => a + c.charCodeAt(0), 0) % 360;
  return (
- <div 
+ <div
  className="w-[34px] h-[34px] rounded-full shrink-0 flex items-center justify-center font-sans text-xs font-semibold shadow-sm"
  style={{ background: `hsl(${hue}, 55%, 88%)`, color: `hsl(${hue}, 55%, 30%)` }}
  >
@@ -53,69 +52,9 @@ const Avatar = ({ name }: { name: string }) => {
  );
 };
 
-// ─── Login screen ─────────────────────────────────────────────────────────────
-const LoginScreen = ({ onLogin }: { onLogin: (key: string) => void }) => {
- const [key, setKey] = useState("");
- const [shake, setShake] = useState(false);
-
- const attempt = () => {
- if (key === (import.meta.env.VITE_ADMIN_KEY || "")) {
- onLogin(key);
- } else {
- setShake(true);
- setTimeout(() => setShake(false), 500);
- }
- };
-
- return (
- <div className="min-h-screen flex items-center justify-center bg-[#f8f9fc] font-sans relative overflow-hidden">
- <div className="absolute inset-0 pointer-events-none z-0">
- <div className="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-[#1e3a5f] opacity-20 blur-3xl" />
- <div className="absolute -bottom-20 -left-20 w-80 h-80 rounded-full bg-[#c8922a] opacity-20 blur-3xl" />
- </div>
-
- <div className={`relative z-10 bg-white rounded-3xl border border-slate-200 p-12 w-full max-w-md shadow-sm animate-in fade-in slide-in-from-bottom-8 ${shake ? 'animate-[shake_0.4s_ease-in-out]' : ''}`}>
- <div className="text-center mb-8">
- <div className="w-16 h-16 rounded-full bg-[#0a1628] mx-auto mb-4 flex items-center justify-center border-4 border-[#c8922a] overflow-hidden shadow-sm">
- <img src={logo} alt="Logo" className="w-full h-full object-cover filter invert brightness-0" />
- </div>
- <h2 className="font-display text-2xl text-[#0a1628] mb-1">Admin Portal</h2>
- <p className="text-sm text-slate-500">Ahlussuffa Dars · Admission System</p>
- </div>
-
- <div className="space-y-4">
- <div className="relative">
- <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
- <Lock className="w-5 h-5" />
- </div>
- <input
- type="password"
- value={key}
- placeholder="Enter admin key"
- onChange={e => setKey(e.target.value)}
- onKeyDown={e => e.key === "Enter" && attempt()}
- className="w-full pl-12 pr-4 py-3 font-sans text-sm border-2 border-slate-100 rounded-xl outline-none bg-slate-50 text-slate-800 focus:border-[#0a1628] focus:bg-white transition-all"
- />
- </div>
- <button
- onClick={attempt}
- className="w-full py-3 bg-[#0a1628] hover:bg-[#132238] text-white font-sans text-sm font-medium rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm hover:shadow-sm hover:-translate-y-0.5"
- >
- Sign In
- <ChevronRight className="w-4 h-4" />
- </button>
- </div>
- <div className="text-center mt-6 text-xs text-slate-400 uppercase tracking-widest font-semibold">
- Authorised personnel only
- </div>
- </div>
- </div>
- );
-};
-
 // ─── Stat Card ────────────────────────────────────────────────────────────────
 const StatCard = ({ label, value, icon: Icon, accentClass, bgAccentClass }: {
- label: string; value: number; icon: any; accentClass: string; bgAccentClass: string;
+ label: string; value: number; icon: React.ElementType; accentClass: string; bgAccentClass: string;
 }) => (
  <div className="bg-white rounded-2xl p-5 border border-slate-100 flex flex-col gap-3 shadow-sm hover:shadow-sm transition-all relative overflow-hidden group">
  <div className={`absolute top-0 left-0 w-1 h-full ${bgAccentClass}`}></div>
@@ -134,13 +73,16 @@ const StatCard = ({ label, value, icon: Icon, accentClass, bgAccentClass }: {
 // ─── Main AdminPage ───────────────────────────────────────────────────────────
 const AdminPage = () => {
  const [isAuthenticated, setIsAuthenticated] = useState(false);
- const [applications, setApplications] = useState<any[]>([]);
- const [selectedApp, setSelectedApp] = useState<any>(null);
+ const [applications, setApplications] = useState<ApplicationData[]>([]);
+ const [selectedApp, setSelectedApp] = useState<ApplicationData | null>(null);
+ const [totalCount, setTotalCount] = useState(0);
+ const [currentPage, setCurrentPage] = useState(1);
+ const [hasMore, setHasMore] = useState(false);
  const [loading, setLoading] = useState(true);
- const [viewModalApp, setViewModalApp] = useState<any>(null);
- const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
+ const [viewModalApp, setViewModalApp] = useState<ApplicationData | null>(null);
+  const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
  const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 });
- const [downloadingApp, setDownloadingApp] = useState<any>(null);
+ const [downloadingApp, setDownloadingApp] = useState<ApplicationData | null>(null);
  const [activeTab, setActiveTab] = useState("all");
  const [searchTerm, setSearchTerm] = useState("");
  const [statusFilter, setStatusFilter] = useState("all");
@@ -149,6 +91,7 @@ const AdminPage = () => {
  const [sortOrder, setSortOrder] = useState<"asc"|"desc">("desc");
  const [selectedApps, setSelectedApps] = useState<string[]>([]);
  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+ const [processingAction, setProcessingAction] = useState<string | null>(null);
  const [confirmDialog, setConfirmDialog] = useState<{
  isOpen: boolean;
  title: string;
@@ -173,34 +116,75 @@ const AdminPage = () => {
  return () => document.removeEventListener("mousedown", handler);
  }, []);
 
- const fetchApplications = async () => {
+ const fetchApplications = useCallback(async (page = 1) => {
  setLoading(true);
  try {
- const data = await getAllApplications();
- setApplications(data);
+ const result = await getAllApplications({ page, pageSize: 100 });
+ if (page === 1) {
+ setApplications(result.data);
+ } else {
+ setApplications(prev => [...prev, ...result.data]);
+ }
+ setTotalCount(result.totalCount);
+ setHasMore(result.hasMore);
+ setCurrentPage(page);
  } catch (e) {
  console.error(e);
  } finally {
  setLoading(false);
  }
- };
+ }, []);
 
- const handleLogin = () => { setIsAuthenticated(true); fetchApplications(); };
+ // Check for existing auth token on mount
+ useEffect(() => {
+ const checkAuth = async () => {
+ const valid = await verifyAdminToken();
+ if (valid) {
+ setIsAuthenticated(true);
+ fetchApplications();
+ } else {
+ setLoading(false);
+ }
+ };
+ checkAuth();
+ }, [fetchApplications]);
+
+ // Listen for auth state changes
+ useEffect(() => {
+ const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+ if (event === 'SIGNED_IN' && session) {
+ setIsAuthenticated(true);
+ fetchApplications();
+ } else if (event === 'SIGNED_OUT') {
+ setIsAuthenticated(false);
+ setApplications([]);
+ }
+ });
+ return () => subscription.unsubscribe();
+ }, [fetchApplications]);
+
+ const handleLogin = () => { setIsAuthenticated(true); fetchApplications(1); };
+
+ const handleLogout = async () => {
+ await logoutAdmin();
+ setIsAuthenticated(false);
+ setApplications([]);
+ };
 
  const handleStatusUpdate = async (id: string, status: string) => {
  await updateApplicationStatus(id, status);
  fetchApplications();
  };
 
- const handleDelete = (id: string) => {
+ const handleDelete = (id: string, photoUrl?: string | null) => {
  setConfirmDialog({
  isOpen: true,
  title: "Delete Application",
  message: "Are you sure you want to delete this application? This action cannot be undone.",
  onConfirm: async () => {
  try {
- await deleteApplication(id);
- fetchApplications();
+ await deleteApplication(id, photoUrl);
+ fetchApplications(currentPage);
  setConfirmDialog(prev => ({ ...prev, isOpen: false }));
  } catch (error) {
  console.error("Error deleting application:", error);
@@ -211,57 +195,67 @@ const AdminPage = () => {
  });
  };
 
- const shareApplication = async (app: any) => {
- const shareData = { title: `Application ${app.appNo || app.app_no}`, text: `${app.firstName || app.first_name} ${app.lastName || app.last_name}`, url: window.location.href };
+ const shareApplication = async (app: ApplicationData) => {
+ const shareData = { title: `Application ${app.appNo}`, text: `${app.firstName} ${app.lastName}`, url: window.location.href };
  if (navigator.share) await navigator.share(shareData);
  else { navigator.clipboard.writeText(JSON.stringify(shareData, null, 2)); alert("Copied!"); }
  };
 
- 	const handleDirectDownload = async (app: any) => {
-		setDownloadingApp(app);
-		setTimeout(async () => {
-			const name = `${app.firstName || app.first_name || ""} ${app.lastName || app.last_name || ""}`.trim();
-			await downloadApplicationPDF(app.appNo || app.app_no || "application", name);
-			setDownloadingApp(null);
-		}, 100);
-		setDropdownOpen(null);
-	};
+ const handleDirectDownload = async (app: ApplicationData) => {
+ setDownloadingApp(app);
+ setDropdownOpen(null);
+
+ // Use requestAnimationFrame to ensure the component is rendered before generating PDF
+ requestAnimationFrame(async () => {
+ // Small delay to ensure DOM is ready
+ await new Promise(resolve => setTimeout(resolve, 300));
+ const name = `${app.firstName || ""} ${app.lastName || ""}`.trim();
+ try {
+ await downloadApplicationPDF(app.appNo || "application", name);
+ } catch (error) {
+ console.error("PDF download failed:", error);
+ alert("Failed to download PDF. Please try again.");
+ } finally {
+ setDownloadingApp(null);
+ }
+ });
+ };
 
  const exportData = () => {
  if (!applications.length) return;
  const rows = tabApplications.map(app => ({
- "App No": app.appNo || app.app_no,
- "Name": `${app.firstName || app.first_name} ${app.lastName || app.last_name}`,
- "Class": app.applyClass || app.apply_class,
- "Year": app.academicYear || app.academic_year,
+ "App No": app.appNo,
+ "Name": `${app.firstName} ${app.lastName}`,
+ "Class": app.applyClass,
+ "Year": app.academicYear,
  "Status": app.status || "submitted",
- "Submitted": app.submissionDate || app.submission_date,
- "Father": app.fatherName || app.father_name,
- "Phone": app.fatherPhone || app.father_phone,
+ "Submitted": app.submissionDate,
+ "Father": app.fatherName,
+ "Phone": app.fatherPhone,
  }));
  const csv = [Object.keys(rows[0]).join(","), ...rows.map(r => Object.values(r).map(v => `"${v ?? ""}"`).join(","))].join("\n");
  const a = Object.assign(document.createElement("a"), { href: URL.createObjectURL(new Blob([csv], { type: "text/csv" })), download: `applications_${new Date().toISOString().split("T")[0]}.csv` });
  a.click();
  };
 
- const uniqueClasses = [...new Set(applications.map(a => a.applyClass || a.apply_class).filter(Boolean))];
+ const uniqueClasses = [...new Set(applications.map(a => a.applyClass).filter(Boolean))];
 
  const filtered = applications
  .filter(app => {
- const name = `${app.firstName || app.first_name || ""} ${app.lastName || app.last_name || ""}`.toLowerCase();
- const appNo = (app.appNo || app.app_no || "").toLowerCase();
- const father = (app.fatherName || app.father_name || "").toLowerCase();
+ const name = `${app.firstName || ""} ${app.lastName || ""}`.toLowerCase();
+ const appNo = (app.appNo || "").toLowerCase();
+ const father = (app.fatherName || "").toLowerCase();
  const q = searchTerm.toLowerCase();
  const matchSearch = !q || name.includes(q) || appNo.includes(q) || father.includes(q);
  const matchStatus = statusFilter === "all" || app.status === statusFilter;
- const matchClass = classFilter === "all" || (app.applyClass || app.apply_class) === classFilter;
+ const matchClass = classFilter === "all" || app.applyClass === classFilter;
  return matchSearch && matchStatus && matchClass;
  })
  .sort((a, b) => {
- let av: any, bv: any;
- if (sortBy === "date") { av = new Date(a.submissionDate || a.submission_date); bv = new Date(b.submissionDate || b.submission_date); }
- else if (sortBy === "name") { av = `${a.firstName || a.first_name}`; bv = `${b.firstName || b.first_name}`; }
- else if (sortBy === "class") { av = a.applyClass || a.apply_class; bv = b.applyClass || b.apply_class; }
+ let av: string | Date, bv: string | Date;
+ if (sortBy === "date") { av = new Date(a.submissionDate as string); bv = new Date(b.submissionDate as string); }
+ else if (sortBy === "name") { av = `${a.firstName}`; bv = `${b.firstName}`; }
+ else if (sortBy === "class") { av = a.applyClass; bv = b.applyClass; }
  else { av = a.status || "submitted"; bv = b.status || "submitted"; }
  return sortOrder === "asc" ? (av > bv ? 1 : -1) : (av < bv ? 1 : -1);
  });
@@ -287,13 +281,18 @@ const AdminPage = () => {
  ];
 
  const handleSelectAll = () => {
- setSelectedApps(selectedApps.length === tabApplications.length && tabApplications.length > 0 ? [] : tabApplications.map(a => a.id || a._id));
+ setSelectedApps(selectedApps.length === tabApplications.length && tabApplications.length > 0 ? [] : tabApplications.map(a => a.id).filter((id): id is string => Boolean(id)));
  };
 
  const handleBulkStatus = async (status: string) => {
  if (!selectedApps.length || !confirm(`Update ${selectedApps.length} applications to "${status}"?`)) return;
+ setProcessingAction(`bulk-${status}`);
+ try {
  await Promise.all(selectedApps.map(id => updateApplicationStatus(id, status)));
  setSelectedApps([]); fetchApplications();
+ } finally {
+ setProcessingAction(null);
+ }
  };
 
  const handleBulkDelete = () => {
@@ -317,13 +316,16 @@ const AdminPage = () => {
  });
  };
 
- if (!isAuthenticated) return <LoginScreen onLogin={handleLogin} />;
+ if (!isAuthenticated) return <LoginScreen onLogin={handleLogin} onLoading={() => {}} />;
 
  if (selectedApp) return (
  <div className="font-sans min-h-screen bg-[#faf8f5]">
  <div className="no-print sticky top-0 z-50 bg-[#0a1628] border-b border-[#c8922a]/30 px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-4 shadow-sm backdrop-blur-md">
- <button onClick={() => setSelectedApp(null)} className="inline-flex items-center gap-2 text-sm text-white bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl px-4 py-2 transition-all">
+ <button type="button" onClick={() => setSelectedApp(null)} className="inline-flex items-center gap-2 text-sm text-white bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl px-4 py-2 transition-all">
  <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+ </button>
+ <button type="button" onClick={() => window.print()} className="inline-flex items-center gap-2 text-sm text-white bg-[#c8922a] hover:bg-[#b07d20] rounded-xl px-4 py-2 transition-all">
+ <Printer className="w-4 h-4" /> Print
  </button>
  </div>
  <div className="py-8">
@@ -332,7 +334,7 @@ const AdminPage = () => {
  </div>
  );
 
- if (viewModalApp) return <StudentViewModal app={viewModalApp} onClose={() => setViewModalApp(null)} />;
+ <StudentViewModal app={viewModalApp as RawStudentData} open={!!viewModalApp} onOpenChange={(open) => !open && setViewModalApp(null)} />
 
  return (
  <>
@@ -344,45 +346,22 @@ const AdminPage = () => {
  <div className="flex min-h-screen font-sans bg-slate-50 text-slate-800">
  
  {/* Sidebar */}
- <aside className={`fixed inset-y-0 left-0 z-40 w-64 bg-gradient-to-b from-[#0a1628] to-[#132238] shadow-sm transform transition-transform duration-300 flex flex-col ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0 lg:static"}`}>
- <div className="p-6 border-b border-white/10">
- <div className="w-12 h-12 rounded-xl bg-white/5 border border-[#c8922a]/50 p-1.5 mb-4 shadow-sm">
- <img src={logo} alt="Logo" className="w-full h-full object-contain filter invert brightness-0" />
- </div>
- <h2 className="font-display text-xl text-white font-bold leading-tight">Ahlussuffa Dars</h2>
- <p className="text-xs text-white/50 mt-1 uppercase tracking-wider font-semibold">Admission Portal</p>
- </div>
-
- <div className="flex-1 overflow-y-auto p-4 space-y-2">
- {stats.map(s => (
- <div key={s.label} className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 cursor-pointer transition-colors group">
- <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${s.bgAccentClass} ${s.accentClass} group-hover:scale-110 transition-transform`}>
- <s.icon className="w-5 h-5" />
- </div>
- <div>
- <div className="font-display text-lg text-white font-medium leading-none mb-1">{s.value}</div>
- <div className="text-[10px] text-white/50 uppercase tracking-wider font-semibold">{s.label}</div>
- </div>
- </div>
- ))}
- </div>
-
- <div className="p-4 border-t border-white/10 space-y-1">
- <button onClick={exportData} className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-white/70 hover:text-white hover:bg-white/10 transition-colors text-left">
- <Download className="w-4 h-4" /> Export CSV
- </button>
- <button onClick={fetchApplications} className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-white/70 hover:text-white hover:bg-white/10 transition-colors text-left">
- <RefreshCw className="w-4 h-4" /> Refresh Data
- </button>
- <button onClick={() => setIsAuthenticated(false)} className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors text-left mt-4">
- <LogOut className="w-4 h-4" /> Sign Out
- </button>
- </div>
- </aside>
+ <AdminSidebar
+ applications={applications}
+ onExport={exportData}
+ onRefresh={() => fetchApplications(1)}
+ onLogout={handleLogout}
+ mobileMenuOpen={mobileMenuOpen}
+ />
 
  {/* Mobile Overlay */}
  {mobileMenuOpen && (
- <div className="fixed inset-0 bg-[#0a1628]/50 backdrop-blur-sm z-30 lg:hidden" onClick={() => setMobileMenuOpen(false)} />
+ <button
+ type="button"
+ className="fixed inset-0 bg-[#0a1628]/50 backdrop-blur-sm z-30 lg:hidden cursor-pointer"
+ onClick={() => setMobileMenuOpen(false)}
+ aria-label="Close mobile menu"
+ />
  )}
 
  {/* Main Area */}
@@ -391,18 +370,24 @@ const AdminPage = () => {
  {/* Topbar */}
  <header className="shrink-0 bg-white border-b border-slate-200 px-4 lg:px-8 py-4 flex items-center justify-between z-10 shadow-sm">
  <div className="flex items-center gap-4">
- <button className="p-2 -ml-2 text-slate-500 hover:text-[#0a1628] hover:bg-slate-100 rounded-lg lg:hidden" onClick={() => setMobileMenuOpen(true)}>
+ <button type="button" className="p-2 -ml-2 text-slate-500 hover:text-[#0a1628] hover:bg-slate-100 rounded-lg lg:hidden" onClick={() => setMobileMenuOpen(true)}>
  <Menu className="w-6 h-6" />
  </button>
  <h1 className="font-display text-2xl font-bold text-[#0a1628] hidden sm:block">Dashboard</h1>
  </div>
  <div className="flex items-center gap-3">
- <button onClick={exportData} className="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-semibold text-[#0a1628] bg-white border border-slate-200 hover:bg-slate-50 rounded-lg shadow-sm transition-colors">
+ <button type="button"    onClick={exportData} className="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-semibold text-[#0a1628] bg-white border border-slate-200 hover:bg-slate-50 rounded-lg shadow-sm transition-colors">
  <Download className="w-4 h-4" /> Export
  </button>
- <button onClick={fetchApplications} className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-[#0a1628] hover:bg-[#132238] rounded-lg shadow-sm transition-colors">
+ <Button
+ type="button"
+ onClick={() => fetchApplications(1)}
+ loading={loading}
+ disabled={loading}
+ className="flex items-center gap-2 bg-[#0a1628] hover:bg-[#132238] text-white rounded-lg shadow-sm"
+ >
  <RefreshCw className="w-4 h-4" /> Refresh
- </button>
+ </Button>
  </div>
  </header>
 
@@ -410,9 +395,13 @@ const AdminPage = () => {
  <div className="p-4 lg:p-8 space-y-6 max-w-7xl mx-auto">
  
  {/* Stats Grid */}
+ {loading ? (
+ <AdminStatsSkeleton />
+ ) : (
  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
  {stats.map(s => <StatCard key={s.label} {...s} />)}
  </div>
+ )}
 
  {/* Controls */}
  <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-4">
@@ -445,7 +434,7 @@ const AdminPage = () => {
  <option value="class">Class</option>
  <option value="status">Status</option>
  </select>
- <button className="shrink-0 p-2.5 bg-slate-50 border border-slate-200 hover:bg-slate-100 rounded-xl text-slate-600 transition-colors" onClick={() => setSortOrder(s => s === "asc" ? "desc" : "asc")}>
+ <button type="button" className="shrink-0 p-2.5 bg-slate-50 border border-slate-200 hover:bg-slate-100 rounded-xl text-slate-600 transition-colors" onClick={() => setSortOrder(s => s === "asc" ? "desc" : "asc")}>
  {sortOrder === "asc" ? <ArrowUpAZ className="w-5 h-5" /> : <ArrowDownAZ className="w-5 h-5" />}
  </button>
  </div>
@@ -455,16 +444,32 @@ const AdminPage = () => {
  {selectedApps.length > 0 && (
  <div className="flex items-center gap-3 p-3 bg-blue-50 border border-blue-100 rounded-xl animate-in slide-in-from-top-2 overflow-x-auto">
  <span className="text-sm font-bold text-blue-800 whitespace-nowrap px-2">{selectedApps.length} selected</span>
- <button onClick={() => handleBulkStatus("approved")} className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-emerald-200 text-emerald-700 hover:bg-emerald-50 rounded-lg text-sm font-semibold transition-colors shadow-sm whitespace-nowrap">
+ <Button
+ type="button"
+ variant="outline"
+ size="sm"
+ loading={processingAction === 'bulk-approved'}
+ disabled={processingAction !== null}
+ onClick={() => handleBulkStatus("approved")}
+ className="flex items-center gap-1.5 bg-white border-emerald-200 text-emerald-700 hover:bg-emerald-50 rounded-lg text-sm font-semibold shadow-sm whitespace-nowrap"
+ >
  <Check className="w-4 h-4" /> Approve
- </button>
- <button onClick={() => handleBulkStatus("rejected")} className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-rose-200 text-rose-700 hover:bg-rose-50 rounded-lg text-sm font-semibold transition-colors shadow-sm whitespace-nowrap">
+ </Button>
+ <Button
+ type="button"
+ variant="outline"
+ size="sm"
+ loading={processingAction === 'bulk-rejected'}
+ disabled={processingAction !== null}
+ onClick={() => handleBulkStatus("rejected")}
+ className="flex items-center gap-1.5 bg-white border-rose-200 text-rose-700 hover:bg-rose-50 rounded-lg text-sm font-semibold shadow-sm whitespace-nowrap"
+ >
  <X className="w-4 h-4" /> Reject
- </button>
- <button onClick={handleBulkDelete} className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 rounded-lg text-sm font-semibold transition-colors shadow-sm whitespace-nowrap">
+ </Button>
+ <button type="button" onClick={handleBulkDelete} className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 rounded-lg text-sm font-semibold transition-colors shadow-sm whitespace-nowrap">
  <Trash2 className="w-4 h-4" /> Delete
  </button>
- <button onClick={() => setSelectedApps([])} className="px-3 py-1.5 text-sm font-medium text-slate-500 hover:text-slate-700 bg-transparent hover:bg-slate-200/50 rounded-lg transition-colors ml-auto whitespace-nowrap">
+ <button type="button" onClick={() => setSelectedApps([])} className="px-3 py-1.5 text-sm font-medium text-slate-500 hover:text-slate-700 bg-transparent hover:bg-slate-200/50 rounded-lg transition-colors ml-auto whitespace-nowrap">
  Clear
  </button>
  </div>
@@ -477,6 +482,7 @@ const AdminPage = () => {
  <div className="flex overflow-x-auto border-b border-slate-100 hide-scrollbar bg-slate-50/50">
  {TABS.map(tab => (
  <button
+ type="button"
  key={tab.id}
  onClick={() => setActiveTab(tab.id)}
  className={`flex items-center gap-2 px-6 py-4 text-sm font-semibold whitespace-nowrap border-b-2 transition-colors ${activeTab === tab.id ? "border-[#0a1628] text-[#0a1628] bg-white" : "border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50"}`}
@@ -491,10 +497,7 @@ const AdminPage = () => {
 
  <div className="p-0 overflow-x-auto">
  {loading ? (
- <div className="p-20 flex flex-col items-center justify-center text-slate-400">
- <div className="w-8 h-8 border-2 border-slate-200 border-t-[#0a1628] rounded-full animate-spin mb-4" />
- <p className="text-sm font-medium">Loading applications...</p>
- </div>
+ <AdminTableSkeleton />
  ) : tabApplications.length === 0 ? (
  <div className="p-20 flex flex-col items-center justify-center text-slate-400">
  <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
@@ -516,8 +519,9 @@ const AdminPage = () => {
  </label>
  </div>
  {tabApplications.map(app => {
- const id = app.id || app._id;
- const name = `${app.firstName || app.first_name || ""} ${app.lastName || app.last_name || ""}`.trim();
+ const id = app.id;
+ if (!id) return null;
+ const name = `${app.firstName || ""} ${app.lastName || ""}`.trim();
  const status = app.status || "submitted";
  const isSelected = selectedApps.includes(id);
 
@@ -529,10 +533,11 @@ const AdminPage = () => {
  checked={isSelected}
  onChange={() => setSelectedApps(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])}
  />
- <AppNoChip value={app.appNo || app.app_no || "—"} />
+ <AppNoChip value={app.appNo || "—"} />
  </div>
  <div className="action-dropdown">
  <button
+ type="button"
  onClick={e => {
  if (dropdownOpen === id) { setDropdownOpen(null); return; }
  const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
@@ -545,48 +550,48 @@ const AdminPage = () => {
  </button>
  {dropdownOpen === id && (
  <div className="fixed z-50 w-48 bg-white border border-slate-200 rounded-xl shadow-sm py-1 animate-in fade-in zoom-in-95" style={{ top: dropdownPos.top, left: dropdownPos.left }}>
- <button onClick={() => { setViewModalApp(app); setDropdownOpen(null); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#0a1628] font-medium transition-colors">
+ <button type="button" onClick={() => { setViewModalApp(app); setDropdownOpen(null); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#0a1628] font-medium transition-colors">
  <Eye className="w-4 h-4 text-slate-400" /> View Details
  </button>
- <button onClick={() => { setSelectedApp(app); setTimeout(() => window.print(), 100); setDropdownOpen(null); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#0a1628] font-medium transition-colors">
+ <button type="button" onClick={() => { setSelectedApp(app); setTimeout(() => window.print(), 100); setDropdownOpen(null); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#0a1628] font-medium transition-colors">
  <Printer className="w-4 h-4 text-slate-400" /> Print Form
  </button>
- <button onClick={() => handleDirectDownload(app)} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#0a1628] font-medium transition-colors">
+ <button type="button" onClick={() => handleDirectDownload(app)} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#0a1628] font-medium transition-colors">
  <Download className="w-4 h-4 text-slate-400" /> Download PDF
  </button>
- <button onClick={() => { shareApplication(app); setDropdownOpen(null); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#0a1628] font-medium transition-colors">
+ <button type="button" onClick={() => { shareApplication(app); setDropdownOpen(null); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#0a1628] font-medium transition-colors">
  <Share2 className="w-4 h-4 text-slate-400" /> Share Link
  </button>
  <div className="h-px bg-slate-100 my-1"></div>
- <button onClick={() => { handleDelete(id); setDropdownOpen(null); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 font-medium transition-colors">
+ <button type="button" onClick={() => { handleDelete(id, app.photoUrl); setDropdownOpen(null); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 font-medium transition-colors">
  <Trash2 className="w-4 h-4 text-red-400" /> Delete Application
  </button>
  </div>
  )}
  </div>
  </div>
- 
+
  <div className="flex items-center gap-4 mb-4">
  <Avatar name={name || "?"} />
  <div>
  <div className="font-bold text-[#0a1628] text-base">{name}</div>
- <div className="text-sm text-slate-500 font-medium mt-0.5">{app.fatherPhone || app.father_phone || "—"}</div>
+ <div className="text-sm text-slate-500 font-medium mt-0.5">{app.fatherPhone || "—"}</div>
  </div>
  </div>
 
  <div className="grid grid-cols-2 gap-3 mb-4 bg-slate-50 p-3 rounded-xl border border-slate-100">
  <div>
  <div className="text-[10px] uppercase font-bold text-slate-400 mb-1">Class</div>
- <div className="font-semibold text-slate-800">{app.applyClass || app.apply_class}</div>
+ <div className="font-semibold text-slate-800">{app.applyClass}</div>
  </div>
  <div>
  <div className="text-[10px] uppercase font-bold text-slate-400 mb-1">Year</div>
- <div className="font-mono text-sm font-semibold text-slate-600">{app.academicYear || app.academic_year}</div>
+ <div className="font-mono text-sm font-semibold text-slate-600">{app.academicYear}</div>
  </div>
  <div>
  <div className="text-[10px] uppercase font-bold text-slate-400 mb-1">Date</div>
  <div className="font-mono text-sm font-semibold text-slate-600">
- {app.submissionDate || app.submission_date ? new Date(app.submissionDate || app.submission_date).toLocaleDateString("en-IN") : "—"}
+ {app.submissionDate ? new Date(app.submissionDate as string).toLocaleDateString("en-IN") : "—"}
  </div>
  </div>
  </div>
@@ -629,8 +634,9 @@ const AdminPage = () => {
  </thead>
  <tbody className="divide-y divide-slate-100">
  {tabApplications.map(app => {
- const id = app.id || app._id;
- const name = `${app.firstName || app.first_name || ""} ${app.lastName || app.last_name || ""}`.trim();
+ const id = app.id;
+ if (!id) return null;
+ const name = `${app.firstName || ""} ${app.lastName || ""}`.trim();
  const status = app.status || "submitted";
  const isSelected = selectedApps.includes(id);
 
@@ -643,21 +649,21 @@ const AdminPage = () => {
  />
  </td>
  <td className="p-4">
- <AppNoChip value={app.appNo || app.app_no || "—"} />
+ <AppNoChip value={app.appNo || "—"} />
  </td>
  <td className="p-4">
  <div className="flex items-center gap-3">
  <Avatar name={name || "?"} />
  <div>
  <div className="font-semibold text-[#0a1628] text-sm group-hover:text-blue-700 transition-colors">{name}</div>
- <div className="text-xs text-slate-500 font-medium mt-0.5">{app.fatherPhone || app.father_phone || "—"}</div>
+ <div className="text-xs text-slate-500 font-medium mt-0.5">{app.fatherPhone || "—"}</div>
  </div>
  </div>
  </td>
  <td className="p-4">
  <div className="inline-flex flex-col">
- <span className="text-sm font-bold text-[#0a1628] bg-slate-100 px-2.5 py-0.5 rounded-md inline-block mb-1">{app.applyClass || app.apply_class}</span>
- <span className="text-xs text-slate-400 font-mono tracking-wide">{app.academicYear || app.academic_year}</span>
+ <span className="text-sm font-bold text-[#0a1628] bg-slate-100 px-2.5 py-0.5 rounded-md inline-block mb-1">{app.applyClass}</span>
+ <span className="text-xs text-slate-400 font-mono tracking-wide">{app.academicYear}</span>
  </div>
  </td>
  <td className="p-4">
@@ -673,11 +679,11 @@ const AdminPage = () => {
  </select>
  </td>
  <td className="p-4 text-sm text-slate-500 font-mono tracking-wide">
- {app.submissionDate || app.submission_date ? new Date(app.submissionDate || app.submission_date).toLocaleDateString("en-IN") : "—"}
+ {app.submissionDate ? new Date(app.submissionDate as string).toLocaleDateString("en-IN") : "—"}
  </td>
  <td className="p-4 text-center relative">
  <div className="action-dropdown" ref={dropdownRef}>
- <button
+ <button type="button"
  onClick={e => {
  if (dropdownOpen === id) { setDropdownOpen(null); return; }
  const r = (e.currentTarget as HTMLElement).getBoundingClientRect();
@@ -690,20 +696,20 @@ const AdminPage = () => {
  </button>
  {dropdownOpen === id && (
  <div className="fixed z-50 w-48 bg-white border border-slate-200 rounded-xl shadow-sm py-1 animate-in fade-in zoom-in-95" style={{ top: dropdownPos.top, left: dropdownPos.left }}>
- <button onClick={() => { setViewModalApp(app); setDropdownOpen(null); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#0a1628] font-medium transition-colors">
+ <button type="button" onClick={() => { setViewModalApp(app); setDropdownOpen(null); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#0a1628] font-medium transition-colors">
  <Eye className="w-4 h-4 text-slate-400" /> View Details
  </button>
- <button onClick={() => { setSelectedApp(app); setTimeout(() => window.print(), 100); setDropdownOpen(null); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#0a1628] font-medium transition-colors">
+ <button type="button" onClick={() => { setSelectedApp(app); setTimeout(() => window.print(), 100); setDropdownOpen(null); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#0a1628] font-medium transition-colors">
  <Printer className="w-4 h-4 text-slate-400" /> Print Form
  </button>
- <button onClick={() => handleDirectDownload(app)} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#0a1628] font-medium transition-colors">
+ <button type="button" onClick={() => handleDirectDownload(app)} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#0a1628] font-medium transition-colors">
  <Download className="w-4 h-4 text-slate-400" /> Download PDF
  </button>
- <button onClick={() => { shareApplication(app); setDropdownOpen(null); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#0a1628] font-medium transition-colors">
+ <button type="button" onClick={() => { shareApplication(app); setDropdownOpen(null); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 hover:text-[#0a1628] font-medium transition-colors">
  <Share2 className="w-4 h-4 text-slate-400" /> Share Link
  </button>
  <div className="h-px bg-slate-100 my-1"></div>
- <button onClick={() => { handleDelete(id); setDropdownOpen(null); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 font-medium transition-colors">
+ <button type="button" onClick={() => { handleDelete(id, app.photoUrl); setDropdownOpen(null); }} className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 font-medium transition-colors">
  <Trash2 className="w-4 h-4 text-red-400" /> Delete Application
  </button>
  </div>
@@ -715,6 +721,23 @@ const AdminPage = () => {
  })}
  </tbody>
  </table>
+
+ {/* Pagination */}
+ {hasMore && (
+ <div className="p-4 border-t border-slate-100 flex justify-center">
+ <Button
+ type="button"
+ variant="secondary"
+ onClick={() => fetchApplications(currentPage + 1)}
+ loading={loading}
+ disabled={loading}
+ className="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl"
+ >
+ <Download className="w-4 h-4" />
+ Load More ({totalCount - applications.length} remaining)
+ </Button>
+ </div>
+ )}
  </>
  )}
  </div>
