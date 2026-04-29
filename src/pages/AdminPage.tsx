@@ -334,10 +334,13 @@ const AdminPage = () => {
  </div>
  );
 
- <StudentViewModal app={viewModalApp as RawStudentData} open={!!viewModalApp} onOpenChange={(open) => !open && setViewModalApp(null)} />
-
  return (
  <>
+ <StudentViewModal
+ app={viewModalApp as RawStudentData}
+ open={!!viewModalApp}
+ onOpenChange={(open) => !open && setViewModalApp(null)}
+ />
  {downloadingApp && (
     <div style={{ position: "absolute", left: "-9999px", top: "-9999px" }}>
         <ApplicationPrintDocument app={downloadingApp} />
