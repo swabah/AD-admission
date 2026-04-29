@@ -76,6 +76,12 @@ const STATUS_CFG: Record<
 		bgClass: "bg-red-100",
 		dotClass: "bg-red-600",
 	},
+	deleted: {
+		label: "Deleted",
+		textClass: "text-slate-500",
+		bgClass: "bg-slate-100/80",
+		dotClass: "bg-slate-500",
+	},
 };
 
 // Internal components moved to src/components/admin
@@ -125,7 +131,11 @@ const AdminPage = () => {
 	const fetchApplications = useCallback(async (page = 1) => {
 		setLoading(true);
 		try {
-			const result = await getAllApplications({ page, pageSize: 100 });
+			const result = await getAllApplications({ 
+				page, 
+				pageSize: 100,
+				includeDeleted: true // Always include so we can filter for "Deleted" tab
+			});
 			if (page === 1) {
 				setApplications(result.data);
 			} else {
@@ -187,16 +197,32 @@ const AdminPage = () => {
 		fetchApplications();
 	};
 
+	const handleRestore = async (id: string) => {
+		setProcessingAction(`restore-${id}`);
+		try {
+			await updateApplicationStatus(id, "submitted");
+			fetchApplications();
+		} catch (error) {
+			console.error("Error restoring application:", error);
+		} finally {
+			setProcessingAction(null);
+		}
+	};
+
 	const handleDelete = (id: string, photoUrl?: string | null) => {
+		const app = applications.find(a => a.id === id);
+		const isCurrentlyDeleted = app?.status === 'deleted';
+
 		setConfirmDialog({
 			isOpen: true,
-			title: "Delete Application",
-			message:
-				"Are you sure you want to delete this application? This action cannot be undone.",
+			title: isCurrentlyDeleted ? "Permanently Delete" : "Move to Trash",
+			message: isCurrentlyDeleted
+				? "This application is already in the deleted tab. This action will permanently remove it and its photo from the database. This cannot be undone."
+				: "Are you sure you want to move this application to trash? You can still find it in the Deleted filter.",
 			onConfirm: async () => {
 				try {
-					await deleteApplication(id, photoUrl);
-					fetchApplications(currentPage);
+					await deleteApplication(id, photoUrl, isCurrentlyDeleted);
+					fetchApplications(1);
 					setConfirmDialog((prev) => ({ ...prev, isOpen: false }));
 				} catch (error) {
 					console.error("Error deleting application:", error);
@@ -420,7 +446,10 @@ const AdminPage = () => {
 			const q = searchTerm.toLowerCase();
 			const matchSearch =
 				!q || name.includes(q) || appNo.includes(q) || father.includes(q);
-			const matchStatus = statusFilter === "all" || app.status === statusFilter;
+			const matchStatus =
+				statusFilter === "all"
+					? app.status !== "deleted"
+					: app.status === statusFilter;
 			const matchClass =
 				classFilter === "all" || app.applyClass === classFilter;
 			return matchSearch && matchStatus && matchClass;
@@ -453,28 +482,12 @@ const AdminPage = () => {
 				});
 
 	const TABS = [
-		{ id: "all", label: "All", count: filtered.length },
-		{
-			id: "pending",
-			label: "Pending",
-			count: applications.filter((a) => !a.status || a.status === "submitted")
-				.length,
-		},
-		{
-			id: "reviewing",
-			label: "Reviewing",
-			count: applications.filter((a) => a.status === "reviewing").length,
-		},
-		{
-			id: "approved",
-			label: "Approved",
-			count: applications.filter((a) => a.status === "approved").length,
-		},
-		{
-			id: "rejected",
-			label: "Rejected",
-			count: applications.filter((a) => a.status === "rejected").length,
-		},
+		{ id: "all", label: "All", count: applications.filter(a => a.status !== 'deleted').length },
+		{ id: "pending", label: "Pending", count: applications.filter(a => !a.status || a.status === 'submitted').length },
+		{ id: "reviewing", label: "Reviewing", count: applications.filter(a => a.status === 'reviewing').length },
+		{ id: "approved", label: "Approved", count: applications.filter(a => a.status === 'approved').length },
+		{ id: "rejected", label: "Rejected", count: applications.filter(a => a.status === 'rejected').length },
+		{ id: "deleted", label: "Trash", count: applications.filter(a => a.status === 'deleted').length },
 	];
 
 	const handleSelectAll = () => {
@@ -612,7 +625,10 @@ const AdminPage = () => {
 										searchTerm={searchTerm}
 										onSearchChange={setSearchTerm}
 										statusFilter={statusFilter}
-										onStatusChange={setStatusFilter}
+										onStatusChange={(s) => {
+											setStatusFilter(s);
+											setActiveTab(s);
+										}}
 										classFilter={classFilter}
 										onClassChange={setClassFilter}
 										sortBy={sortBy}
@@ -622,6 +638,8 @@ const AdminPage = () => {
 											setSortOrder((s) => (s === "asc" ? "desc" : "asc"))
 										}
 										uniqueClasses={uniqueClasses}
+										onDropdownClose={() => setDropdownOpen(null)}
+										onRestore={handleRestore}
 									/>
 								</div>
 
@@ -679,7 +697,10 @@ const AdminPage = () => {
 										<button
 											type="button"
 											key={tab.id}
-											onClick={() => setActiveTab(tab.id)}
+											onClick={() => {
+												setActiveTab(tab.id);
+												setStatusFilter(tab.id);
+											}}
 											className={`flex items-center gap-2 px-6 py-4 text-sm font-semibold whitespace-nowrap border-b-2 transition-colors ${activeTab === tab.id ? "border-[#0a1628] text-[#0a1628] bg-white" : "border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50"}`}
 										>
 											{tab.label}
@@ -802,15 +823,36 @@ const AdminPage = () => {
 																			Share Link
 																		</DropdownMenuItem>
 																		<DropdownMenuSeparator />
-																		<DropdownMenuItem
-																			onClick={() =>
-																				handleDelete(id, app.photoUrl)
-																			}
-																			className="gap-2 py-2.5 font-medium text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer"
-																		>
-																			<Trash2 className="w-4 h-4 text-red-400" />{" "}
-																			Delete Application
-																		</DropdownMenuItem>
+																		{status === "deleted" ? (
+																			<>
+																				<DropdownMenuItem
+																					onClick={() => handleRestore(id)}
+																					className="gap-2 py-2.5 font-medium text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 cursor-pointer"
+																				>
+																					<ArrowLeft className="w-4 h-4 text-emerald-400" />{" "}
+																					Restore from Trash
+																				</DropdownMenuItem>
+																				<DropdownMenuItem
+																					onClick={() =>
+																						handleDelete(id, app.photoUrl)
+																					}
+																					className="gap-2 py-2.5 font-medium text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer"
+																				>
+																					<Trash2 className="w-4 h-4 text-red-400" />{" "}
+																					Delete Permanently
+																				</DropdownMenuItem>
+																			</>
+																		) : (
+																			<DropdownMenuItem
+																				onClick={() =>
+																					handleDelete(id, app.photoUrl)
+																				}
+																				className="gap-2 py-2.5 font-medium text-slate-600 hover:text-red-600 hover:bg-red-50 cursor-pointer"
+																			>
+																				<Trash2 className="w-4 h-4 text-slate-400" />{" "}
+																				Move to Trash
+																			</DropdownMenuItem>
+																		)}
 																	</DropdownMenuContent>
 																</DropdownMenu>
 															</div>
@@ -873,6 +915,9 @@ const AdminPage = () => {
 																	<option value="reviewing">Reviewing</option>
 																	<option value="approved">Approved</option>
 																	<option value="rejected">Rejected</option>
+																	{status === "deleted" && (
+																		<option value="deleted">Deleted</option>
+																	)}
 																</select>
 															</div>
 														</div>
@@ -970,6 +1015,9 @@ const AdminPage = () => {
 																		<option value="reviewing">Reviewing</option>
 																		<option value="approved">Approved</option>
 																		<option value="rejected">Rejected</option>
+																		{status === "deleted" && (
+																			<option value="deleted">Deleted</option>
+																		)}
 																	</select>
 																</td>
 																<td className="p-4 text-sm text-slate-500 font-mono tracking-wide">
@@ -1030,15 +1078,36 @@ const AdminPage = () => {
 																				Share Link
 																			</DropdownMenuItem>
 																			<DropdownMenuSeparator />
-																			<DropdownMenuItem
-																				onClick={() =>
-																					handleDelete(id, app.photoUrl)
-																				}
-																				className="gap-2 py-2.5 font-medium text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer"
-																			>
-																				<Trash2 className="w-4 h-4 text-red-400" />{" "}
-																				Delete Application
-																			</DropdownMenuItem>
+																			{status === "deleted" ? (
+																				<>
+																					<DropdownMenuItem
+																						onClick={() => handleRestore(id)}
+																						className="gap-2 py-2.5 font-medium text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 cursor-pointer"
+																					>
+																						<ArrowLeft className="w-4 h-4 text-emerald-400" />{" "}
+																						Restore from Trash
+																					</DropdownMenuItem>
+																					<DropdownMenuItem
+																						onClick={() =>
+																							handleDelete(id, app.photoUrl)
+																						}
+																						className="gap-2 py-2.5 font-medium text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer"
+																					>
+																						<Trash2 className="w-4 h-4 text-red-400" />{" "}
+																						Delete Permanently
+																					</DropdownMenuItem>
+																				</>
+																			) : (
+																				<DropdownMenuItem
+																					onClick={() =>
+																						handleDelete(id, app.photoUrl)
+																					}
+																					className="gap-2 py-2.5 font-medium text-slate-600 hover:text-red-600 hover:bg-red-50 cursor-pointer"
+																				>
+																					<Trash2 className="w-4 h-4 text-slate-400" />{" "}
+																					Move to Trash
+																				</DropdownMenuItem>
+																			)}
 																		</DropdownMenuContent>
 																	</DropdownMenu>
 																</td>

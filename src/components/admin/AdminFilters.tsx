@@ -50,6 +50,7 @@ export const AdminFilters = ({
 				<option value="reviewing">Reviewing</option>
 				<option value="approved">Approved</option>
 				<option value="rejected">Rejected</option>
+				<option value="deleted">Trash / Deleted</option>
 			</select>
 			<select
 				className="shrink-0 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#0a1628] transition-colors font-medium text-slate-700"

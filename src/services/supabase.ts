@@ -261,25 +261,40 @@ export const addApplication = async (
 
 // Get all applications with pagination
 export const getAllApplications = async (
-	options: PaginationOptions = {},
+	options: PaginationOptions & { includeDeleted?: boolean } = {},
 ): Promise<PaginatedApplications> => {
-	const { page = 1, pageSize = 100 } = options;
+	const { page = 1, pageSize = 100, includeDeleted = false } = options;
 	const start = (page - 1) * pageSize;
 	const end = start + pageSize - 1;
 
 	// Get total count first
-	const { count, error: countError } = await supabase
+	let queryCount = supabase
 		.from(SUPABASE_TABLE_NAME)
-		.select("*", { count: "exact", head: true })
-		.neq("status", "deleted");
+		.select("*", { count: "exact", head: true });
+	
+	if (!includeDeleted) {
+		queryCount = queryCount.neq("status", "deleted");
+	}
+
+	const { count, error: countError } = await queryCount;
 
 	if (countError) throw countError;
 
 	// Get paginated data
-	const { data, error } = await supabase
+	let queryData = supabase
 		.from(SUPABASE_TABLE_NAME)
-		.select("*")
-		.neq("status", "deleted")
+		.select("*");
+	
+	if (!includeDeleted) {
+		queryData = queryData.neq("status", "deleted");
+	} else {
+		// If including deleted, we might only want to see deleted items or all?
+		// Usually for a "Deleted" tab, we'd want ONLY deleted.
+		// But let's allow all if includeDeleted is true, or handle it in filters.
+		// Actually, let's make it fetch all including deleted if flag is true.
+	}
+
+	const { data, error } = await queryData
 		.order("submitted_at", { ascending: false })
 		.range(start, end);
 
@@ -459,24 +474,34 @@ export const updateApplicationStatus = async (
 	if (error) throw error;
 };
 
-// Delete an application (Soft Delete due to RLS)
+// Delete an application (Soft or Hard Delete)
 export const deleteApplication = async (
 	id: string,
 	photoUrl?: string | null,
+	hardDelete: boolean = false,
 ): Promise<{ success: boolean }> => {
-	// Delete photo from storage if exists
-	if (photoUrl) {
-		await deletePhotoFromStorage(photoUrl);
+	if (hardDelete) {
+		// Delete photo from storage if exists
+		if (photoUrl) {
+			await deletePhotoFromStorage(photoUrl);
+		}
+
+		const { error } = await supabase
+			.from(SUPABASE_TABLE_NAME)
+			.delete()
+			.eq("id", id);
+
+		if (error) throw error;
+	} else {
+		// Perform a soft delete by updating the status to 'deleted'.
+		const { error } = await supabase
+			.from(SUPABASE_TABLE_NAME)
+			.update({ status: "deleted" })
+			.eq("id", id);
+
+		if (error) throw error;
 	}
-
-	// Instead of a hard delete which is blocked by Supabase anon key RLS,
-	// we perform a soft delete by updating the status to 'deleted'.
-	const { error } = await supabase
-		.from(SUPABASE_TABLE_NAME)
-		.update({ status: "deleted" })
-		.eq("id", id);
-
-	if (error) throw error;
+	
 	return { success: true };
 };
 
