@@ -91,7 +91,10 @@ const NewAdmissionPage = () => {
 	};
 
 	const nextStep = () => {
-		const stepErrors = validateStep(currentStep, formData);
+		const stepErrors = validateStep(currentStep, {
+			...formData,
+			photo: photoDataURL,
+		});
 		setErrors(stepErrors);
 		
 		if (isValidStep(stepErrors)) {
@@ -118,6 +121,13 @@ const NewAdmissionPage = () => {
 	};
 
 	const handleSubmit = async () => {
+		const stepErrors = validateStep(currentStep, {
+			...formData,
+			photo: photoDataURL,
+		});
+		setErrors(stepErrors);
+		if (!isValidStep(stepErrors)) return;
+
 		setIsSubmitting(true);
 		setSubmitError(null);
 		const newAppNo = formatApplicationNo();
@@ -278,7 +288,13 @@ const NewAdmissionPage = () => {
 											className="hidden"
 											ref={photoInputRef}
 											onChange={handlePhotoUpload}
+											accept="image/*"
 										/>
+										{errors.photo && (
+											<p className="text-[10px] text-destructive font-medium text-center">
+												{errors.photo}
+											</p>
+										)}
 									</div>
 									<div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
 										<InputField

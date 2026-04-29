@@ -30,6 +30,7 @@ export interface FormData {
   referral: string;
   remarks: string;
   agreeCheck: boolean;
+  photo?: string | null;
 }
 
 export interface FormErrors {
@@ -73,8 +74,9 @@ export const validateStep = (
       }
     }
     // studentPhone is not currently in Step 1 UI
-    // const studentPhoneError = validatePhone(formData.studentPhone || "");
-    // if (studentPhoneError) errors.studentPhone = studentPhoneError;
+    const studentPhoneError = validatePhone(formData.studentPhone || "", false);
+    if (studentPhoneError) errors.studentPhone = studentPhoneError;
+    if (!formData.photo) errors.photo = "Student photo is required";
   }
 
   if (step === 2) {
