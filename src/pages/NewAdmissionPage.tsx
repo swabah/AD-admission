@@ -173,27 +173,27 @@ const NewAdmissionPage = () => {
 
 	return (
 		<div className="bg-slate-50 min-h-screen pb-20">
-			<header className="bg-[#0a1628] border-b border-[#c8922a]/20 py-4 mb-12 shadow-md">
+			<header className="sticky top-0 z-50 bg-[#0a1628]/95 backdrop-blur-md border-b border-[#c8922a]/20 py-4 mb-12 shadow-xl shadow-[#0a1628]/10">
 				<div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
-					<div className="flex items-center gap-5">
-						<div className="bg-white p-1 rounded-xl shadow-lg border border-white/20">
-							<img src={logo} alt="Logo" className="w-10 h-10 object-contain" />
+					<div className="flex items-center gap-3 sm:gap-5">
+						<div className="bg-white p-1 rounded-xl shadow-lg border border-white/20 shrink-0">
+							<img src={logo} alt="Logo" className="w-8 h-8 sm:w-10 sm:h-10 object-contain" />
 						</div>
-						<div>
-							<h1 className="text-white text-2xl font-display font-bold leading-none mb-1.5">
+						<div className="min-w-0">
+							<h1 className="text-white text-lg sm:text-2xl font-display font-bold leading-none mb-1 sm:mb-1.5 truncate">
 								New Admission
 							</h1>
-							<p className="text-[#c8922a] text-[10px] uppercase font-bold tracking-[0.2em]">
+							<p className="text-[#c8922a] text-[9px] sm:text-[10px] uppercase font-bold tracking-[0.2em] truncate">
 								Session 2026–27
 							</p>
 						</div>
 					</div>
 					<Link
 						to="/apply"
-						className="text-white/60 hover:text-white text-xs font-bold flex items-center gap-2 transition-colors group"
+						className="text-white/60 hover:text-white text-[10px] sm:text-xs font-bold flex items-center gap-1.5 transition-colors group shrink-0"
 					>
-						<ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />{" "}
-						Back to Portal
+						<ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+						<span className="hidden xs:inline">Back <span className="hidden sm:inline">to Portal</span></span>
 					</Link>
 				</div>
 			</header>
