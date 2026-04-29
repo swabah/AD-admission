@@ -3,7 +3,7 @@ import { addApplication } from "../services/supabase";
 import { downloadApplicationPDF } from "../utils/pdfDownloader";
 import logo from "../assets/logo.jpg";
 import ApplicationPrintDocument from "../components/ApplicationPrintDocument";
-import { validatePhoto } from "../utils/formValidation";
+import { validatePhoto, validatePhone } from "../utils/formValidation";
 import { formatApplicationNo } from "../utils/formatters";
 import { InputField } from "../components/InputField";
 import {
@@ -155,10 +155,14 @@ const LocalAdmissionPage = () => {
 			newErrors.academicYear = "Academic year is required";
 		if (!formData.fatherName.trim())
 			newErrors.fatherName = "Father's name is required";
-		if (!formData.fatherPhone.trim())
-			newErrors.fatherPhone = "Father's phone is required";
+		const studentPhoneError = validatePhone(formData.studentPhone || "");
+		if (studentPhoneError) newErrors.studentPhone = studentPhoneError;
+		const fatherPhoneError = validatePhone(formData.fatherPhone || "");
+		if (fatherPhoneError) newErrors.fatherPhone = fatherPhoneError;
 		if (!formData.motherName.trim())
 			newErrors.motherName = "Mother's name is required";
+		const motherPhoneError = validatePhone(formData.motherPhone || "");
+		if (motherPhoneError) newErrors.motherPhone = motherPhoneError;
 		if (!formData.address.trim()) newErrors.address = "Address is required";
 		if (!formData.agreeCheck)
 			newErrors.agreeCheck = "Please agree to the declaration";

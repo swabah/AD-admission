@@ -36,6 +36,20 @@ export interface FormErrors {
   [key: string]: string | null;
 }
 
+export const validatePhone = (phone: string): string | null => {
+  if (!phone?.trim()) return "Phone number is required";
+  const phoneClean = phone.replace(/\s/g, "").replace(/[-+()]/g, "");
+  // Accept 10 digits or 10 digits with +91 prefix (total 12 digits)
+  if (!/^[0-9]{10}$/.test(phoneClean) && !/^[0-9]{12}$/.test(phoneClean)) {
+    return "Please enter a valid 10-digit phone number";
+  }
+  // If 12 digits, it should start with 91 (India country code)
+  if (/^[0-9]{12}$/.test(phoneClean) && !phoneClean.startsWith("91")) {
+    return "Please enter a valid Indian phone number";
+  }
+  return null;
+};
+
 export const validateStep = (
   step: number,
   formData: Partial<FormData>,
@@ -55,6 +69,8 @@ export const validateStep = (
         errors.aadhar = "Aadhar must be exactly 12 digits";
       }
     }
+    const studentPhoneError = validatePhone(formData.studentPhone || "");
+    if (studentPhoneError) errors.studentPhone = studentPhoneError;
   }
 
   if (step === 2) {
@@ -64,8 +80,15 @@ export const validateStep = (
 
   if (step === 3) {
     if (!formData.fatherName?.trim()) errors.fatherName = "Father's name is required";
-    if (!formData.fatherPhone?.trim()) errors.fatherPhone = "Father's phone number is required";
+    const fatherPhoneError = validatePhone(formData.fatherPhone || "");
+    if (fatherPhoneError) errors.fatherPhone = fatherPhoneError;
     if (!formData.motherName?.trim()) errors.motherName = "Mother's name is required";
+    const motherPhoneError = validatePhone(formData.motherPhone || "");
+    if (motherPhoneError) errors.motherPhone = motherPhoneError;
+    if (formData.emergencyPhone?.trim()) {
+      const emergencyPhoneError = validatePhone(formData.emergencyPhone);
+      if (emergencyPhoneError) errors.emergencyPhone = emergencyPhoneError;
+    }
     if (!formData.agreeCheck) errors.agreeCheck = "You must agree to the declaration before submitting";
   }
 
