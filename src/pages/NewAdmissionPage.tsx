@@ -355,7 +355,7 @@ const NewAdmissionPage = () => {
 											label="Stream"
 											id="stream"
 											type="select"
-											options={["Science", "Commerce", "Humanities", "N/A"]}
+											options={["Root Exc", "HS", "BS", "N/A"]}
 											registration={register("stream")}
 											error={errors.stream?.message}
 										/>
@@ -380,6 +380,8 @@ const NewAdmissionPage = () => {
 										<InputField
 											label="Previous Board"
 											id="prevBoard"
+											type="select"
+											options={["SSLC", "CBSE", "ICSE", "HSE", "VHSE", "THSE", "Other"]}
 											registration={register("prevBoard")}
 											error={errors.prevBoard?.message}
 										/>
