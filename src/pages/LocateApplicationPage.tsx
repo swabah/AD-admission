@@ -13,7 +13,9 @@ import {
 	Download,
 } from "lucide-react";
 import logo from "../assets/logo.jpg";
+import printLogo from "../assets/horizontal-logo.png";
 import ApplicationPrintDocument from "../components/ApplicationPrintDocument";
+import { downloadApplicationPDF } from "../utils/pdfDownloader";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Badge } from "../components/ui/badge";
@@ -43,6 +45,60 @@ const LocateApplicationPage = () => {
 	const [selectedApp, setSelectedApp] = useState<Application | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const [searched, setSearched] = useState(false);
+	const [isPrinting, setIsPrinting] = useState(false);
+	const [isDownloading, setIsDownloading] = useState(false);
+
+	const preloadImage = (url: string): Promise<void> => {
+		return new Promise((resolve) => {
+			if (!url) {
+				resolve();
+				return;
+			}
+			const img = new Image();
+			img.onload = () => resolve();
+			img.onerror = () => resolve();
+			img.src = url;
+		});
+	};
+
+	const handlePrint = async () => {
+		if (!selectedApp) return;
+		setIsPrinting(true);
+		try {
+			const photo = selectedApp.photo || selectedApp.photoUrl;
+			const preloads = [preloadImage(printLogo)];
+			if (photo) preloads.push(preloadImage(photo));
+			await Promise.all(preloads);
+
+			// Small delay for styles to settle
+			setTimeout(() => {
+				window.print();
+				setIsPrinting(false);
+			}, 500);
+		} catch (err) {
+			console.error("Print failed:", err);
+			setIsPrinting(false);
+		}
+	};
+
+	const handleDownloadPDF = async () => {
+		if (!selectedApp) return;
+		setIsDownloading(true);
+		try {
+			const photo = selectedApp.photo || selectedApp.photoUrl;
+			const preloads = [preloadImage(printLogo)];
+			if (photo) preloads.push(preloadImage(photo));
+			await Promise.all(preloads);
+
+			const name = `${selectedApp.firstName || ""} ${selectedApp.lastName || ""}`.trim();
+			await downloadApplicationPDF(selectedApp.appNo || "application", name);
+		} catch (err) {
+			console.error("PDF download failed:", err);
+			alert("Failed to download PDF. Please try again.");
+		} finally {
+			setIsDownloading(false);
+		}
+	};
 
 	const onSearch = async (data: LocateFormData) => {
 		setError(null);
@@ -71,11 +127,20 @@ const LocateApplicationPage = () => {
 						<ChevronLeft className="w-4 h-4 mr-2" /> Back
 					</Button>
 					<div className="flex gap-2">
-						<Button variant="outline" onClick={() => window.print()}>
-							<Printer className="w-4 h-4 mr-2" /> Print
+						<Button
+							variant="outline"
+							onClick={handlePrint}
+							disabled={isPrinting || isDownloading}
+						>
+							<Printer className="w-4 h-4 mr-2" />
+							{isPrinting ? "Preparing..." : "Print"}
 						</Button>
-						<Button onClick={() => alert("PDF Download in progress...")}>
-							<Download className="w-4 h-4 mr-2" /> PDF
+						<Button
+							onClick={handleDownloadPDF}
+							disabled={isPrinting || isDownloading}
+						>
+							<Download className="w-4 h-4 mr-2" />
+							{isDownloading ? "Downloading..." : "PDF"}
 						</Button>
 					</div>
 				</div>
