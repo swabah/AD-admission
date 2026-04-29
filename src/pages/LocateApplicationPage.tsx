@@ -47,6 +47,23 @@ const LocateApplicationPage = () => {
 	const [searched, setSearched] = useState(false);
 	const [isPrinting, setIsPrinting] = useState(false);
 	const [isDownloading, setIsDownloading] = useState(false);
+	const [isReady, setIsReady] = useState(false);
+
+	// Auto-preload logo when an application is selected
+	useEffect(() => {
+		if (selectedApp) {
+			setIsReady(false);
+			const preload = async () => {
+				const photo = selectedApp.photo || selectedApp.photoUrl;
+				const preloads = [preloadImage(printLogo)];
+				if (photo) preloads.push(preloadImage(photo));
+				await Promise.all(preloads);
+				// Extra delay for DOM/styles to settle
+				setTimeout(() => setIsReady(true), 800);
+			};
+			preload();
+		}
+	}, [selectedApp]);
 
 	const preloadImage = (url: string): Promise<void> => {
 		return new Promise((resolve) => {
@@ -62,19 +79,12 @@ const LocateApplicationPage = () => {
 	};
 
 	const handlePrint = async () => {
-		if (!selectedApp) return;
+		if (!selectedApp || !isReady) return;
 		setIsPrinting(true);
 		try {
-			const photo = selectedApp.photo || selectedApp.photoUrl;
-			const preloads = [preloadImage(printLogo)];
-			if (photo) preloads.push(preloadImage(photo));
-			await Promise.all(preloads);
-
-			// Small delay for styles to settle
-			setTimeout(() => {
-				window.print();
-				setIsPrinting(false);
-			}, 500);
+			window.print();
+			// Stay in printing state briefly to prevent double clicks
+			setTimeout(() => setIsPrinting(false), 1000);
 		} catch (err) {
 			console.error("Print failed:", err);
 			setIsPrinting(false);
@@ -130,17 +140,17 @@ const LocateApplicationPage = () => {
 						<Button
 							variant="outline"
 							onClick={handlePrint}
-							disabled={isPrinting || isDownloading}
+							disabled={!isReady || isPrinting || isDownloading}
 						>
 							<Printer className="w-4 h-4 mr-2" />
-							{isPrinting ? "Preparing..." : "Print"}
+							{!isReady ? "Syncing..." : isPrinting ? "Printing..." : "Print"}
 						</Button>
 						<Button
 							onClick={handleDownloadPDF}
-							disabled={isPrinting || isDownloading}
+							disabled={!isReady || isPrinting || isDownloading}
 						>
 							<Download className="w-4 h-4 mr-2" />
-							{isDownloading ? "Downloading..." : "PDF"}
+							{!isReady ? "Syncing..." : isDownloading ? "Downloading..." : "PDF"}
 						</Button>
 					</div>
 				</div>
