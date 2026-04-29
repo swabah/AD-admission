@@ -4,7 +4,7 @@ import { addApplication } from "../services/supabase";
 import { downloadApplicationPDF } from "../utils/pdfDownloader";
 import logo from "../assets/logo.jpg";
 import ApplicationPrintDocument from "../components/ApplicationPrintDocument";
-import { validateStep, type FormData } from "../utils/formValidation";
+import { validateStep, isValidStep, type FormData } from "../utils/formValidation";
 import { formatApplicationNo } from "../utils/formatters";
 import { InputField } from "../components/InputField";
 import { FormStep } from "../components/FormStep";
