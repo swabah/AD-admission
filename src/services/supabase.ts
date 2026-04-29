@@ -28,7 +28,6 @@ export interface ApplicationData {
 	firstName: string;
 	lastName: string;
 	dob: string;
-	gender?: string;
 	bloodGroup?: string;
 	nationality?: string;
 	aadhar?: string;
@@ -177,7 +176,6 @@ export const addApplication = async (
 		first_name: data.firstName,
 		last_name: data.lastName,
 		dob: data.dob,
-		gender: data.gender,
 		blood_group: data.bloodGroup,
 		nationality: data.nationality,
 		aadhar: data.aadhar,
@@ -320,7 +318,6 @@ export const getApplicationById = async (
 		firstName: data.first_name,
 		lastName: data.last_name,
 		dob: data.dob,
-		gender: data.gender,
 		bloodGroup: data.blood_group,
 		nationality: data.nationality,
 		aadhar: data.aadhar,
