@@ -476,14 +476,14 @@ const AdminPage = () => {
 		activeTab === "all"
 			? filtered
 			: filtered.filter((app) => {
-					if (activeTab === "pending")
+					if (activeTab === "submitted")
 						return !app.status || app.status === "submitted";
 					return app.status === activeTab;
 				});
 
 	const TABS = [
 		{ id: "all", label: "All", count: applications.filter(a => a.status !== 'deleted').length },
-		{ id: "pending", label: "Pending", count: applications.filter(a => !a.status || a.status === 'submitted').length },
+		{ id: "submitted", label: "Pending", count: applications.filter(a => !a.status || a.status === 'submitted').length },
 		{ id: "reviewing", label: "Reviewing", count: applications.filter(a => a.status === 'reviewing').length },
 		{ id: "approved", label: "Approved", count: applications.filter(a => a.status === 'approved').length },
 		{ id: "rejected", label: "Rejected", count: applications.filter(a => a.status === 'rejected').length },
