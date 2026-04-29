@@ -45,7 +45,7 @@ export interface ApplicationData {
 	fatherOcc?: string;
 	fatherPhone: string;
 	fatherEmail?: string;
-	motherName: string;
+	motherName?: string;
 	motherOcc?: string;
 	motherPhone?: string;
 	motherEmail?: string;

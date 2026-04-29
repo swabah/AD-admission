@@ -7,13 +7,20 @@ import { validatePhoto } from "../utils/formValidation";
 import { formatApplicationNo } from "../utils/formatters";
 import { InputField } from "../components/InputField";
 import { Button } from "../components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui/card";
+import {
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
+	CardDescription,
+} from "../components/ui/card";
 import {
 	Camera,
 	Send,
 	Printer,
 	CheckCircle2,
-	ChevronLeft
+	ChevronLeft,
+	AlertCircle,
 } from "lucide-react";
 
 interface FormData {
@@ -53,7 +60,11 @@ const LocalAdmissionPage = () => {
 	const [appNo, setAppNo] = useState("");
 	const [submitError, setSubmitError] = useState<string | null>(null);
 
-	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+	const handleInputChange = (
+		e: React.ChangeEvent<
+			HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+		>,
+	) => {
 		const { id, value } = e.target;
 		setFormData((prev) => ({ ...prev, [id]: value }));
 		if (errors[id]) setErrors((prev) => ({ ...prev, [id]: null }));
@@ -62,9 +73,9 @@ const LocalAdmissionPage = () => {
 	const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
 		if (file) {
-			const validation = validatePhoto(file);
-			if (!validation.valid) {
-				alert(validation.error);
+			const photoError = validatePhoto(file);
+			if (photoError) {
+				alert(photoError);
 				return;
 			}
 
@@ -112,19 +123,34 @@ const LocalAdmissionPage = () => {
 					<div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
 						<CheckCircle2 className="w-10 h-10" />
 					</div>
-					<h2 className="text-3xl font-display font-bold text-[#0a1628] mb-2">Application Submitted!</h2>
-					<p className="text-slate-500 mb-8 font-medium">Your local re-admission has been received successfully.</p>
-					
+					<h2 className="text-3xl font-display font-bold text-[#0a1628] mb-2">
+						Application Submitted!
+					</h2>
+					<p className="text-slate-500 mb-8 font-medium">
+						Your local re-admission has been received successfully.
+					</p>
+
 					<div className="bg-slate-50 p-6 rounded-2xl mb-8 border border-slate-100">
-						<p className="text-xs uppercase tracking-widest font-bold text-slate-400 mb-1">Application Number</p>
-						<p className="text-2xl font-mono font-bold text-[#0a1628]">{appNo}</p>
+						<p className="text-xs uppercase tracking-widest font-bold text-slate-400 mb-1">
+							Application Number
+						</p>
+						<p className="text-2xl font-mono font-bold text-[#0a1628]">
+							{appNo}
+						</p>
 					</div>
 
 					<div className="space-y-3">
-						<Button onClick={() => downloadApplicationPDF(appNo, formData.firstName)} className="w-full h-12 rounded-xl bg-[#0a1628] hover:bg-[#132238] font-bold">
+						<Button
+							onClick={() => downloadApplicationPDF(appNo, formData.firstName)}
+							className="w-full h-12 rounded-xl bg-[#0a1628] hover:bg-[#132238] font-bold"
+						>
 							<Printer className="w-4 h-4 mr-2" /> Download Receipt
 						</Button>
-						<Button variant="outline" onClick={() => navigate("/apply")} className="w-full h-12 rounded-xl font-bold">
+						<Button
+							variant="outline"
+							onClick={() => navigate("/apply")}
+							className="w-full h-12 rounded-xl font-bold"
+						>
 							Back to Portal
 						</Button>
 					</div>
@@ -150,8 +176,12 @@ const LocalAdmissionPage = () => {
 							</p>
 						</div>
 					</div>
-					<Link to="/apply" className="text-white/60 hover:text-white text-xs font-bold flex items-center gap-2 transition-colors group">
-						<ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Back to Portal
+					<Link
+						to="/apply"
+						className="text-white/60 hover:text-white text-xs font-bold flex items-center gap-2 transition-colors group"
+					>
+						<ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />{" "}
+						Back to Portal
 					</Link>
 				</div>
 			</header>
@@ -160,7 +190,9 @@ const LocalAdmissionPage = () => {
 				<Card className="border-0 bg-transparent shadow-none sm:border sm:bg-white sm:shadow-sm sm:rounded-xl overflow-hidden">
 					<CardHeader className="px-0 sm:px-6">
 						<CardTitle>Re-admission Form</CardTitle>
-						<CardDescription>Enter details for continuing students.</CardDescription>
+						<CardDescription>
+							Enter details for continuing students.
+						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-8 px-0 sm:px-6">
 						{submitError && (
@@ -172,74 +204,166 @@ const LocalAdmissionPage = () => {
 						<form onSubmit={handleSubmit} className="space-y-8">
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-12">
 								<div className="space-y-8">
-									<h3 className="text-sm font-bold uppercase tracking-widest text-[#c8922a] border-b border-slate-100 pb-2">Student Information</h3>
+									<h3 className="text-sm font-bold uppercase tracking-widest text-[#c8922a] border-b border-slate-100 pb-2">
+										Student Information
+									</h3>
 									<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-										<InputField label="First Name" id="firstName" formData={formData as any} handleInputChange={handleInputChange} errors={errors} required />
-										<InputField label="Last Name" id="lastName" formData={formData as any} handleInputChange={handleInputChange} errors={errors} required />
+										<InputField
+											label="First Name"
+											id="firstName"
+											formData={formData as any}
+											handleInputChange={handleInputChange}
+											errors={errors}
+											required
+										/>
+										<InputField
+											label="Last Name"
+											id="lastName"
+											formData={formData as any}
+											handleInputChange={handleInputChange}
+											errors={errors}
+											required
+										/>
 									</div>
-									<InputField label="Date of Birth" id="dob" type="date" formData={formData as any} handleInputChange={handleInputChange} errors={errors} required />
-									<InputField label="Student Phone" id="studentPhone" formData={formData as any} handleInputChange={handleInputChange} errors={errors} />
+									<InputField
+										label="Date of Birth"
+										id="dob"
+										type="date"
+										formData={formData as any}
+										handleInputChange={handleInputChange}
+										errors={errors}
+										required
+									/>
+									<InputField
+										label="Student Phone"
+										id="studentPhone"
+										formData={formData as any}
+										handleInputChange={handleInputChange}
+										errors={errors}
+									/>
 								</div>
 
 								<div className="space-y-8">
-									<h3 className="text-sm font-bold uppercase tracking-widest text-[#c8922a] border-b border-slate-100 pb-2">Parent Information</h3>
-									<InputField label="Father's Name" id="fatherName" formData={formData as any} handleInputChange={handleInputChange} errors={errors} required />
-									<InputField label="Father's Phone" id="fatherPhone" type="tel" formData={formData as any} handleInputChange={handleInputChange} errors={errors} required />
-									<InputField label="Residential Address" id="address" type="textarea" formData={formData as any} handleInputChange={handleInputChange} errors={errors} required />
+									<h3 className="text-sm font-bold uppercase tracking-widest text-[#c8922a] border-b border-slate-100 pb-2">
+										Parent Information
+									</h3>
+									<InputField
+										label="Father's Name"
+										id="fatherName"
+										formData={formData as any}
+										handleInputChange={handleInputChange}
+										errors={errors}
+										required
+									/>
+									<InputField
+										label="Father's Phone"
+										id="fatherPhone"
+										type="tel"
+										formData={formData as any}
+										handleInputChange={handleInputChange}
+										errors={errors}
+										required
+									/>
+									<InputField
+										label="Residential Address"
+										id="address"
+										type="textarea"
+										formData={formData as any}
+										handleInputChange={handleInputChange}
+										errors={errors}
+										required
+									/>
 								</div>
 							</div>
 
 							<div className="space-y-8">
-								<h3 className="text-sm font-bold uppercase tracking-widest text-[#c8922a] border-b border-slate-100 pb-2">Academic Details</h3>
+								<h3 className="text-sm font-bold uppercase tracking-widest text-[#c8922a] border-b border-slate-100 pb-2">
+									Academic Details
+								</h3>
 								<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-									<InputField 
-										label="Applying For Class" 
-										id="applyClass" 
-										type="select" 
-										options={["Class 8", "Class 9", "Class 10", "Plus One", "Plus Two", "Degree"]} 
-										formData={formData as any} 
-										handleInputChange={handleInputChange} 
-										errors={errors} 
-										required 
+									<InputField
+										label="Applying For Class"
+										id="applyClass"
+										type="select"
+										options={[
+											"Class 8",
+											"Class 9",
+											"Class 10",
+											"Plus One",
+											"Plus Two",
+											"Degree",
+										]}
+										formData={formData as any}
+										handleInputChange={handleInputChange}
+										errors={errors}
+										required
 									/>
-									<InputField label="Previous Class" id="prevClass" formData={formData as any} handleInputChange={handleInputChange} errors={errors} required />
-									<InputField 
-										label="Academic Year" 
-										id="academicYear" 
-										type="select" 
-										options={["2026–27"]} 
-										formData={formData as any} 
-										handleInputChange={handleInputChange} 
-										errors={errors} 
-										required 
+									<InputField
+										label="Previous Class"
+										id="prevClass"
+										formData={formData as any}
+										handleInputChange={handleInputChange}
+										errors={errors}
+										required
+									/>
+									<InputField
+										label="Academic Year"
+										id="academicYear"
+										type="select"
+										options={["2026–27"]}
+										formData={formData as any}
+										handleInputChange={handleInputChange}
+										errors={errors}
+										required
 									/>
 								</div>
 							</div>
 
 							<div className="space-y-6 pt-4">
-								<h3 className="text-sm font-bold uppercase tracking-widest text-[#c8922a] border-b border-slate-100 pb-2">Student Photograph</h3>
+								<h3 className="text-sm font-bold uppercase tracking-widest text-[#c8922a] border-b border-slate-100 pb-2">
+									Student Photograph
+								</h3>
 								<div className="flex flex-col sm:flex-row items-center gap-6 p-8 border-2 border-dashed border-slate-200 rounded-3xl bg-slate-50/50">
 									<div className="w-32 h-40 rounded-2xl bg-white border border-slate-200 flex items-center justify-center overflow-hidden shadow-sm relative group">
 										{photoDataURL ? (
-											<img src={photoDataURL} alt="Student" className="w-full h-full object-cover" />
+											<img
+												src={photoDataURL}
+												alt="Student"
+												className="w-full h-full object-cover"
+											/>
 										) : (
 											<Camera className="w-10 h-10 text-slate-300" />
 										)}
-										<input type="file" ref={photoInputRef} onChange={handlePhotoChange} accept="image/*" className="hidden" />
+										<input
+											type="file"
+											ref={photoInputRef}
+											onChange={handlePhotoChange}
+											accept="image/*"
+											className="hidden"
+										/>
 									</div>
 									<div className="space-y-3 text-center sm:text-left">
-										<p className="text-sm font-bold text-[#0a1628]">Recent Passport Size Photo</p>
-										<Button type="button" variant="outline" onClick={() => photoInputRef.current?.click()} className="h-11 rounded-xl font-bold bg-white border-slate-200 hover:bg-slate-50 transition-all">
+										<p className="text-sm font-bold text-[#0a1628]">
+											Recent Passport Size Photo
+										</p>
+										<Button
+											type="button"
+											variant="outline"
+											onClick={() => photoInputRef.current?.click()}
+											className="h-11 rounded-xl font-bold bg-white border-slate-200 hover:bg-slate-50 transition-all"
+										>
 											{photoDataURL ? "Change Photo" : "Upload Photo"}
 										</Button>
-										<p className="text-[11px] text-slate-400 font-medium">JPG or PNG. Max size 2MB. Ensure clear face visibility.</p>
+										<p className="text-[11px] text-slate-400 font-medium">
+											JPG or PNG. Max size 2MB. Ensure clear face visibility.
+										</p>
 									</div>
 								</div>
 							</div>
 
 							<div className="pt-10 border-t border-slate-100 flex justify-center sm:justify-start">
-								<Button 
-									type="submit" 
+								<Button
+									type="submit"
 									loading={loading}
 									className="w-full sm:w-auto px-12 h-14 rounded-xl bg-[#0a1628] hover:bg-[#132238] text-white font-bold text-lg shadow-xl shadow-[#0a1628]/10 transition-all hover:-translate-y-1"
 								>

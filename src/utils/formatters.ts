@@ -26,6 +26,6 @@ export const formatFileSizeMB = (sizeInBytes: number): string => {
   return (sizeInBytes / (1024 * 1024)).toFixed(2);
 };
 
-export const formatApplicationNo = (): string => {
-  return "AS" + Date.now().toString().slice(-6);
+export const formatApplicationNo = (prefix: string = ""): string => {
+  return (prefix || "AS") + Date.now().toString().slice(-6);
 };
