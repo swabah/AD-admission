@@ -13,6 +13,7 @@ import {
 	Download,
 } from "lucide-react";
 import ApplicationPrintDocument, { type RawApplicationData } from "../components/ApplicationPrintDocument";
+import ApplicationResponsiveView from "../components/ApplicationResponsiveView";
 import printLogo from "../assets/horizontal-logo.png";
 import { downloadApplicationPDF } from "../utils/pdfDownloader";
 import { AdmissionPageHeader } from "../components/AdmissionPageHeader";
@@ -155,10 +156,18 @@ const LocateApplicationPage = () => {
 					</div>
 				</div>
 				<div className="container mx-auto py-8">
-					<ApplicationPrintDocument
-						app={selectedApp as unknown as RawApplicationData}
-						showStatus={true}
-					/>
+					{/* Desktop View: Print Document */}
+					<div className="hidden md:block">
+						<ApplicationPrintDocument
+							app={selectedApp as unknown as RawApplicationData}
+							showStatus={true}
+						/>
+					</div>
+
+					{/* Mobile View: Responsive Detail Cards */}
+					<div className="md:hidden px-4">
+						<ApplicationResponsiveView app={selectedApp as unknown as RawApplicationData} />
+					</div>
 				</div>
 			</div>
 		);
