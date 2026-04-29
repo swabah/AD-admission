@@ -102,12 +102,8 @@ const NewAdmissionPage = () => {
 		setErrors(stepErrors);
 		
 		if (isValidStep(stepErrors)) {
-			setIsNavigating(true);
-			setTimeout(() => {
-				setCurrentStep((prev) => prev + 1);
-				setIsNavigating(false);
-				window.scrollTo({ top: 0, behavior: "smooth" });
-			}, 350);
+			setCurrentStep((prev) => prev + 1);
+			window.scrollTo({ top: 0, behavior: "smooth" });
 		} else {
 			window.scrollTo({ top: 0, behavior: "smooth" });
 		}
@@ -115,12 +111,8 @@ const NewAdmissionPage = () => {
 
 	const prevStep = () => {
 		if (currentStep > 1) {
-			setIsNavigating(true);
-			setTimeout(() => {
-				setCurrentStep((prev) => prev - 1);
-				setIsNavigating(false);
-				window.scrollTo({ top: 0, behavior: "smooth" });
-			}, 350);
+			setCurrentStep((prev) => prev - 1);
+			window.scrollTo({ top: 0, behavior: "smooth" });
 		}
 	};
 
@@ -666,20 +658,20 @@ const NewAdmissionPage = () => {
 							{currentStep < 4 ? (
 								<Button 
 									type="button"
+									variant="navy"
 									onClick={nextStep} 
-									loading={isNavigating} 
-									disabled={isNavigating}
-									className="rounded-xl h-12 px-8 font-bold bg-[#0a1628] w-full sm:w-auto order-1 sm:order-2"
+									className="rounded-xl h-12 px-8 font-bold w-full sm:w-auto order-1 sm:order-2"
 								>
 									Next Step <ChevronRight className="w-4 h-4 ml-2" />
 								</Button>
 							) : (
 								<Button
 									type="button"
+									variant="navy"
 									onClick={handleSubmit}
 									disabled={isSubmitting}
 									loading={isSubmitting}
-									className="rounded-xl h-12 px-10 font-bold bg-[#0a1628] w-full sm:w-auto order-1 sm:order-2"
+									className="rounded-xl h-12 px-10 font-bold w-full sm:w-auto order-1 sm:order-2"
 								>
 									Submit Application <Send className="w-4 h-4 ml-2" />
 								</Button>
