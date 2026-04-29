@@ -20,15 +20,15 @@ export const LoginScreen = ({ onLogin, onLoading }: LoginScreenProps) => {
 
 	const validateForm = () => {
 		if (!email.trim()) {
-			setError("Admin email is required");
+			setError("Admin email required");
 			return false;
 		}
 		if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-			setError("Please enter a valid email address");
+			setError("Invalid email format");
 			return false;
 		}
 		if (!password.trim()) {
-			setError("Password is required");
+			setError("Password required");
 			return false;
 		}
 		return true;
@@ -41,27 +41,23 @@ export const LoginScreen = ({ onLogin, onLoading }: LoginScreenProps) => {
 
 	const attempt = async () => {
 		if (isLoading) return;
-
 		setError(null);
 		if (!validateForm()) {
 			triggerShake();
 			return;
 		}
-
 		setIsLoading(true);
 		onLoading(true);
-
 		try {
 			const result = await authenticateAdmin(email, password);
-
 			if (result.success) {
 				onLogin();
 			} else {
-				setError(result.error || "Invalid email or password");
+				setError(result.error || "Invalid credentials");
 				triggerShake();
 			}
 		} catch {
-			setError("Authentication failed. Please check your connection.");
+			setError("Auth failed. Check connection.");
 			triggerShake();
 		} finally {
 			setIsLoading(false);
@@ -70,44 +66,42 @@ export const LoginScreen = ({ onLogin, onLoading }: LoginScreenProps) => {
 	};
 
 	return (
-		<div className="min-h-screen flex items-center justify-center bg-[#f8f9fc] font-sans relative overflow-hidden">
-			{/* Decorative Elements */}
-			<div className="absolute inset-0 pointer-events-none z-0">
-				<div className="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-[#1e3a5f] opacity-10 blur-3xl" />
-				<div className="absolute -bottom-20 -left-20 w-80 h-80 rounded-full bg-[#c8922a] opacity-10 blur-3xl" />
+		<div className="min-h-screen flex items-center justify-center bg-slate-50 font-sans p-4 sm:p-6 overflow-hidden">
+			{/* Decorative elements kept subtle */}
+			<div className="absolute inset-0 pointer-events-none opacity-40">
+				<div className="absolute top-0 right-0 w-64 h-64 bg-[#0a1628] rounded-full blur-[100px] -mr-32 -mt-32" />
+				<div className="absolute bottom-0 left-0 w-64 h-64 bg-[#c8922a] rounded-full blur-[100px] -ml-32 -mb-32" />
 			</div>
 
 			<div 
-				className={`relative z-10 bg-white rounded-[2rem] border border-slate-100 p-10 md:p-14 w-full max-w-md shadow-2xl shadow-[#0a1628]/5 transition-all duration-500 animate-in fade-in slide-in-from-bottom-8 ${
+				className={`relative z-10 bg-white rounded-2xl border border-slate-100 p-8 sm:p-10 w-full max-w-[380px] shadow-2xl shadow-slate-200/50 transition-all ${
 					shake ? 'animate-[shake_0.5s_ease-in-out]' : ''
 				}`}
 			>
-				<div className="text-center mb-10">
-					<div className="mb-8 p-1.5 rounded-2xl bg-white shadow-xl shadow-[#c8922a]/10 inline-block">
-						<img src={logo} alt="Logo" className="w-16 h-16 object-contain" />
+				<div className="text-center mb-8">
+					<div className="mb-4 inline-block p-1 bg-white rounded-xl shadow-lg border border-slate-50">
+						<img src={logo} alt="Logo" className="w-12 h-12 object-contain" />
 					</div>
-					<h2 className="font-display text-3xl text-[#0a1628] font-bold mb-2 tracking-tight">Admin Portal</h2>
-					<p className="text-sm text-slate-400 font-medium uppercase tracking-[0.2em] text-[10px]">
-						Ahlussuffa Admission System
+					<h2 className="font-display text-2xl text-[#0a1628] font-bold tracking-tight">Admin Login</h2>
+					<p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">
+						Ahlussuffa Admission
 					</p>
 				</div>
 
-				<div className="space-y-6">
+				<div className="space-y-5">
 					{error && (
-						<div className="p-4 bg-rose-50 border border-rose-100 rounded-2xl text-rose-600 text-xs font-bold flex items-center gap-3 animate-in fade-in zoom-in-95 duration-300">
-							<AlertCircle className="w-4 h-4 shrink-0" />
+						<div className="p-3 bg-rose-50 border border-rose-100 rounded-xl text-rose-600 text-[11px] font-bold flex items-center gap-2 animate-in fade-in zoom-in-95">
+							<AlertCircle className="w-3.5 h-3.5 shrink-0" />
 							{error}
 						</div>
 					)}
 
-					<div className="space-y-2">
-						<Label htmlFor="email" className="text-[10px] uppercase font-bold tracking-widest text-slate-500 ml-1">
+					<div className="space-y-1.5">
+						<Label htmlFor="email" className="text-[9px] uppercase font-black tracking-[0.1em] text-slate-400 ml-1">
 							Email Address
 						</Label>
-						<div className="relative group">
-							<div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#0a1628] transition-colors z-10">
-								<Mail className="w-4 h-4" />
-							</div>
+						<div className="relative">
+							<Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 w-4 h-4" />
 							<Input
 								id="email"
 								type="email"
@@ -116,19 +110,17 @@ export const LoginScreen = ({ onLogin, onLoading }: LoginScreenProps) => {
 								onChange={e => setEmail(e.target.value)}
 								onKeyDown={e => e.key === "Enter" && attempt()}
 								disabled={isLoading}
-								className="pl-12 h-14 rounded-2xl bg-slate-50/50 focus:bg-white border-2 border-transparent focus:border-[#0a1628] transition-all text-sm font-medium"
+								className="pl-11 h-11 rounded-xl bg-slate-50/50 focus:bg-white border-slate-100 focus:border-[#0a1628] transition-all text-sm font-medium"
 							/>
 						</div>
 					</div>
 
-					<div className="space-y-2">
-						<Label htmlFor="password" className="text-[10px] uppercase font-bold tracking-widest text-slate-500 ml-1">
+					<div className="space-y-1.5">
+						<Label htmlFor="password" className="text-[9px] uppercase font-black tracking-[0.1em] text-slate-400 ml-1">
 							Password
 						</Label>
-						<div className="relative group">
-							<div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#0a1628] transition-colors z-10">
-								<Lock className="w-4 h-4" />
-							</div>
+						<div className="relative">
+							<Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 w-4 h-4" />
 							<Input
 								id="password"
 								type="password"
@@ -137,7 +129,7 @@ export const LoginScreen = ({ onLogin, onLoading }: LoginScreenProps) => {
 								onChange={e => setPassword(e.target.value)}
 								onKeyDown={e => e.key === "Enter" && attempt()}
 								disabled={isLoading}
-								className="pl-12 h-14 rounded-2xl bg-slate-50/50 focus:bg-white border-2 border-transparent focus:border-[#0a1628] transition-all text-sm font-medium"
+								className="pl-11 h-11 rounded-xl bg-slate-50/50 focus:bg-white border-slate-100 focus:border-[#0a1628] transition-all text-sm font-medium"
 							/>
 						</div>
 					</div>
@@ -146,16 +138,16 @@ export const LoginScreen = ({ onLogin, onLoading }: LoginScreenProps) => {
 						type="button"
 						onClick={attempt}
 						loading={isLoading}
-						className="w-full h-14 bg-[#0a1628] hover:bg-[#132238] text-white font-bold rounded-2xl shadow-lg shadow-[#0a1628]/10 group transition-all"
+						className="w-full h-11 bg-[#0a1628] hover:bg-[#132238] text-white font-bold rounded-xl shadow-lg shadow-[#0a1628]/10 group transition-all mt-2"
 					>
-						{isLoading ? "Authenticating..." : "Sign In to Dashboard"}
-						{!isLoading && <ChevronRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />}
+						{isLoading ? "Authenticating..." : "Sign In"}
+						{!isLoading && <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-0.5 transition-transform" />}
 					</Button>
 				</div>
 
-				<div className="text-center mt-10">
-					<p className="text-[10px] text-slate-400 uppercase tracking-widest font-bold">
-						Authorised Access Only
+				<div className="text-center mt-8 pt-6 border-t border-slate-50">
+					<p className="text-[9px] text-slate-300 uppercase font-black tracking-[0.2em]">
+						Authorized Personnel Only
 					</p>
 				</div>
 			</div>
