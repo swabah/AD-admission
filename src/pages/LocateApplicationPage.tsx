@@ -12,10 +12,10 @@ import {
 	Printer,
 	Download,
 } from "lucide-react";
-import logo from "../assets/logo.jpg";
+import ApplicationPrintDocument, { type RawApplicationData } from "../components/ApplicationPrintDocument";
 import printLogo from "../assets/horizontal-logo.png";
-import ApplicationPrintDocument from "../components/ApplicationPrintDocument";
 import { downloadApplicationPDF } from "../utils/pdfDownloader";
+import { AdmissionPageHeader } from "../components/AdmissionPageHeader";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Badge } from "../components/ui/badge";
@@ -31,6 +31,19 @@ import {
 import type { ApplicationData } from "../services/supabase";
 
 type Application = ApplicationData & { id: string };
+
+const preloadImage = (url: string): Promise<void> => {
+	return new Promise((resolve) => {
+		if (!url) {
+			resolve();
+			return;
+		}
+		const img = new Image();
+		img.onload = () => resolve();
+		img.onerror = () => resolve();
+		img.src = url;
+	});
+};
 
 const LocateApplicationPage = () => {
 	const {
@@ -52,7 +65,6 @@ const LocateApplicationPage = () => {
 	// Auto-preload logo when an application is selected
 	useEffect(() => {
 		if (selectedApp) {
-			setIsReady(false);
 			const preload = async () => {
 				const photo = selectedApp.photo || selectedApp.photoUrl;
 				const preloads = [preloadImage(printLogo)];
@@ -64,19 +76,6 @@ const LocateApplicationPage = () => {
 			preload();
 		}
 	}, [selectedApp]);
-
-	const preloadImage = (url: string): Promise<void> => {
-		return new Promise((resolve) => {
-			if (!url) {
-				resolve();
-				return;
-			}
-			const img = new Image();
-			img.onload = () => resolve();
-			img.onerror = () => resolve();
-			img.src = url;
-		});
-	};
 
 	const handlePrint = async () => {
 		if (!selectedApp || !isReady) return;
@@ -102,8 +101,8 @@ const LocateApplicationPage = () => {
 
 			const name = `${selectedApp.firstName || ""} ${selectedApp.lastName || ""}`.trim();
 			await downloadApplicationPDF(selectedApp.appNo || "application", name);
-		} catch (err) {
-			console.error("PDF download failed:", err);
+		} catch (error) {
+			console.error("PDF download failed:", error);
 			alert("Failed to download PDF. Please try again.");
 		} finally {
 			setIsDownloading(false);
@@ -124,7 +123,8 @@ const LocateApplicationPage = () => {
 			);
 			setApplications(results as Application[]);
 			if (results.length === 0) setError("No records found.");
-		} catch (err) {
+		} catch (error) {
+			console.error("Search error:", error);
 			setError("Search failed. Try again.");
 		}
 	};
@@ -156,7 +156,7 @@ const LocateApplicationPage = () => {
 				</div>
 				<div className="container mx-auto py-8">
 					<ApplicationPrintDocument
-						app={selectedApp as any}
+						app={selectedApp as unknown as RawApplicationData}
 						showStatus={true}
 					/>
 				</div>
@@ -165,29 +165,11 @@ const LocateApplicationPage = () => {
 	}
 
 	return (
-		<div className="min-h-screen bg-slate-50 flex flex-col">
-			{/* Responsive Sticky Header */}
-			<header className="sticky top-0 z-50 w-full bg-[#0a1628]/95 backdrop-blur-md border-b border-[#c8922a]/20 py-3 sm:py-4 shadow-xl shadow-[#0a1628]/10">
-				<div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
-					<div className="flex items-center gap-2.5 sm:gap-5">
-						<div className="bg-white p-1 rounded-xl shadow-lg border border-white/20 shrink-0">
-							<img src={logo} alt="Logo" className="w-8 h-8 sm:w-10 sm:h-10 object-contain" />
-						</div>
-						<div className="min-w-0">
-							<h1 className="text-white text-base sm:text-2xl font-display font-bold leading-none truncate">
-								Locate Application
-							</h1>
-						</div>
-					</div>
-					<Link
-						to="/apply"
-						className="text-white/60 hover:text-white text-[10px] sm:text-xs font-bold flex items-center gap-1 transition-colors group shrink-0"
-					>
-						<ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-						<span className="hidden xs:inline">Back <span className="hidden sm:inline">to Portal</span></span>
-					</Link>
-				</div>
-			</header>
+		<div className="bg-slate-50 min-h-screen pb-20">
+			<AdmissionPageHeader 
+				title="Locate Application"
+				session="2026–27"
+			/>
 
 			<main className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
 				<Card className="w-full max-w-2xl mx-auto mb-12 border-0 sm:border bg-white shadow-2xl shadow-slate-200/50 rounded-[2rem] overflow-hidden">
@@ -261,7 +243,10 @@ const LocateApplicationPage = () => {
 								<Card
 									key={app.id}
 									className="group cursor-pointer hover:border-[#c8922a] hover:shadow-lg transition-all duration-300 rounded-[1.5rem] border-slate-100 bg-white"
-									onClick={() => setSelectedApp(app)}
+									onClick={() => {
+										setIsReady(false);
+										setSelectedApp(app);
+									}}
 								>
 									<CardContent className="p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
 										<div className="flex items-center gap-5">

@@ -48,7 +48,6 @@ export const AdminSidebar = ({ applications, onExport, onExportPDF, onRefresh, o
 				{stats.map(s => <StatItem key={s.label} {...s} />)}
 			</div>
 
-			<div className="p-4 border-t border-white/10 space-y-1">
 			<div className="p-4 border-t border-white/10 space-y-2">
 				<Button 
 					variant="ghost" 
@@ -78,7 +77,6 @@ export const AdminSidebar = ({ applications, onExport, onExportPDF, onRefresh, o
 				>
 					<LogOut className="w-4 h-4" /> Sign Out
 				</Button>
-			</div>
 			</div>
 		</aside>
 	);

@@ -207,7 +207,7 @@ export const addApplication = async (
 	}
 
 	// Convert camelCase to snake_case for Supabase
-	const snakeCaseData: Record<string, any> = {
+	const snakeCaseData: Record<string, string | number | boolean | Date | null | undefined> = {
 		app_no: data.appNo,
 		first_name: data.firstName,
 		last_name: data.lastName,

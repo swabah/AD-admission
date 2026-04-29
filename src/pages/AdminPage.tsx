@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
 	deleteApplication,
 	getAllApplications,
@@ -17,28 +17,26 @@ import ConfirmDialog from "../components/ConfirmDialog";
 import {
 	LoginScreen,
 	AdminSidebar,
-	AdminStatsSkeleton,
 	AdminTableSkeleton,
+	AppNoChip,
+	Avatar,
+	AdminTopbar,
+	AdminFilters,
+	AdminSummaryStats,
 } from "../components/admin";
 import { Button } from "@/components/ui/button";
 import { downloadApplicationPDF } from "../utils/pdfDownloader";
 import {
 	Users,
-	Clock,
 	Eye,
 	Check,
 	X,
-	Search,
 	Download,
-	RefreshCw,
 	Printer,
 	Trash2,
 	Share2,
 	MoreVertical,
-	ArrowDownAZ,
-	ArrowUpAZ,
 	ArrowLeft,
-	Menu,
 } from "lucide-react";
 import {
 	DropdownMenu,
@@ -80,67 +78,7 @@ const STATUS_CFG: Record<
 	},
 };
 
-const AppNoChip = ({ value }: { value: string }) => (
-	<span className="font-mono text-[11px] font-medium bg-[#0a1628] text-[#c8922a] px-2 py-1 rounded tracking-wide whitespace-nowrap shadow-sm">
-		{value}
-	</span>
-);
-
-const Avatar = ({ name }: { name: string }) => {
-	const initials = (name || "?")
-		.split(" ")
-		.map((w) => w[0])
-		.slice(0, 2)
-		.join("")
-		.toUpperCase();
-	const hue =
-		(name || "").split("").reduce((a, c) => a + c.charCodeAt(0), 0) % 360;
-	return (
-		<div
-			className="w-[34px] h-[34px] rounded-full shrink-0 flex items-center justify-center font-sans text-xs font-semibold shadow-sm"
-			style={{
-				background: `hsl(${hue}, 55%, 88%)`,
-				color: `hsl(${hue}, 55%, 30%)`,
-			}}
-		>
-			{initials}
-		</div>
-	);
-};
-
-// ─── Stat Card ────────────────────────────────────────────────────────────────
-const StatCard = ({
-	label,
-	value,
-	icon: Icon,
-	accentClass,
-	bgAccentClass,
-}: {
-	label: string;
-	value: number;
-	icon: React.ElementType;
-	accentClass: string;
-	bgAccentClass: string;
-}) => (
-	<div className="bg-white rounded-2xl p-5 border border-slate-100 flex flex-col gap-3 shadow-sm hover:shadow-sm transition-all relative overflow-hidden group">
-		<div className={`absolute top-0 left-0 w-1 h-full ${bgAccentClass}`}></div>
-		<div className="flex justify-between items-start pl-2">
-			<div
-				className={`w-10 h-10 rounded-xl ${bgAccentClass} ${accentClass} flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform`}
-			>
-				<Icon className="w-5 h-5" />
-			</div>
-		</div>
-		<div className="pl-2">
-			<div className="font-display text-3xl text-slate-800 leading-none font-medium mb-1">
-				{value}
-			</div>
-			<div className="font-sans text-xs text-slate-500 font-semibold tracking-wide uppercase">
-				{label}
-			</div>
-		</div>
-	</div>
-);
+// Internal components moved to src/components/admin
 
 // ─── Main AdminPage ───────────────────────────────────────────────────────────
 const AdminPage = () => {
@@ -154,8 +92,6 @@ const AdminPage = () => {
 	const [viewModalApp, setViewModalApp] = useState<ApplicationData | null>(
 		null,
 	);
-	const [dropdownOpen, setDropdownOpen] = useState<string | null>(null);
-	const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 });
 	const [downloadingApp, setDownloadingApp] = useState<ApplicationData | null>(
 		null,
 	);
@@ -185,16 +121,6 @@ const AdminPage = () => {
 		type: "danger",
 	});
 
-	const dropdownRef = useRef<HTMLDivElement>(null);
-
-	useEffect(() => {
-		const handler = (e: MouseEvent) => {
-			if (!(e.target as Element).closest(".action-dropdown"))
-				setDropdownOpen(null);
-		};
-		document.addEventListener("mousedown", handler);
-		return () => document.removeEventListener("mousedown", handler);
-	}, []);
 
 	const fetchApplications = useCallback(async (page = 1) => {
 		setLoading(true);
@@ -318,7 +244,6 @@ const AdminPage = () => {
 	const handlePrint = async (app: ApplicationData) => {
 		const id = app.id!;
 		setProcessingAction(`print-${id}`);
-		setDropdownOpen(null);
 
 		try {
 			// Ensure photo and logo are preloaded
@@ -328,13 +253,20 @@ const AdminPage = () => {
 			await Promise.all(preloads);
 
 			setSelectedApp(app);
-			// Small delay for React to render the print component
-			setTimeout(() => {
-				window.print();
-				setProcessingAction(null);
-			}, 500);
+			
+			// Use requestAnimationFrame to ensure the component is rendered
+			await new Promise((resolve) => {
+				requestAnimationFrame(() => {
+					// Small delay to ensure styles are applied
+					setTimeout(() => {
+						window.print();
+						resolve(null);
+					}, 800);
+				});
+			});
 		} catch (err) {
 			console.error("Print failed:", err);
+		} finally {
 			setProcessingAction(null);
 		}
 	};
@@ -343,7 +275,6 @@ const AdminPage = () => {
 		const id = app.id!;
 		setProcessingAction(`download-${id}`);
 		setDownloadingApp(app);
-		setDropdownOpen(null);
 
 		try {
 			// Ensure photo and logo are preloaded
@@ -457,10 +388,10 @@ const AdminPage = () => {
 						const opt = {
 							margin: 0,
 							filename: `bulk_applications_${new Date().toISOString().split("T")[0]}.pdf`,
-							image: { type: "jpeg", quality: 0.98 },
+							image: { type: "jpeg" as const, quality: 0.98 },
 							html2canvas: { scale: 2, useCORS: true, logging: false },
-							jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-							pagebreak: { mode: ["css", "legacy"] },
+							jsPDF: { unit: "mm", format: "a4", orientation: "portrait" as const },
+							pagebreak: { mode: ["css" as const, "legacy" as const] },
 						};
 
 						await html2pdf().set(opt).from(element).save();
@@ -520,38 +451,6 @@ const AdminPage = () => {
 						return !app.status || app.status === "submitted";
 					return app.status === activeTab;
 				});
-
-	const stats = [
-		{
-			label: "Total Applications",
-			value: applications.length,
-			icon: Users,
-			accentClass: "text-blue-600",
-			bgAccentClass: "bg-blue-100",
-		},
-		{
-			label: "Pending Review",
-			value: applications.filter((a) => !a.status || a.status === "submitted")
-				.length,
-			icon: Clock,
-			accentClass: "text-amber-600",
-			bgAccentClass: "bg-amber-100",
-		},
-		{
-			label: "Under Review",
-			value: applications.filter((a) => a.status === "reviewing").length,
-			icon: Eye,
-			accentClass: "text-purple-600",
-			bgAccentClass: "bg-purple-100",
-		},
-		{
-			label: "Approved",
-			value: applications.filter((a) => a.status === "approved").length,
-			icon: Check,
-			accentClass: "text-emerald-600",
-			bgAccentClass: "bg-emerald-100",
-		},
-	];
 
 	const TABS = [
 		{ id: "all", label: "All", count: filtered.length },
@@ -691,123 +590,39 @@ const AdminPage = () => {
 
 				{/* Main Area */}
 				<main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
-					{/* Topbar */}
-					<header className="shrink-0 bg-white border-b border-slate-200 px-4 lg:px-8 py-4 flex items-center justify-between z-10 shadow-sm">
-						<div className="flex items-center gap-4">
-							<button
-								type="button"
-								className="p-2 -ml-2 text-slate-500 hover:text-[#0a1628] hover:bg-slate-100 rounded-lg lg:hidden"
-								onClick={() => setMobileMenuOpen(true)}
-							>
-								<Menu className="w-6 h-6" />
-							</button>
-							<h1 className="font-display text-2xl font-bold text-[#0a1628] hidden sm:block">
-								Dashboard
-							</h1>
-						</div>
-						<div className="flex items-center gap-3">
-							<button
-								type="button"
-								onClick={exportData}
-								className="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-semibold text-[#0a1628] bg-white border border-slate-200 hover:bg-slate-50 rounded-lg shadow-sm transition-colors"
-							>
-								<Download className="w-4 h-4" /> CSV
-							</button>
-							<button
-								type="button"
-								onClick={handleBulkDownloadPDF}
-								disabled={processingAction !== null}
-								className="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-semibold text-[#0a1628] bg-white border border-slate-200 hover:bg-slate-50 rounded-lg shadow-sm transition-colors disabled:opacity-50"
-							>
-								<Printer className="w-4 h-4" />{" "}
-								{processingAction === "bulk-download" ? "..." : "Bulk PDF"}
-							</button>
-							<Button
-								type="button"
-								onClick={() => fetchApplications(1)}
-								loading={loading}
-								disabled={loading}
-								className="flex items-center gap-2 bg-[#0a1628] hover:bg-[#132238] text-white rounded-lg shadow-sm"
-							>
-								<RefreshCw className="w-4 h-4" /> Refresh
-							</Button>
-						</div>
-					</header>
+					<AdminTopbar
+						onMenuClick={() => setMobileMenuOpen(true)}
+						onExportCSV={exportData}
+						onExportPDF={handleBulkDownloadPDF}
+						onRefresh={() => fetchApplications(1)}
+						isLoading={loading}
+						processingAction={processingAction}
+					/>
 
 					<div className="flex-1 overflow-y-auto bg-slate-50">
 						<div className="p-4 lg:p-8 space-y-6 max-w-7xl mx-auto">
-							{/* Stats Grid */}
-							{loading ? (
-								<AdminStatsSkeleton />
-							) : (
-								<div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-									{stats.map((s) => (
-										<StatCard key={s.label} {...s} />
-									))}
-								</div>
-							)}
+							<AdminSummaryStats
+								applications={applications}
+								isLoading={loading}
+							/>
 
-							{/* Controls */}
-							<div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-4">
-								<div className="flex flex-col lg:flex-row gap-4">
-									<div className="relative flex-1">
-										<Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-										<input
-											type="text"
-											className="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 focus:border-[#0a1628] focus:ring-1 focus:ring-[#0a1628] rounded-xl text-sm outline-none transition-all"
-											placeholder="Search by name, app no, or father's name..."
-											value={searchTerm}
-											onChange={(e) => setSearchTerm(e.target.value)}
-										/>
-									</div>
-									<div className="flex gap-3 overflow-x-auto pb-2 lg:pb-0 hide-scrollbar">
-										<select
-											className="shrink-0 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#0a1628] transition-colors font-medium text-slate-700"
-											value={statusFilter}
-											onChange={(e) => setStatusFilter(e.target.value)}
-										>
-											<option value="all">All Status</option>
-											<option value="submitted">Submitted</option>
-											<option value="reviewing">Reviewing</option>
-											<option value="approved">Approved</option>
-											<option value="rejected">Rejected</option>
-										</select>
-										<select
-											className="shrink-0 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#0a1628] transition-colors font-medium text-slate-700"
-											value={classFilter}
-											onChange={(e) => setClassFilter(e.target.value)}
-										>
-											<option value="all">All Classes</option>
-											{uniqueClasses.map((c) => (
-												<option key={c} value={c}>
-													{c}
-												</option>
-											))}
-										</select>
-										<select
-											className="shrink-0 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#0a1628] transition-colors font-medium text-slate-700"
-											value={sortBy}
-											onChange={(e) => setSortBy(e.target.value)}
-										>
-											<option value="date">Date</option>
-											<option value="name">Name</option>
-											<option value="class">Class</option>
-											<option value="status">Status</option>
-										</select>
-										<button
-											type="button"
-											className="shrink-0 p-2.5 bg-slate-50 border border-slate-200 hover:bg-slate-100 rounded-xl text-slate-600 transition-colors"
-											onClick={() =>
-												setSortOrder((s) => (s === "asc" ? "desc" : "asc"))
-											}
-										>
-											{sortOrder === "asc" ? (
-												<ArrowUpAZ className="w-5 h-5" />
-											) : (
-												<ArrowDownAZ className="w-5 h-5" />
-											)}
-										</button>
-									</div>
+							<div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+								<div className="p-4 lg:p-6 border-b border-slate-100 bg-white sticky top-0 z-20">
+									<AdminFilters
+										searchTerm={searchTerm}
+										onSearchChange={setSearchTerm}
+										statusFilter={statusFilter}
+										onStatusChange={setStatusFilter}
+										classFilter={classFilter}
+										onClassChange={setClassFilter}
+										sortBy={sortBy}
+										onSortByChange={setSortBy}
+										sortOrder={sortOrder}
+										onSortOrderToggle={() =>
+											setSortOrder((s) => (s === "asc" ? "desc" : "asc"))
+										}
+										uniqueClasses={uniqueClasses}
+									/>
 								</div>
 
 								{/* Bulk Actions */}
@@ -956,8 +771,8 @@ const AdminPage = () => {
 																			onClick={() => setViewModalApp(app)}
 																			className="gap-2 py-2.5 font-medium cursor-pointer"
 																		>
-																			<Eye className="w-4 h-4 text-slate-400" /> View
-																			Details
+																			<Eye className="w-4 h-4 text-slate-400" />{" "}
+																			View Details
 																		</DropdownMenuItem>
 																		<DropdownMenuItem
 																			onClick={() => handlePrint(app)}
@@ -988,7 +803,9 @@ const AdminPage = () => {
 																		</DropdownMenuItem>
 																		<DropdownMenuSeparator />
 																		<DropdownMenuItem
-																			onClick={() => handleDelete(id, app.photoUrl)}
+																			onClick={() =>
+																				handleDelete(id, app.photoUrl)
+																			}
 																			className="gap-2 py-2.5 font-medium text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer"
 																		>
 																			<Trash2 className="w-4 h-4 text-red-400" />{" "}
@@ -1180,8 +997,8 @@ const AdminPage = () => {
 																				onClick={() => setViewModalApp(app)}
 																				className="gap-2 py-2.5 font-medium cursor-pointer"
 																			>
-																				<Eye className="w-4 h-4 text-slate-400" /> View
-																				Details
+																				<Eye className="w-4 h-4 text-slate-400" />{" "}
+																				View Details
 																			</DropdownMenuItem>
 																			<DropdownMenuItem
 																				onClick={() => handlePrint(app)}
@@ -1194,7 +1011,9 @@ const AdminPage = () => {
 																					: "Print Form"}
 																			</DropdownMenuItem>
 																			<DropdownMenuItem
-																				onClick={() => handleDirectDownload(app)}
+																				onClick={() =>
+																					handleDirectDownload(app)
+																				}
 																				disabled={processingAction !== null}
 																				className="gap-2 py-2.5 font-medium cursor-pointer"
 																			>
@@ -1212,7 +1031,9 @@ const AdminPage = () => {
 																			</DropdownMenuItem>
 																			<DropdownMenuSeparator />
 																			<DropdownMenuItem
-																				onClick={() => handleDelete(id, app.photoUrl)}
+																				onClick={() =>
+																					handleDelete(id, app.photoUrl)
+																				}
 																				className="gap-2 py-2.5 font-medium text-red-600 hover:text-red-700 hover:bg-red-50 cursor-pointer"
 																			>
 																				<Trash2 className="w-4 h-4 text-red-400" />{" "}
@@ -1220,7 +1041,6 @@ const AdminPage = () => {
 																			</DropdownMenuItem>
 																		</DropdownMenuContent>
 																	</DropdownMenu>
-
 																</td>
 															</tr>
 														);

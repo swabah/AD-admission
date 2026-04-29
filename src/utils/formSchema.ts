@@ -69,6 +69,7 @@ export const localAdmissionSchema = z.object({
   fatherPhone: requiredPhoneSchema,
   prevBoard: z.string().optional(),
   address: z.string().min(1, "Residential address is required"),
+  agreeCheck: z.boolean().refine((val) => val === true, "You must agree to the declaration"),
 });
 
 export type LocalAdmissionFormData = z.infer<typeof localAdmissionSchema>;

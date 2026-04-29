@@ -7,6 +7,7 @@ import {
 import logo from "../assets/logo.jpg";
 import ApplicationPrintDocument from "../components/ApplicationPrintDocument";
 import { downloadApplicationPDF } from "../utils/pdfDownloader";
+import ViewDetailItem from "../components/ViewDetailItem";
 
 interface Application {
 	id: string;
@@ -70,46 +71,56 @@ const AdminApplicationView = () => {
 	const [updatingStatus, setUpdatingStatus] = useState(false);
 
 	useEffect(() => {
-		if (!id) {
-			setError("No application ID provided");
-			setLoading(false);
-			return;
-		}
-
 		const fetchApplication = async () => {
+			if (!id) {
+				setError("No application ID provided");
+				setLoading(false);
+				return;
+			}
 			try {
 				const data = await getApplicationById(id);
 				// Convert snake_case to camelCase
 				const formatted: Application = {
 					...data,
-					appNo: data.app_no,
-					firstName: data.first_name,
-					lastName: data.last_name,
-					bloodGroup: data.blood_group,
-					studentPhone: data.student_phone,
-					applyClass: data.apply_class,
-					academicYear: data.academic_year,
-					prevSchool: data.prev_school,
-					prevClass: data.prev_class,
-					prevBoard: data.prev_board,
-					prevPercentage: data.prev_percentage,
+					// Ensure all camelCase fields are explicitly assigned if needed, 
+					// but since getApplicationById already returns them, we just spread.
+					// We add explicit mappings for any potential mismatches or missing fields.
+					id: data.id || id,
+					appNo: data.appNo,
+					firstName: data.firstName,
+					lastName: data.lastName,
+					dob: data.dob,
+					bloodGroup: data.bloodGroup,
+					nationality: data.nationality,
+					aadhar: data.aadhar,
+					studentPhone: data.studentPhone,
+					address: data.address,
+					applyClass: data.applyClass,
+					academicYear: data.academicYear,
+					stream: data.stream,
+					prevSchool: data.prevSchool,
+					prevClass: data.prevClass,
+					prevBoard: data.prevBoard,
+					prevPercentage: data.prevPercentage,
 					achievements: data.achievements,
-					fatherName: data.father_name,
-					fatherOcc: data.father_occ,
-					fatherPhone: data.father_phone,
-					fatherEmail: data.father_email,
-					motherName: data.mother_name,
-					motherOcc: data.mother_occ,
-					motherPhone: data.mother_phone,
-					motherEmail: data.mother_email,
-					emergencyName: data.emergency_name,
-					emergencyPhone: data.emergency_phone,
+					fatherName: data.fatherName,
+					fatherOcc: data.fatherOcc,
+					fatherPhone: data.fatherPhone,
+					fatherEmail: data.fatherEmail,
+					motherName: data.motherName,
+					motherOcc: data.motherOcc,
+					motherPhone: data.motherPhone,
+					motherEmail: data.motherEmail,
+					emergencyName: data.emergencyName,
+					emergencyPhone: data.emergencyPhone,
 					income: data.income,
 					medical: data.medical,
 					referral: data.referral,
 					remarks: data.remarks,
-					submissionDate: data.submitted_at,
-					admissionType: data.admission_type,
+					submissionDate: data.submissionDate,
+					admissionType: data.admissionType,
+					status: data.status,
+					photo: data.photo || data.photoUrl,
 				};
 				setApplication(formatted);
 			} catch (err) {
@@ -477,18 +488,18 @@ const AdminApplicationView = () => {
 					</div>
 
 					<div className="form-grid col-2">
-						<InfoItem label="First Name" value={application.firstName} />
-						<InfoItem label="Last Name" value={application.lastName} />
-						<InfoItem label="Date of Birth" value={application.dob} />
-						<InfoItem label="Blood Group" value={application.bloodGroup} />
-						<InfoItem label="Nationality" value={application.nationality} />
-						<InfoItem label="Student Phone" value={application.studentPhone} />
-						<InfoItem
+						<ViewDetailItem label="First Name" value={application.firstName} />
+						<ViewDetailItem label="Last Name" value={application.lastName} />
+						<ViewDetailItem label="Date of Birth" value={application.dob} />
+						<ViewDetailItem label="Blood Group" value={application.bloodGroup} />
+						<ViewDetailItem label="Nationality" value={application.nationality} />
+						<ViewDetailItem label="Student Phone" value={application.studentPhone} />
+						<ViewDetailItem
 							label="Aadhar Number"
 							value={application.aadhar}
 							fullWidth
 						/>
-						<InfoItem
+						<ViewDetailItem
 							label="Residential Address"
 							value={application.address}
 							fullWidth
@@ -510,20 +521,20 @@ const AdminApplicationView = () => {
 					<div className="section-heading">Academic Details</div>
 
 					<div className="form-grid col-2">
-						<InfoItem
+						<ViewDetailItem
 							label="Applying for Class"
 							value={application.applyClass}
 						/>
-						<InfoItem label="Academic Year" value={application.academicYear} />
-						<InfoItem label="Stream / Section" value={application.stream} />
-						<InfoItem label="Previous School" value={application.prevSchool} />
-						<InfoItem label="Previous Class" value={application.prevClass} />
-						<InfoItem label="Previous Board" value={application.prevBoard} />
-						<InfoItem
+						<ViewDetailItem label="Academic Year" value={application.academicYear} />
+						<ViewDetailItem label="Stream / Section" value={application.stream} />
+						<ViewDetailItem label="Previous School" value={application.prevSchool} />
+						<ViewDetailItem label="Previous Class" value={application.prevClass} />
+						<ViewDetailItem label="Previous Board" value={application.prevBoard} />
+						<ViewDetailItem
 							label="Percentage / Grade"
 							value={application.prevPercentage}
 						/>
-						<InfoItem
+						<ViewDetailItem
 							label="Achievements"
 							value={application.achievements}
 							fullWidth
@@ -568,13 +579,13 @@ const AdminApplicationView = () => {
 						Father's Details
 					</div>
 					<div className="form-grid col-2" style={{ marginBottom: "20px" }}>
-						<InfoItem label="Father's Name" value={application.fatherName} />
-						<InfoItem
+						<ViewDetailItem label="Father's Name" value={application.fatherName} />
+						<ViewDetailItem
 							label="Father's Occupation"
 							value={application.fatherOcc}
 						/>
-						<InfoItem label="Father's Phone" value={application.fatherPhone} />
-						<InfoItem label="Father's Email" value={application.fatherEmail} />
+						<ViewDetailItem label="Father's Phone" value={application.fatherPhone} />
+						<ViewDetailItem label="Father's Email" value={application.fatherEmail} />
 					</div>
 
 					<div
@@ -601,13 +612,13 @@ const AdminApplicationView = () => {
 						Mother's Details
 					</div>
 					<div className="form-grid col-2" style={{ marginBottom: "20px" }}>
-						<InfoItem label="Mother's Name" value={application.motherName} />
-						<InfoItem
+						<ViewDetailItem label="Mother's Name" value={application.motherName} />
+						<ViewDetailItem
 							label="Mother's Occupation"
 							value={application.motherOcc}
 						/>
-						<InfoItem label="Mother's Phone" value={application.motherPhone} />
-						<InfoItem label="Mother's Email" value={application.motherEmail} />
+						<ViewDetailItem label="Mother's Phone" value={application.motherPhone} />
+						<ViewDetailItem label="Mother's Email" value={application.motherEmail} />
 					</div>
 
 					<div
@@ -634,25 +645,25 @@ const AdminApplicationView = () => {
 						Additional Details
 					</div>
 					<div className="form-grid col-2">
-						<InfoItem label="Annual Family Income" value={application.income} />
-						<InfoItem
+						<ViewDetailItem label="Annual Family Income" value={application.income} />
+						<ViewDetailItem
 							label="How did you hear about us?"
 							value={application.referral}
 						/>
-						<InfoItem
+						<ViewDetailItem
 							label="Emergency Contact Name"
 							value={application.emergencyName}
 						/>
-						<InfoItem
+						<ViewDetailItem
 							label="Emergency Contact Phone"
 							value={application.emergencyPhone}
 						/>
-						<InfoItem
+						<ViewDetailItem
 							label="Medical Conditions"
 							value={application.medical}
 							fullWidth
 						/>
-						<InfoItem
+						<ViewDetailItem
 							label="Additional Remarks"
 							value={application.remarks}
 							fullWidth
@@ -714,48 +725,6 @@ const AdminApplicationView = () => {
 	);
 };
 
-const InfoItem = ({
-	label,
-	value,
-	fullWidth = false,
-}: {
-	label: string;
-	value?: string;
-	fullWidth?: boolean;
-}) => (
-	<div
-		className={`form-group ${fullWidth ? "full" : ""}`}
-		style={{ marginBottom: "16px" }}
-	>
-		<label
-			style={{
-				display: "block",
-				fontSize: "11px",
-				fontWeight: 600,
-				textTransform: "uppercase",
-				letterSpacing: "0.06em",
-				color: "var(--text-muted)",
-				marginBottom: "6px",
-			}}
-		>
-			{label}
-		</label>
-		<div
-			style={{
-				padding: "12px 16px",
-				background: "var(--bg)",
-				borderRadius: "10px",
-				border: "1px solid var(--card-border)",
-				fontSize: "14px",
-				color: value ? "var(--text)" : "var(--text-muted)",
-				minHeight: "44px",
-				display: "flex",
-				alignItems: "center",
-			}}
-		>
-			{value || "—"}
-		</div>
-	</div>
-);
+// Internal components moved to src/components
 
 export default AdminApplicationView;

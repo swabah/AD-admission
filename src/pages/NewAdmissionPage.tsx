@@ -1,16 +1,16 @@
-import { useState, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { addApplication, generateNextAppNo } from "../services/supabase";
 import { downloadApplicationPDF } from "../utils/pdfDownloader";
-import logo from "../assets/logo.jpg";
-import ApplicationPrintDocument from "../components/ApplicationPrintDocument";
 import { admissionSchema, type AdmissionFormData } from "../utils/formSchema";
-import { formatApplicationNo } from "../utils/formatters";
 import { InputField } from "../components/InputField";
 import { FormStep } from "../components/FormStep";
 import { Button } from "../components/ui/button";
+import { AdmissionPageHeader } from "../components/AdmissionPageHeader";
+import { AdmissionSuccess } from "../components/AdmissionSuccess";
+import { PhotoUploadSection } from "../components/PhotoUploadSection";
+import ApplicationReview from "../components/ApplicationReview";
 import {
 	Card,
 	CardContent,
@@ -18,20 +18,10 @@ import {
 	CardTitle,
 	CardDescription,
 } from "../components/ui/card";
-import {
-	Camera,
-	ChevronLeft,
-	ChevronRight,
-	Send,
-	CheckCircle2,
-	Printer,
-	AlertCircle,
-} from "lucide-react";
+import { AlertCircle, ChevronLeft, ChevronRight, Send } from "lucide-react";
 
 const NewAdmissionPage = () => {
-	const navigate = useNavigate();
 	const [currentStep, setCurrentStep] = useState(1);
-	const photoInputRef = useRef<HTMLInputElement>(null);
 	const [photoDataURL, setPhotoDataURL] = useState<string | null>(null);
 	const [photoError, setPhotoError] = useState<string | null>(null);
 
@@ -54,44 +44,30 @@ const NewAdmissionPage = () => {
 	const [showSuccess, setShowSuccess] = useState(false);
 	const [appNo, setAppNo] = useState("");
 
-	const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const file = e.target.files?.[0];
-		if (!file) return;
-		const reader = new FileReader();
-		reader.onload = (ev) => {
-			setPhotoDataURL(ev.target?.result as string);
-			setPhotoError(null);
-		};
-		reader.readAsDataURL(file);
+	const stepFields: Record<number, (keyof AdmissionFormData)[]> = {
+		1: ["firstName", "lastName", "dob", "bloodGroup", "nationality", "aadhar", "address"],
+		2: ["applyClass", "academicYear", "prevSchool", "prevClass", "prevPercentage"],
+		3: ["fatherName", "fatherPhone", "motherName"],
+		4: ["agreeCheck"],
+	};
+
+	const getStepHasError = (step: number) => {
+		const fields = stepFields[step];
+		if (!fields) return false;
+		
+		// Photo error is specifically for step 1
+		if (step === 1 && photoError) return true;
+		
+		return fields.some(field => !!errors[field]);
 	};
 
 	const nextStep = async () => {
-		let fieldsToValidate: (keyof AdmissionFormData)[] = [];
-		if (currentStep === 1) {
-			fieldsToValidate = [
-				"firstName",
-				"lastName",
-				"dob",
-				"bloodGroup",
-				"nationality",
-				"aadhar",
-				"address",
-			];
-			if (!photoDataURL) {
-				setPhotoError("Student photo is required");
-				window.scrollTo({ top: 0, behavior: "smooth" });
-				return;
-			}
-		} else if (currentStep === 2) {
-			fieldsToValidate = [
-				"applyClass",
-				"academicYear",
-				"prevSchool",
-				"prevClass",
-				"prevPercentage",
-			];
-		} else if (currentStep === 3) {
-			fieldsToValidate = ["fatherName", "fatherPhone", "motherName"];
+		const fieldsToValidate = stepFields[currentStep] || [];
+		
+		if (currentStep === 1 && !photoDataURL) {
+			setPhotoError("Student photo is required");
+			window.scrollTo({ top: 0, behavior: "smooth" });
+			return;
 		}
 
 		const isStepValid = await trigger(fieldsToValidate);
@@ -132,88 +108,33 @@ const NewAdmissionPage = () => {
 				status: "submitted",
 			});
 			setShowSuccess(true);
-		} catch (err: any) {
-			setSubmitError(err.message || "Failed to submit application.");
+		} catch (err: unknown) {
+			const error = err as Error;
+			setSubmitError(error.message || "Failed to submit application.");
 		}
 	};
 
 	if (showSuccess) {
 		const formData = getValues();
 		return (
-			<div className="container mx-auto py-12 max-w-4xl px-4">
-				<Card className="border-emerald-100 bg-emerald-50/10">
-					<CardContent className="pt-12 pb-12 flex flex-col items-center text-center">
-						<div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-6">
-							<CheckCircle2 className="w-8 h-8" />
-						</div>
-						<h2 className="text-3xl font-bold mb-2">Submission Successful!</h2>
-						<p className="text-muted-foreground mb-8">
-							Your application number is{" "}
-							<span className="font-mono font-bold text-foreground">
-								{appNo}
-							</span>
-						</p>
-						<div className="flex gap-4">
-							<Button onClick={() => navigate("/")} variant="outline">
-								Back Home
-							</Button>
-							<Button
-								onClick={() =>
-									downloadApplicationPDF(appNo, formData.firstName)
-								}
-							>
-								<Printer className="w-4 h-4 mr-2" /> Download PDF
-							</Button>
-						</div>
-					</CardContent>
-				</Card>
-				<div className="mt-8">
-					<ApplicationPrintDocument
-						app={{
-							...formData,
-							appNo,
-							photo: photoDataURL,
-							status: "submitted",
-							submissionDate: new Date().toISOString(),
-						}}
-					/>
-				</div>
-			</div>
+			<AdmissionSuccess
+				appNo={appNo}
+				studentName={formData.firstName}
+				onDownload={() => downloadApplicationPDF(appNo, formData.firstName)}
+				printData={{
+					...formData,
+					appNo,
+					photo: photoDataURL,
+					status: "submitted",
+					submissionDate: new Date().toISOString(),
+				}}
+			/>
 		);
 	}
 
 	return (
 		<div className="bg-slate-50 min-h-screen pb-20">
-			<header className="sticky top-0 z-50 bg-[#0a1628]/95 backdrop-blur-md border-b border-[#c8922a]/20 py-3 sm:py-4 mb-8 sm:mb-12 shadow-xl shadow-[#0a1628]/10">
-				<div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
-					<div className="flex items-center gap-2.5 sm:gap-5">
-						<div className="bg-white p-1 rounded-xl shadow-lg border border-white/20 shrink-0">
-							<img
-								src={logo}
-								alt="Logo"
-								className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
-							/>
-						</div>
-						<div className="min-w-0">
-							<h1 className="text-white text-base sm:text-2xl font-display font-bold leading-none mb-1 sm:mb-1.5 truncate">
-								New Admission
-							</h1>
-							<p className="text-[#c8922a] text-[8px] sm:text-[10px] uppercase font-bold tracking-[0.15em] truncate">
-								Session 2026–27
-							</p>
-						</div>
-					</div>
-					<Link
-						to="/apply"
-						className="text-white/60 hover:text-white text-[10px] sm:text-xs font-bold flex items-center gap-1 transition-colors group shrink-0"
-					>
-						<ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-						<span className="hidden xs:inline">
-							Back <span className="hidden sm:inline">to Portal</span>
-						</span>
-					</Link>
-				</div>
-			</header>
+			<AdmissionPageHeader title="New Admission" session="2026–27" />
 
 			<div className="max-w-7xl mx-auto px-4 sm:px-6">
 				<Card className="mb-8 border-0 bg-transparent shadow-none sm:border sm:bg-white sm:shadow-sm sm:rounded-xl overflow-hidden">
@@ -237,6 +158,7 @@ const NewAdmissionPage = () => {
 										if (step < currentStep) setCurrentStep(step);
 									}}
 									isLast={step === 4}
+									hasError={getStepHasError(step)}
 								/>
 							))}
 						</div>
@@ -258,36 +180,47 @@ const NewAdmissionPage = () => {
 							</div>
 						)}
 
-						<form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+						<form
+							onSubmit={handleSubmit(onSubmit, (errs) => {
+								// Find the first step that has any of the errors
+								const firstStepWithError = [1, 2, 3, 4].find(step => {
+									const fields = stepFields[step] || [];
+									return fields.some(field => !!errs[field]) || (step === 1 && !photoDataURL);
+								});
+								if (firstStepWithError) {
+									setCurrentStep(firstStepWithError);
+								}
+								window.scrollTo({ top: 0, behavior: "smooth" });
+							})}
+							className="space-y-8"
+						>
+							{Object.keys(errors).length > 0 && (
+								<div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 flex items-start gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+									<AlertCircle className="w-5 h-5 text-rose-500 mt-0.5" />
+									<div>
+										<p className="text-sm font-bold text-rose-800">Please correct the errors before submitting.</p>
+										<p className="text-xs text-rose-600 mt-1">
+											Errors detected in: { [1, 2, 3, 4].filter(s => getStepHasError(s)).map(s => `Step ${s}`).join(", ") }
+										</p>
+									</div>
+								</div>
+							)}
+
 							{currentStep === 1 && (
 								<div className="space-y-6">
 									<div className="flex flex-col md:flex-row gap-8">
 										<div className="shrink-0 flex flex-col items-center gap-2">
 											<div className="text-sm font-medium">Student Photo</div>
-											<div
-												onClick={() => photoInputRef.current?.click()}
-												className="w-32 h-40 border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer bg-slate-50 hover:bg-slate-100 transition-colors mx-auto overflow-hidden"
-											>
-												{photoDataURL ? (
-													<img
-														src={photoDataURL}
-														alt="Student Photo Preview"
-														className="w-full h-full object-cover"
-													/>
-												) : (
-													<Camera className="text-slate-400" />
-												)}
-											</div>
-											<input
-												type="file"
-												className="hidden"
-												ref={photoInputRef}
-												onChange={handlePhotoUpload}
-												accept="image/*"
+											<PhotoUploadSection
+												photoDataURL={photoDataURL}
+												onPhotoUpload={(url) => {
+													setPhotoDataURL(url);
+													setPhotoError(null);
+												}}
 											/>
-											{(photoError || errors.photo) && (
-												<p className="text-[10px] text-destructive font-medium text-center">
-													{photoError || errors.photo?.message}
+											{photoError && (
+												<p className="text-xs text-destructive font-medium mt-1">
+													{photoError}
 												</p>
 											)}
 										</div>
@@ -567,7 +500,7 @@ const NewAdmissionPage = () => {
 							)}
 
 							{currentStep === 4 && (
-								<div className="space-y-6">
+								<div className="space-y-8">
 									<div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
 										<InputField
 											label="Medical Conditions / Allergies"
@@ -591,59 +524,11 @@ const NewAdmissionPage = () => {
 										error={errors.remarks?.message}
 									/>
 
-									<div className="p-6 border rounded-lg bg-slate-50 space-y-4">
-										<h3 className="font-bold flex items-center gap-2">
-											<CheckCircle2 className="w-5 h-5 text-green-600" />
-											Review & Final Declaration
-										</h3>
-										<div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-8 text-sm">
-											{/* Review items remain static or use getValues() */}
-											<div className="flex justify-between border-b pb-1">
-												<span className="text-muted-foreground">
-													Full Name:
-												</span>
-												<span className="font-medium">
-													{getValues("firstName")} {getValues("lastName")}
-												</span>
-											</div>
-											<div className="flex justify-between border-b pb-1">
-												<span className="text-muted-foreground">
-													Applied Class:
-												</span>
-												<span className="font-medium">
-													{getValues("applyClass")}
-												</span>
-											</div>
-											<div className="flex justify-between border-b pb-1">
-												<span className="text-muted-foreground">DOB:</span>
-												<span className="font-medium">{getValues("dob")}</span>
-											</div>
-											<div className="flex justify-between border-b pb-1">
-												<span className="text-muted-foreground">Father:</span>
-												<span className="font-medium">
-													{getValues("fatherName")}
-												</span>
-											</div>
-										</div>
-
-										<label className="flex items-start gap-3 cursor-pointer mt-6 p-3 bg-white rounded border border-slate-200">
-											<input
-												type="checkbox"
-												{...register("agreeCheck")}
-												className="mt-1 h-4 w-4 rounded border-slate-300 text-[#0a1628] focus:ring-[#0a1628]"
-											/>
-											<span className="text-sm leading-relaxed text-slate-600">
-												I hereby declare that the information provided is true
-												to the best of my knowledge. I understand that any false
-												information may lead to rejection of this application.
-											</span>
-										</label>
-										{errors.agreeCheck && (
-											<p className="text-xs text-destructive font-medium ml-7">
-												{errors.agreeCheck.message}
-											</p>
-										)}
-									</div>
+									<ApplicationReview
+										register={register}
+										errors={errors}
+										getValues={getValues}
+									/>
 								</div>
 							)}
 

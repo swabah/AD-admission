@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { Badge } from "../ui/badge";
 
 export const STATUS_CFG: Record<string, { label: string; variant: "submitted" | "reviewing" | "approved" | "rejected" }> = {

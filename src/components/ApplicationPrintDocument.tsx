@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { formatDate } from "../utils/formatters";
 import logo from "../assets/horizontal-logo.png";
 
-interface RawApplicationData {
+export interface RawApplicationData {
 	appNo?: string;
 	app_no?: string;
 	firstName?: string;
@@ -56,8 +56,10 @@ interface RawApplicationData {
 	referral?: string;
 	remarks?: string;
 	photo?: string;
-	submissionDate?: string;
-	submission_date?: string;
+	photoUrl?: string;
+	photo_url?: string;
+	submissionDate?: string | Date;
+	submission_date?: string | Date;
 	status?: string;
 }
 
@@ -127,7 +129,6 @@ const PRINT_STYLES = `
       top:        0 !important;
       left:       0 !important;
       margin:     0 !important;
-      padding:    0 !important;
       width:      210mm !important;
       height:     297mm !important;
       max-height: 297mm !important;
@@ -181,11 +182,11 @@ const Field = ({ label, value, span = 1 }: FieldProps) => (
 		<span
 			style={{
 				fontFamily: font.sans,
-				fontSize: 9,
-				letterSpacing: 1,
+				fontSize: 8.5,
+				letterSpacing: 0.5,
 				textTransform: "uppercase" as const,
 				color: C.subtext,
-				fontWeight: 300,
+				fontWeight: 400,
 			}}
 		>
 			{label}
@@ -193,15 +194,15 @@ const Field = ({ label, value, span = 1 }: FieldProps) => (
 		<div
 			style={{
 				fontFamily: font.sans,
-				fontSize: value ? 11 : 9,
+				fontSize: value ? 10.5 : 8.5,
 				fontStyle: value ? "normal" : "italic",
 				color: value ? "#000000" : C.subtext,
 				fontWeight: value ? 500 : 300,
 				borderBottom: `1px solid #e5e7eb`,
 				paddingBottom: 2,
 				paddingTop: 1,
-				minHeight: 14,
-				lineHeight: 1.4,
+				minHeight: 16,
+				lineHeight: 1.3,
 			}}
 		>
 			{value || "\u00A0"}
@@ -221,10 +222,10 @@ const SectionHeader = ({ title }: SectionHeaderProps) => (
 			fontSize: 9,
 			letterSpacing: 2,
 			textTransform: "uppercase" as const,
-			fontWeight: 600,
+			fontWeight: 700,
 			color: C.navy,
 			fontFamily: font.sans,
-			margin: "4px 0 10px",
+			margin: "8px 0 12px",
 			borderRadius: "0 2px 2px 0",
 		}}
 	>
@@ -234,16 +235,16 @@ const SectionHeader = ({ title }: SectionHeaderProps) => (
 
 interface FormGridProps {
 	children: React.ReactNode;
-	cols?: 2 | 3;
+	cols?: 2 | 3 | 4;
 }
-const FormGrid = ({ children, cols = 2 }: FormGridProps) => (
+const FormGrid = ({ children, cols = 3 }: FormGridProps) => (
 	<div
 		style={{
 			display: "grid",
 			gridTemplateColumns: `repeat(${cols}, 1fr)`,
-			gap: "4px 12px",
-			padding: "10px 0",
-			marginBottom: 2,
+			gap: "8px 16px",
+			padding: "6px 0",
+			marginBottom: 4,
 		}}
 	>
 		{children}
@@ -335,7 +336,7 @@ const ApplicationPrintDocument = ({
 		emergencyPhone: app.emergencyPhone || app.emergency_phone,
 		medical:        app.medical,
 		remarks:        app.remarks,
-		photo:          app.photo          || app.photoUrl        || "",
+		photo:          app.photo          || app.photoUrl        || app.photo_url       || "",
 		submissionDate: app.submissionDate || app.submission_date,
 		status:         app.status         || "submitted",
 	};
@@ -378,13 +379,15 @@ const ApplicationPrintDocument = ({
 					overflow:        "hidden",
 					background:      C.white,
 					fontFamily:      font.sans,
-					fontSize:        7.5,
+					fontSize:        8,
 					color:           C.text,
-					padding:         "0 10px",
+					padding:         "12mm 15mm", // Slightly more breathing room
 					boxSizing:       "border-box" as const,
 					boxShadow:       scale < 1 ? "0 4px 32px rgba(0,0,0,0.10)" : "0 4px 32px rgba(0,0,0,0.10)",
 					flexShrink:      0,
 					position:        "relative",
+					display:         "flex",
+					flexDirection:   "column",
 					// Scale for on-screen preview; reset to none in PRINT_STYLES
 					transform:       `scale(${scale})`,
 					transformOrigin: "top center",
@@ -398,7 +401,7 @@ const ApplicationPrintDocument = ({
 				<div
 					style={{
 						borderBottom: `1px solid ${C.border}`,
-						padding: "20px 14px 10px",
+						padding: "0 0 8px 0",
 						display: "grid",
 						gridTemplateColumns: "1fr auto",
 						alignItems: "center",
@@ -406,22 +409,22 @@ const ApplicationPrintDocument = ({
 					}}
 				>
 					{/* Left: logo + meta */}
-					<div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-						<div style={{ display: "flex", flexDirection: "column", gap: 2, marginBottom: 4 }}>
+					<div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+						<div style={{ display: "flex", flexDirection: "column", gap: 1, marginBottom: 2 }}>
 							<img
 								src={logo}
 								alt="Ahlussuffa Dars Logo"
-								style={{ height: 48, objectFit: "contain", alignSelf: "flex-start" }}
+								style={{ height: 36, objectFit: "contain", alignSelf: "flex-start" }}
 							/>
 							<div
 								style={{
 									fontFamily: font.sans,
-									fontSize: 9,
-									letterSpacing: 0.5,
+									fontSize: 8,
+									letterSpacing: 0.3,
 									color: C.subtext,
 									fontWeight: "bold",
-									marginTop: 4,
-									lineHeight: 1.4,
+									marginTop: 2,
+									lineHeight: 1.2,
 								}}
 							>
 								Ahlussuffa Campus, Parappram, Pinarayi, Kerala
@@ -430,18 +433,18 @@ const ApplicationPrintDocument = ({
 							</div>
 						</div>
 
-						<div style={{ display: "flex", gap: 16, marginTop: 2 }}>
+						<div style={{ display: "flex", gap: 12, marginTop: 1 }}>
 							{/* App No */}
-							<div style={{ display: "flex", alignItems: "center", gap: 6, height: "18px" }}>
-								<span style={{ fontFamily: font.sans, fontSize: 10, letterSpacing: 0.5, textTransform: "uppercase", color: C.subtext, fontWeight: 500, lineHeight: "18px" }}>
-									Application No.
+							<div style={{ display: "flex", alignItems: "center", gap: 4, height: "16px" }}>
+								<span style={{ fontFamily: font.sans, fontSize: 8.5, letterSpacing: 0.3, textTransform: "uppercase", color: C.subtext, fontWeight: 500, lineHeight: "16px" }}>
+									App No.
 								</span>
 								<span
 									style={{
-										display: "inline-block", height: "18px", lineHeight: "18px",
+										display: "inline-block", height: "16px", lineHeight: "16px",
 										background: C.navy, color: C.gold,
-										fontFamily: font.sans, fontSize: 10, fontWeight: 500,
-										letterSpacing: 1, padding: "0 6px", borderRadius: 2, verticalAlign: "middle",
+										fontFamily: font.sans, fontSize: 8.5, fontWeight: 500,
+										letterSpacing: 0.5, padding: "0 4px", borderRadius: 2, verticalAlign: "middle",
 									}}
 								>
 									{d.appNo || "PENDING"}
@@ -449,32 +452,32 @@ const ApplicationPrintDocument = ({
 							</div>
 
 							{/* Submitted date */}
-							<div style={{ display: "flex", alignItems: "center", gap: 6, height: "18px" }}>
-								<span style={{ fontFamily: font.sans, fontSize: 10, letterSpacing: 0.5, textTransform: "uppercase", color: C.subtext, fontWeight: 500, lineHeight: "18px" }}>
-									Submitted :
+							<div style={{ display: "flex", alignItems: "center", gap: 4, height: "16px" }}>
+								<span style={{ fontFamily: font.sans, fontSize: 8.5, letterSpacing: 0.3, textTransform: "uppercase", color: C.subtext, fontWeight: 500, lineHeight: "16px" }}>
+									Date :
 								</span>
-								<span style={{ fontFamily: font.sans, fontSize: 10, fontWeight: "bold", letterSpacing: 0.5, textTransform: "uppercase", color: C.text, lineHeight: "18px" }}>
+								<span style={{ fontFamily: font.sans, fontSize: 8.5, fontWeight: "bold", letterSpacing: 0.3, textTransform: "uppercase", color: C.text, lineHeight: "16px" }}>
 									{formatDate(d.submissionDate, "full") || "—"}
 								</span>
 							</div>
 
 							{/* Status badge */}
 							{showStatus && (
-								<div style={{ display: "flex", alignItems: "center", gap: 6, height: "18px" }}>
-									<span style={{ fontFamily: font.sans, fontSize: 10, letterSpacing: 0.5, textTransform: "uppercase", color: C.subtext, fontWeight: 500, lineHeight: "18px" }}>
+								<div style={{ display: "flex", alignItems: "center", gap: 4, height: "16px" }}>
+									<span style={{ fontFamily: font.sans, fontSize: 8.5, letterSpacing: 0.3, textTransform: "uppercase", color: C.subtext, fontWeight: 500, lineHeight: "16px" }}>
 										Status :
 									</span>
 									<span
 										style={{
-											display: "inline-block", height: "18px", lineHeight: "18px",
+											display: "inline-block", height: "16px", lineHeight: "16px",
 											background:
 												d.status === "approved" ? "#10b981"
 												: d.status === "rejected" ? "#ef4444"
 												: d.status === "reviewing" ? "#f59e0b"
 												: C.border,
 											color: C.white,
-											fontFamily: font.sans, fontSize: 10, fontWeight: 500,
-											letterSpacing: 1, padding: "0 6px", borderRadius: 2,
+											fontFamily: font.sans, fontSize: 8.5, fontWeight: 500,
+											letterSpacing: 0.5, padding: "0 4px", borderRadius: 2,
 											textTransform: "uppercase", verticalAlign: "middle",
 										}}
 									>
@@ -489,24 +492,24 @@ const ApplicationPrintDocument = ({
 					<div style={{ display: "flex", justifyContent: "flex-end" }}>
 						<div
 							style={{
-								width: 96, height: 120,
+								width: 72, height: 90,
 								border: `1px solid ${C.border}`,
-								borderRadius: "20%",
+								borderRadius: "10%",
 								background: C.bg,
 								display: "flex", flexDirection: "column",
 								alignItems: "center", justifyContent: "center",
-								gap: 2, overflow: "hidden",
+								gap: 1, overflow: "hidden",
 							}}
 						>
 							{d.photo ? (
 								<img src={d.photo} alt="Student" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
 							) : (
 								<>
-									<svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-label="Student Photo Placeholder">
 										<circle cx="12" cy="8" r="4" fill={C.border} />
 										<path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke={C.border} strokeWidth="1.5" strokeLinecap="round" />
 									</svg>
-									<span style={{ fontFamily: font.sans, fontSize: 7, color: C.subtext, letterSpacing: 0.5, textTransform: "uppercase" }}>
+									<span style={{ fontFamily: font.sans, fontSize: 6, color: C.subtext, letterSpacing: 0.5, textTransform: "uppercase" }}>
 										Photo
 									</span>
 								</>
@@ -519,23 +522,24 @@ const ApplicationPrintDocument = ({
 				<div
 					style={{
 						background: C.navy, color: C.white,
-						textAlign: "center", padding: "4px 14px",
-						fontFamily: font.sans, fontSize: 9,
-						margin: "0 10px", letterSpacing: 2,
+						textAlign: "center", padding: "3px 14px",
+						fontFamily: font.sans, fontSize: 8,
+						letterSpacing: 1.5,
 						textTransform: "uppercase", fontWeight: 500,
-						borderBottom: `2px solid ${C.gold}`,
-						borderTop:    `2px solid ${C.gold}`,
+						borderBottom: `1.5px solid ${C.gold}`,
+						borderTop:    `1.5px solid ${C.gold}`,
+						marginTop: 10,
 					}}
 				>
-					Student Admission Application Form · Academic Year {academicYear}
+					Admission Form · {academicYear}
 				</div>
 
 				{/* ── BODY ─────────────────────────────────────────────────── */}
-				<div style={{ padding: "20px 14px 10px" }}>
+				<div style={{ padding: "10px 0 6px 0", flex: 1, display: "flex", flexDirection: "column", justifyContent: "flex-start", gap: 10 }}>
 
 					{/* Personal Information */}
 					<SectionHeader title="Personal Information" />
-					<FormGrid>
+					<FormGrid cols={3}>
 						<Field label="Full Name"           value={fullName}                           span={2} />
 						<Field label="Date of Birth"       value={formatDate(d.dob, "full")}                   />
 						<Field label="Blood Group"         value={d.bloodGroup}                                 />
@@ -547,11 +551,11 @@ const ApplicationPrintDocument = ({
 
 					{/* Academic Details */}
 					<SectionHeader title="Academic Details" />
-					<FormGrid>
+					<FormGrid cols={3}>
 						<Field label="Applying for Class" value={d.applyClass}     />
 						<Field label="Academic Year"      value={d.academicYear}   />
 						<Field label="Stream / Section"   value={d.stream}         />
-						<Field label="Previous School"    value={d.prevSchool}     />
+						<Field label="Previous School"    value={d.prevSchool}     span={2} />
 						<Field label="Previous Class"     value={d.prevClass}      />
 						<Field label="Board"              value={d.prevBoard}      />
 						<Field label="Result (%)"         value={d.prevPercentage} />
@@ -560,7 +564,7 @@ const ApplicationPrintDocument = ({
 
 					{/* Parent / Guardian */}
 					<SectionHeader title="Parent / Guardian Information" />
-					<FormGrid>
+					<FormGrid cols={3}>
 						<Field label="Father's Name"         value={d.fatherName}     />
 						<Field label="Father's Occupation"   value={d.fatherOcc}      />
 						<Field label="Father's Phone"        value={d.fatherPhone}    />
@@ -581,22 +585,21 @@ const ApplicationPrintDocument = ({
 					<div
 						style={{
 							border:       `0.5px solid ${C.border}`,
-							padding:      "6px 8px",
+							padding:      "4px 8px",
 							background:   C.bg,
 							borderRadius: 2,
 						}}
 					>
 						<p
 							style={{
-								fontFamily: font.sans, fontSize: 10,
-								lineHeight: 1.3, margin: 0,
+								fontFamily: font.sans, fontSize: 8.5,
+								lineHeight: 1.2, margin: 0,
 								color: C.subtext, fontStyle: "italic",
 							}}
 						>
 							I hereby declare that all information furnished in this application is true, complete
 							and correct to the best of my knowledge and belief. I agree to abide by the rules,
-							regulations and discipline of Ahlussuffa Institution. I understand that any false
-							statement may result in disqualification of my application.
+							regulations and discipline of Ahlussuffa Institution.
 						</p>
 					</div>
 
@@ -606,12 +609,12 @@ const ApplicationPrintDocument = ({
 							display: "grid",
 							gridTemplateColumns: "1fr 1fr 1fr",
 							gap: "0 12px",
-							marginTop: 32,
+							marginTop: 15,
 							paddingBottom: 2,
 						}}
 					>
-						<SigBlock label="Parent / Guardian Signature" />
-						<SigBlock label="Applicant's Signature" />
+						<SigBlock label="Parent Signature" />
+						<SigBlock label="Applicant Signature" />
 						<SigBlock label="Date" />
 					</div>
 				</div>
@@ -619,25 +622,22 @@ const ApplicationPrintDocument = ({
 				{/* ── FOOTER ───────────────────────────────────────────────── */}
 				<div
 					style={{
-						position: "absolute",
-						bottom: "4px",
-						left: "14px",
-						right: "14px",
 						borderTop: `1px solid ${C.border}`,
-						padding: "4px 0",
+						padding: "6px 0 0 0",
 						display: "flex",
 						justifyContent: "space-between",
 						alignItems: "center",
 						fontFamily: font.sans,
-						fontSize: 7,
+						fontSize: 6.5,
 						color: C.subtext,
+						marginTop: "auto",
 					}}
 				>
 					<span>Ahlussuffa Campus, Parappram, Kerala</span>
-					<span style={{ fontFamily: font.serif, fontStyle: "italic", fontSize: 8, color: C.text }}>
+					<span style={{ fontFamily: font.serif, fontStyle: "italic", fontSize: 7, color: C.text }}>
 						ahlussuffa.igs@gmail.com
 					</span>
-					<span>Computer-generated · Valid upon official seal</span>
+					<span>Computer-generated · Valid with seal</span>
 				</div>
 			</div>
 		</div>

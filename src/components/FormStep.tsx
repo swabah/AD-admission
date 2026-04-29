@@ -1,4 +1,4 @@
-import { Check, ChevronRight } from "lucide-react";
+import { Check, ChevronRight, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -8,9 +8,10 @@ interface FormStepProps {
 	label: string;
 	onClick: (step: number) => void;
 	isLast?: boolean;
+	hasError?: boolean;
 }
 
-export function FormStep({ step, currentStep, label, onClick, isLast = false }: FormStepProps) {
+export function FormStep({ step, currentStep, label, onClick, isLast = false, hasError = false }: FormStepProps) {
 	const isActive = currentStep === step;
 	const isDone = currentStep > step;
 	const isPending = currentStep < step;
@@ -44,11 +45,14 @@ export function FormStep({ step, currentStep, label, onClick, isLast = false }: 
 					className={cn(
 						"relative flex h-12 w-12 items-center justify-center rounded-full border-2 text-sm font-bold transition-all duration-300 shadow-sm",
 						isActive && "border-[#0a1628] bg-[#0a1628] text-white shadow-lg shadow-[#0a1628]/20 scale-110",
-						isDone && "border-[#c8922a] bg-[#c8922a] text-white shadow-md",
-						isPending && "border-slate-300 bg-white text-slate-400"
+						isDone && !hasError && "border-[#c8922a] bg-[#c8922a] text-white shadow-md",
+						hasError && "border-rose-500 bg-rose-50 text-rose-600 shadow-md",
+						isPending && !hasError && "border-slate-300 bg-white text-slate-400"
 					)}
 				>
-					{isDone ? (
+					{hasError ? (
+						<AlertCircle className="h-5 w-5 animate-in zoom-in duration-300" />
+					) : isDone ? (
 						<Check className="h-5 w-5 animate-in zoom-in duration-300" />
 					) : (
 						<span className="animate-in fade-in duration-300">{step}</span>
