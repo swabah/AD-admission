@@ -146,14 +146,14 @@ const PRINT_STYLES = `
 
 // Colour tokens
 const C = {
-	navy: "#1a3a6b",
-	navyLight: "#e8f0fb",
-	gold: "#e8c96a",
-	text: "#111827",
-	subtext: "#6b7280",
-	border: "#d1d5db",
-	borderDash: "#e5e7eb",
-	bg: "#f9fafb",
+	navy: "#000000",
+	navyLight: "#f9fafb",
+	gold: "#ffffff",
+	text: "#000000",
+	subtext: "#000000",
+	border: "#bbbbbb", // Slightly darker gray for better visibility
+	borderDash: "#cccccc",
+	bg: "#ffffff",
 	white: "#ffffff",
 };
 
@@ -182,11 +182,11 @@ const Field = ({ label, value, span = 1 }: FieldProps) => (
 		<span
 			style={{
 				fontFamily: font.sans,
-				fontSize: 8.5,
+				fontSize: 10,
 				letterSpacing: 0.5,
 				textTransform: "uppercase" as const,
-				color: C.subtext,
-				fontWeight: 400,
+				color: "#000000",
+				fontWeight: 600, // Thicker labels
 			}}
 		>
 			{label}
@@ -194,15 +194,15 @@ const Field = ({ label, value, span = 1 }: FieldProps) => (
 		<div
 			style={{
 				fontFamily: font.sans,
-				fontSize: value ? 10.5 : 8.5,
+				fontSize: value ? 11.5 : 9.5,
 				fontStyle: value ? "normal" : "italic",
-				color: value ? "#000000" : C.subtext,
-				fontWeight: value ? 500 : 300,
-				borderBottom: `1px solid #e5e7eb`,
+				color: "#000000",
+				fontWeight: value ? 600 : 300,
+				borderBottom: `1px solid #bbbbbb`,
 				paddingBottom: 2,
 				paddingTop: 1,
-				minHeight: 16,
-				lineHeight: 1.3,
+				minHeight: 18,
+				lineHeight: 1.2,
 			}}
 		>
 			{value || "\u00A0"}
@@ -219,14 +219,15 @@ const SectionHeader = ({ title }: SectionHeaderProps) => (
 			background: C.navyLight,
 			borderLeft: `4px solid ${C.navy}`,
 			padding: "4px 8px",
-			fontSize: 9,
+			fontSize: 10.5,
 			letterSpacing: 2,
 			textTransform: "uppercase" as const,
 			fontWeight: 700,
 			color: C.navy,
 			fontFamily: font.sans,
-			margin: "8px 0 12px",
+			margin: "4px 0 8px",
 			borderRadius: "0 2px 2px 0",
+			borderBottom: "1px solid #bbbbbb",
 		}}
 	>
 		{title}
@@ -242,9 +243,9 @@ const FormGrid = ({ children, cols = 3 }: FormGridProps) => (
 		style={{
 			display: "grid",
 			gridTemplateColumns: `repeat(${cols}, 1fr)`,
-			gap: "8px 16px",
-			padding: "6px 0",
-			marginBottom: 4,
+			gap: "6px 12px",
+			padding: "4px 0",
+			marginBottom: 2,
 		}}
 	>
 		{children}
@@ -266,14 +267,14 @@ const SigBlock = ({ label }: SigBlockProps) => (
 		<div
 			style={{
 				width: "100%",
-				height: 22,
-				borderBottom: `1px solid ${C.border}`,
+				height: 26,
+				borderBottom: `1px solid #bbbbbb`,
 			}}
 		/>
 		<span
 			style={{
 				fontFamily: font.sans,
-				fontSize: 9,
+				fontSize: 10,
 				letterSpacing: 1,
 				textTransform: "uppercase" as const,
 				color: C.subtext,
@@ -379,11 +380,11 @@ const ApplicationPrintDocument = ({
 					overflow:        "hidden",
 					background:      C.white,
 					fontFamily:      font.sans,
-					fontSize:        8,
+					fontSize:        9.5,
 					color:           C.text,
-					padding:         "12mm 15mm", // Slightly more breathing room
+					padding:         "4mm 6mm", // Maximized content area
 					boxSizing:       "border-box" as const,
-					boxShadow:       scale < 1 ? "0 4px 32px rgba(0,0,0,0.10)" : "0 4px 32px rgba(0,0,0,0.10)",
+					boxShadow:       "none", // Removed shadow for clarity
 					flexShrink:      0,
 					position:        "relative",
 					display:         "flex",
@@ -401,7 +402,7 @@ const ApplicationPrintDocument = ({
 				<div
 					style={{
 						borderBottom: `1px solid ${C.border}`,
-						padding: "0 0 8px 0",
+						padding: "0 0 12px 0",
 						display: "grid",
 						gridTemplateColumns: "1fr auto",
 						alignItems: "center",
@@ -414,17 +415,17 @@ const ApplicationPrintDocument = ({
 							<img
 								src={logo}
 								alt="Ahlussuffa Dars Logo"
-								style={{ height: 36, objectFit: "contain", alignSelf: "flex-start" }}
+								style={{ height: 60, objectFit: "contain", alignSelf: "flex-start" }}
 							/>
 							<div
 								style={{
 									fontFamily: font.sans,
-									fontSize: 8,
+									fontSize: 12,
 									letterSpacing: 0.3,
-									color: C.subtext,
+									color: "#000000",
 									fontWeight: "bold",
-									marginTop: 2,
-									lineHeight: 1.2,
+									marginTop: 4,
+									lineHeight: 1.5,
 								}}
 							>
 								Ahlussuffa Campus, Parappram, Pinarayi, Kerala
@@ -433,18 +434,18 @@ const ApplicationPrintDocument = ({
 							</div>
 						</div>
 
-						<div style={{ display: "flex", gap: 12, marginTop: 1 }}>
+						<div style={{ display: "flex", gap: 16, marginTop: 4 }}>
 							{/* App No */}
-							<div style={{ display: "flex", alignItems: "center", gap: 4, height: "16px" }}>
-								<span style={{ fontFamily: font.sans, fontSize: 8.5, letterSpacing: 0.3, textTransform: "uppercase", color: C.subtext, fontWeight: 500, lineHeight: "16px" }}>
+							<div style={{ display: "flex", alignItems: "center", gap: 6, height: "20px" }}>
+								<span style={{ fontFamily: font.sans, fontSize: 10, letterSpacing: 0.3, textTransform: "uppercase", color: "#000000", fontWeight: 700, lineHeight: "20px" }}>
 									App No.
 								</span>
 								<span
 									style={{
-										display: "inline-block", height: "16px", lineHeight: "16px",
-										background: C.navy, color: C.gold,
-										fontFamily: font.sans, fontSize: 8.5, fontWeight: 500,
-										letterSpacing: 0.5, padding: "0 4px", borderRadius: 2, verticalAlign: "middle",
+										display: "inline-block", height: "20px", lineHeight: "20px",
+										background: "#000000", color: "#ffffff",
+										fontFamily: font.sans, fontSize: 10, fontWeight: 700,
+										letterSpacing: 0.5, padding: "0 6px", borderRadius: 2, verticalAlign: "middle",
 									}}
 								>
 									{d.appNo || "PENDING"}
@@ -452,31 +453,31 @@ const ApplicationPrintDocument = ({
 							</div>
 
 							{/* Submitted date */}
-							<div style={{ display: "flex", alignItems: "center", gap: 4, height: "16px" }}>
-								<span style={{ fontFamily: font.sans, fontSize: 8.5, letterSpacing: 0.3, textTransform: "uppercase", color: C.subtext, fontWeight: 500, lineHeight: "16px" }}>
+							<div style={{ display: "flex", alignItems: "center", gap: 6, height: "20px" }}>
+								<span style={{ fontFamily: font.sans, fontSize: 10, letterSpacing: 0.3, textTransform: "uppercase", color: "#000000", fontWeight: 700, lineHeight: "20px" }}>
 									Date :
 								</span>
-								<span style={{ fontFamily: font.sans, fontSize: 8.5, fontWeight: "bold", letterSpacing: 0.3, textTransform: "uppercase", color: C.text, lineHeight: "16px" }}>
+								<span style={{ fontFamily: font.sans, fontSize: 10, fontWeight: "bold", letterSpacing: 0.3, textTransform: "uppercase", color: "#000000", lineHeight: "20px" }}>
 									{formatDate(d.submissionDate, "full") || "—"}
 								</span>
 							</div>
 
 							{/* Status badge */}
 							{showStatus && (
-								<div style={{ display: "flex", alignItems: "center", gap: 4, height: "16px" }}>
-									<span style={{ fontFamily: font.sans, fontSize: 8.5, letterSpacing: 0.3, textTransform: "uppercase", color: C.subtext, fontWeight: 500, lineHeight: "16px" }}>
+								<div style={{ display: "flex", alignItems: "center", gap: 6, height: "20px" }}>
+									<span style={{ fontFamily: font.sans, fontSize: 10, letterSpacing: 0.3, textTransform: "uppercase", color: "#000000", fontWeight: 700, lineHeight: "20px" }}>
 										Status :
 									</span>
 									<span
 										style={{
-											display: "inline-block", height: "16px", lineHeight: "16px",
+											display: "inline-block", height: "20px", lineHeight: "20px",
 											background:
 												d.status === "approved" ? "#10b981"
 												: d.status === "rejected" ? "#ef4444"
 												: d.status === "reviewing" ? "#f59e0b"
-												: C.border,
-											color: C.white,
-											fontFamily: font.sans, fontSize: 8.5, fontWeight: 500,
+												: "#000000",
+											color: "#ffffff",
+											fontFamily: font.sans, fontSize: 10, fontWeight: 700,
 											letterSpacing: 0.5, padding: "0 4px", borderRadius: 2,
 											textTransform: "uppercase", verticalAlign: "middle",
 										}}
@@ -492,8 +493,7 @@ const ApplicationPrintDocument = ({
 					<div style={{ display: "flex", justifyContent: "flex-end" }}>
 						<div
 							style={{
-								width: 72, height: 90,
-								border: `1px solid ${C.border}`,
+								width: 90, height: 115,
 								borderRadius: "10%",
 								background: C.bg,
 								display: "flex", flexDirection: "column",
@@ -505,11 +505,11 @@ const ApplicationPrintDocument = ({
 								<img src={d.photo} alt="Student" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
 							) : (
 								<>
-									<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-label="Student Photo Placeholder">
-										<circle cx="12" cy="8" r="4" fill={C.border} />
-										<path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke={C.border} strokeWidth="1.5" strokeLinecap="round" />
+									<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-label="Student Photo Placeholder">
+										<circle cx="12" cy="8" r="4" fill="#000000" />
+										<path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="#000000" strokeWidth="2" strokeLinecap="round" />
 									</svg>
-									<span style={{ fontFamily: font.sans, fontSize: 6, color: C.subtext, letterSpacing: 0.5, textTransform: "uppercase" }}>
+									<span style={{ fontFamily: font.sans, fontSize: 8, color: "#000000", fontWeight: "bold", letterSpacing: 0.5, textTransform: "uppercase" }}>
 										Photo
 									</span>
 								</>
@@ -523,19 +523,17 @@ const ApplicationPrintDocument = ({
 					style={{
 						background: C.navy, color: C.white,
 						textAlign: "center", padding: "3px 14px",
-						fontFamily: font.sans, fontSize: 8,
-						letterSpacing: 1.5,
-						textTransform: "uppercase", fontWeight: 500,
-						borderBottom: `1.5px solid ${C.gold}`,
-						borderTop:    `1.5px solid ${C.gold}`,
-						marginTop: 10,
+						borderBottom: `1px solid #bbbbbb`,
+						borderTop:    `1px solid #bbbbbb`,
+						marginTop: 8,
+						marginBottom: 2,
 					}}
 				>
 					Admission Form · {academicYear}
 				</div>
 
 				{/* ── BODY ─────────────────────────────────────────────────── */}
-				<div style={{ padding: "10px 0 6px 0", flex: 1, display: "flex", flexDirection: "column", justifyContent: "flex-start", gap: 10 }}>
+				<div style={{ padding: "4px 0", flex: 1, display: "flex", flexDirection: "column", justifyContent: "flex-start", gap: 4 }}>
 
 					{/* Personal Information */}
 					<SectionHeader title="Personal Information" />
@@ -584,17 +582,18 @@ const ApplicationPrintDocument = ({
 					<SectionHeader title="Declaration" />
 					<div
 						style={{
-							border:       `0.5px solid ${C.border}`,
-							padding:      "4px 8px",
-							background:   C.bg,
-							borderRadius: 2,
+							borderLeft:   `3px solid #bbbbbb`,
+							padding:      "6px 12px",
+							background:   "#ffffff",
+							borderRadius: 0,
 						}}
 					>
 						<p
 							style={{
-								fontFamily: font.sans, fontSize: 8.5,
+								fontFamily: font.sans, fontSize: 10,
 								lineHeight: 1.2, margin: 0,
-								color: C.subtext, fontStyle: "italic",
+								color: "#000000", fontStyle: "normal",
+								fontWeight: 500,
 							}}
 						>
 							I hereby declare that all information furnished in this application is true, complete
@@ -609,8 +608,8 @@ const ApplicationPrintDocument = ({
 							display: "grid",
 							gridTemplateColumns: "1fr 1fr 1fr",
 							gap: "0 12px",
-							marginTop: 15,
-							paddingBottom: 2,
+							marginTop: 10,
+							paddingBottom: 0,
 						}}
 					>
 						<SigBlock label="Parent Signature" />
@@ -628,13 +627,14 @@ const ApplicationPrintDocument = ({
 						justifyContent: "space-between",
 						alignItems: "center",
 						fontFamily: font.sans,
-						fontSize: 6.5,
-						color: C.subtext,
+						fontSize: 9,
+						fontWeight: 500,
+						color: "#000000",
 						marginTop: "auto",
 					}}
 				>
 					<span>Ahlussuffa Campus, Parappram, Kerala</span>
-					<span style={{ fontFamily: font.serif, fontStyle: "italic", fontSize: 7, color: C.text }}>
+					<span style={{ fontFamily: font.serif, fontStyle: "italic", fontSize: 9, color: C.text }}>
 						ahlussuffa.igs@gmail.com
 					</span>
 					<span>Computer-generated · Valid with seal</span>
