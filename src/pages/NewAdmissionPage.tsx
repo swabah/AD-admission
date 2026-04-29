@@ -55,9 +55,13 @@ const NewAdmissionPage = () => {
 		motherName: "",
 		motherOcc: "",
 		motherPhone: "",
-		annualIncome: "",
-		localGuardian: "",
-		guardianPhone: "",
+		motherEmail: "",
+		income: "",
+		emergencyName: "",
+		emergencyPhone: "",
+		medical: "",
+		referral: "",
+		remarks: "",
 		agreeCheck: false,
 	});
 
@@ -343,14 +347,24 @@ const NewAdmissionPage = () => {
 										/>
 									</div>
 								</div>
-								<InputField
-									label="Aadhar Number"
-									id="aadhar"
-									formData={formData}
-									handleInputChange={handleInputChange}
-									errors={errors}
-									required
-								/>
+								<div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+									<InputField
+										label="Nationality"
+										id="nationality"
+										formData={formData}
+										handleInputChange={handleInputChange}
+										errors={errors}
+										required
+									/>
+									<InputField
+										label="Student Phone"
+										id="studentPhone"
+										type="tel"
+										formData={formData}
+										handleInputChange={handleInputChange}
+										errors={errors}
+									/>
+								</div>
 								<InputField
 									label="Address"
 									id="address"
@@ -364,131 +378,277 @@ const NewAdmissionPage = () => {
 						)}
 
 						{currentStep === 2 && (
-							<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+							<div className="space-y-6">
+								<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+									<InputField
+										label="Applying for Class"
+										id="applyClass"
+										type="select"
+										options={[
+											"Class 8",
+											"Class 9",
+											"Class 10",
+											"Plus One",
+											"Plus Two",
+											"Degree",
+										]}
+										formData={formData}
+										handleInputChange={handleInputChange}
+										errors={errors}
+										required
+									/>
+									<InputField
+										label="Stream"
+										id="stream"
+										type="select"
+										options={["Science", "Commerce", "Humanities", "N/A"]}
+										formData={formData}
+										handleInputChange={handleInputChange}
+										errors={errors}
+									/>
+									<InputField
+										label="Academic Year"
+										id="academicYear"
+										type="select"
+										options={["2026–27"]}
+										formData={formData}
+										handleInputChange={handleInputChange}
+										errors={errors}
+										required
+									/>
+								</div>
+								<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+									<InputField
+										label="Previous School"
+										id="prevSchool"
+										formData={formData}
+										handleInputChange={handleInputChange}
+										errors={errors}
+										required
+									/>
+									<InputField
+										label="Previous Board"
+										id="prevBoard"
+										formData={formData}
+										handleInputChange={handleInputChange}
+										errors={errors}
+									/>
+									<InputField
+										label="Previous Class"
+										id="prevClass"
+										formData={formData}
+										handleInputChange={handleInputChange}
+										errors={errors}
+										required
+									/>
+									<InputField
+										label="Percentage (%)"
+										id="prevPercentage"
+										formData={formData}
+										handleInputChange={handleInputChange}
+										errors={errors}
+										required
+									/>
+								</div>
 								<InputField
-									label="Applying for Class"
-									id="applyClass"
-									type="select"
-									options={[
-										"Class 8",
-										"Class 9",
-										"Class 10",
-										"Plus One",
-										"Plus Two",
-										"Degree",
-									]}
+									label="Achievements / Extra-curricular"
+									id="achievements"
+									type="textarea"
 									formData={formData}
 									handleInputChange={handleInputChange}
 									errors={errors}
-									required
-								/>
-								<InputField
-									label="Academic Year"
-									id="academicYear"
-									type="select"
-									options={["2026–27"]}
-									formData={formData}
-									handleInputChange={handleInputChange}
-									errors={errors}
-									required
-								/>
-								<InputField
-									label="Previous School"
-									id="prevSchool"
-									formData={formData}
-									handleInputChange={handleInputChange}
-									errors={errors}
-									required
-								/>
-								<InputField
-									label="Previous Percentage"
-									id="prevPercentage"
-									formData={formData}
-									handleInputChange={handleInputChange}
-									errors={errors}
-									required
 								/>
 							</div>
 						)}
 
 						{currentStep === 3 && (
-							<div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-								<InputField
-									label="Father's Name"
-									id="fatherName"
-									formData={formData}
-									handleInputChange={handleInputChange}
-									errors={errors}
-									required
-								/>
-								<InputField
-									label="Father's Phone"
-									id="fatherPhone"
-									type="tel"
-									formData={formData}
-									handleInputChange={handleInputChange}
-									errors={errors}
-									required
-								/>
-								<InputField
-									label="Mother's Name"
-									id="motherName"
-									formData={formData}
-									handleInputChange={handleInputChange}
-									errors={errors}
-									required
-								/>
-								<InputField
-									label="Mother's Phone"
-									id="motherPhone"
-									type="tel"
-									formData={formData}
-									handleInputChange={handleInputChange}
-									errors={errors}
-								/>
+							<div className="space-y-6">
+								<div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+									<div className="space-y-4">
+										<h4 className="text-sm font-bold text-slate-800 uppercase tracking-wider">
+											Father's Information
+										</h4>
+										<InputField
+											label="Name"
+											id="fatherName"
+											formData={formData}
+											handleInputChange={handleInputChange}
+											errors={errors}
+											required
+										/>
+										<InputField
+											label="Occupation"
+											id="fatherOcc"
+											formData={formData}
+											handleInputChange={handleInputChange}
+											errors={errors}
+										/>
+										<InputField
+											label="Phone Number"
+											id="fatherPhone"
+											type="tel"
+											formData={formData}
+											handleInputChange={handleInputChange}
+											errors={errors}
+											required
+										/>
+										<InputField
+											label="Email Address"
+											id="fatherEmail"
+											type="email"
+											formData={formData}
+											handleInputChange={handleInputChange}
+											errors={errors}
+										/>
+									</div>
+									<div className="space-y-4">
+										<h4 className="text-sm font-bold text-slate-800 uppercase tracking-wider">
+											Mother's Information
+										</h4>
+										<InputField
+											label="Name"
+											id="motherName"
+											formData={formData}
+											handleInputChange={handleInputChange}
+											errors={errors}
+											required
+										/>
+										<InputField
+											label="Occupation"
+											id="motherOcc"
+											formData={formData}
+											handleInputChange={handleInputChange}
+											errors={errors}
+										/>
+										<InputField
+											label="Phone Number"
+											id="motherPhone"
+											type="tel"
+											formData={formData}
+											handleInputChange={handleInputChange}
+											errors={errors}
+										/>
+										<InputField
+											label="Email Address"
+											id="motherEmail"
+											type="email"
+											formData={formData}
+											handleInputChange={handleInputChange}
+											errors={errors}
+										/>
+									</div>
+								</div>
+								<div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t">
+									<div className="space-y-4">
+										<h4 className="text-sm font-bold text-slate-800 uppercase tracking-wider">
+											Emergency Contact
+										</h4>
+										<InputField
+											label="Contact Person Name"
+											id="emergencyName"
+											formData={formData}
+											handleInputChange={handleInputChange}
+											errors={errors}
+										/>
+										<InputField
+											label="Emergency Phone"
+											id="emergencyPhone"
+											type="tel"
+											formData={formData}
+											handleInputChange={handleInputChange}
+											errors={errors}
+										/>
+									</div>
+									<div className="space-y-4">
+										<h4 className="text-sm font-bold text-slate-800 uppercase tracking-wider">
+											Financial Information
+										</h4>
+										<InputField
+											label="Annual Family Income"
+											id="income"
+											formData={formData}
+											handleInputChange={handleInputChange}
+											errors={errors}
+										/>
+									</div>
+								</div>
 							</div>
 						)}
 
 						{currentStep === 4 && (
 							<div className="space-y-6">
-								<div className="p-6 border rounded-lg bg-slate-50">
-									<h3 className="font-bold mb-4">Review Information</h3>
-									<div className="grid grid-cols-2 gap-4 text-sm">
-										<div>
-											<span className="text-muted-foreground">Name:</span>{" "}
-											{formData.firstName} {formData.lastName}
+								<div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+									<InputField
+										label="Medical Conditions / Allergies"
+										id="medical"
+										type="textarea"
+										formData={formData}
+										handleInputChange={handleInputChange}
+										errors={errors}
+									/>
+									<InputField
+										label="How did you hear about us?"
+										id="referral"
+										formData={formData}
+										handleInputChange={handleInputChange}
+										errors={errors}
+									/>
+								</div>
+								<InputField
+									label="General Remarks"
+									id="remarks"
+									type="textarea"
+									formData={formData}
+									handleInputChange={handleInputChange}
+									errors={errors}
+								/>
+
+								<div className="p-6 border rounded-lg bg-slate-50 space-y-4">
+									<h3 className="font-bold flex items-center gap-2">
+										<CheckCircle2 className="w-5 h-5 text-green-600" />
+										Review & Final Declaration
+									</h3>
+									<div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-8 text-sm">
+										<div className="flex justify-between border-b pb-1">
+											<span className="text-muted-foreground">Full Name:</span>
+											<span className="font-medium">
+												{formData.firstName} {formData.lastName}
+											</span>
 										</div>
-										<div>
-											<span className="text-muted-foreground">Class:</span>{" "}
-											{formData.applyClass}
+										<div className="flex justify-between border-b pb-1">
+											<span className="text-muted-foreground">Applied Class:</span>
+											<span className="font-medium">{formData.applyClass}</span>
 										</div>
-										<div>
-											<span className="text-muted-foreground">DOB:</span>{" "}
-											{formData.dob}
+										<div className="flex justify-between border-b pb-1">
+											<span className="text-muted-foreground">DOB:</span>
+											<span className="font-medium">{formData.dob}</span>
 										</div>
-										<div>
-											<span className="text-muted-foreground">Father:</span>{" "}
-											{formData.fatherName}
+										<div className="flex justify-between border-b pb-1">
+											<span className="text-muted-foreground">Father:</span>
+											<span className="font-medium">{formData.fatherName}</span>
 										</div>
 									</div>
+
+									<label className="flex items-start gap-3 cursor-pointer mt-6 p-3 bg-white rounded border border-slate-200">
+										<input
+											type="checkbox"
+											id="agreeCheck"
+											checked={formData.agreeCheck}
+											onChange={handleInputChange}
+											className="mt-1 h-4 w-4 rounded border-slate-300 text-[#0a1628] focus:ring-[#0a1628]"
+										/>
+										<span className="text-sm leading-relaxed text-slate-600">
+											I hereby declare that the information provided is true to
+											 the best of my knowledge. I understand that any false 
+											 information may lead to rejection of this application.
+										</span>
+									</label>
+									{errors.agreeCheck && (
+										<p className="text-xs text-destructive font-medium ml-7">
+											{errors.agreeCheck}
+										</p>
+									)}
 								</div>
-								<label className="flex items-start gap-3 cursor-pointer">
-									<input
-										type="checkbox"
-										id="agreeCheck"
-										checked={formData.agreeCheck}
-										onChange={handleInputChange}
-										className="mt-1"
-									/>
-									<span className="text-sm text-muted-foreground">
-										I confirm that all information provided is accurate.
-									</span>
-								</label>
-								{errors.agreeCheck && (
-									<p className="text-xs text-destructive font-medium">
-										{errors.agreeCheck}
-									</p>
-								)}
 							</div>
 						)}
 
