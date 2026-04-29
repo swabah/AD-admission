@@ -67,6 +67,7 @@ export const localAdmissionSchema = z.object({
   prevClass: z.string().min(1, "Previous class is required"),
   fatherName: z.string().min(1, "Father's name is required"),
   fatherPhone: requiredPhoneSchema,
+  prevBoard: z.string().optional(),
   address: z.string().min(1, "Residential address is required"),
 });
 

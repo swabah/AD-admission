@@ -23,7 +23,9 @@ import {
 	CheckCircle2,
 	ChevronLeft,
 	AlertCircle,
+	Download,
 } from "lucide-react";
+import printLogo from "../assets/horizontal-logo.png";
 
 const LocalAdmissionPage = () => {
 	const navigate = useNavigate();
@@ -46,6 +48,37 @@ const LocalAdmissionPage = () => {
 	const [submitted, setSubmitted] = useState(false);
 	const [appNo, setAppNo] = useState("");
 	const [submitError, setSubmitError] = useState<string | null>(null);
+	const [isDownloading, setIsDownloading] = useState(false);
+
+	const preloadImage = (url: string): Promise<void> => {
+		return new Promise((resolve) => {
+			if (!url) {
+				resolve();
+				return;
+			}
+			const img = new Image();
+			img.onload = () => resolve();
+			img.onerror = () => resolve();
+			img.src = url;
+		});
+	};
+
+	const handleDownloadReceipt = async () => {
+		const formData = getValues();
+		setIsDownloading(true);
+		try {
+			const preloads = [preloadImage(printLogo)];
+			if (photoDataURL) preloads.push(preloadImage(photoDataURL));
+			await Promise.all(preloads);
+
+			await downloadApplicationPDF(appNo, formData.firstName);
+		} catch (err) {
+			console.error("PDF download error:", err);
+			alert("Failed to download receipt.");
+		} finally {
+			setIsDownloading(false);
+		}
+	};
 
 	const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
@@ -114,10 +147,12 @@ const LocalAdmissionPage = () => {
 
 					<div className="space-y-3">
 						<Button
-							onClick={() => downloadApplicationPDF(appNo, formData.firstName)}
+							onClick={handleDownloadReceipt}
+							disabled={isDownloading}
 							className="w-full h-12 rounded-xl bg-[#0a1628] hover:bg-[#132238] font-bold"
 						>
-							<Printer className="w-4 h-4 mr-2" /> Download Receipt
+							<Printer className="w-4 h-4 mr-2" /> 
+							{isDownloading ? "Preparing..." : "Download Receipt"}
 						</Button>
 						<Button
 							variant="outline"
@@ -263,6 +298,22 @@ const LocalAdmissionPage = () => {
 										registration={register("applyClass")}
 										error={errors.applyClass?.message}
 										required
+									/>
+									<InputField
+										label="Previous Board"
+										id="prevBoard"
+										type="select"
+										options={[
+											{ value: "Kerala State", label: "Kerala State Board" },
+											{ value: "CBSE", label: "CBSE" },
+											{ value: "ICSE", label: "ICSE / ISC" },
+											{ value: "VHSE", label: "VHSE (Kerala)" },
+											{ value: "THSE", label: "THSE (Kerala)" },
+											{ value: "NIOS", label: "NIOS (Open School)" },
+											{ value: "Other", label: "Other Board" },
+										]}
+										registration={register("prevBoard")}
+										error={errors.prevBoard?.message}
 									/>
 									<InputField
 										label="Previous Class"

@@ -137,8 +137,39 @@ const AdminApplicationView = () => {
 		}
 	};
 
-	const handlePrint = () => {
-		setShowPrintView(true);
+	const preloadImage = (url: string): Promise<void> => {
+		return new Promise((resolve) => {
+			if (!url) {
+				resolve();
+				return;
+			}
+			const img = new Image();
+			img.onload = () => resolve();
+			img.onerror = () => resolve();
+			img.src = url;
+		});
+	};
+
+	const handlePrint = async () => {
+		if (!application) return;
+		setUpdatingStatus(true); // Reusing for loading state
+		try {
+			// Preload logo and student photo
+			const photo = application.photo;
+			const preloads = [preloadImage(logo)];
+			if (photo) preloads.push(preloadImage(photo));
+			await Promise.all(preloads);
+
+			setShowPrintView(true);
+			// Delay to ensure print component is rendered and styles applied
+			setTimeout(() => {
+				window.print();
+				setUpdatingStatus(false);
+			}, 500);
+		} catch (err) {
+			console.error("Print prep failed:", err);
+			setUpdatingStatus(false);
+		}
 	};
 
 	if (loading) {
@@ -394,10 +425,11 @@ const AdminApplicationView = () => {
 					<button
 						type="button"
 						onClick={handlePrint}
+						disabled={updatingStatus}
 						className="btn btn-primary"
 						style={{ fontSize: 14 }}
 					>
-						🖨 Print / PDF
+						{updatingStatus ? "⌛ Preparing..." : "🖨 Print / PDF"}
 					</button>
 				</div>
 			</div>
