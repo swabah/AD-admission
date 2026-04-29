@@ -78,19 +78,25 @@ export const validateStep = (
     if (!formData.academicYear) errors.academicYear = "Please select the academic year";
   }
 
-  if (step === 3) {
-    if (!formData.fatherName?.trim()) errors.fatherName = "Father's name is required";
-    const fatherPhoneError = validatePhone(formData.fatherPhone || "");
-    if (fatherPhoneError) errors.fatherPhone = fatherPhoneError;
-    if (!formData.motherName?.trim()) errors.motherName = "Mother's name is required";
-    const motherPhoneError = validatePhone(formData.motherPhone || "");
-    if (motherPhoneError) errors.motherPhone = motherPhoneError;
-    if (formData.emergencyPhone?.trim()) {
-      const emergencyPhoneError = validatePhone(formData.emergencyPhone);
-      if (emergencyPhoneError) errors.emergencyPhone = emergencyPhoneError;
-    }
-    if (!formData.agreeCheck) errors.agreeCheck = "You must agree to the declaration before submitting";
-  }
+	if (step === 3) {
+		if (!formData.fatherName?.trim())
+			errors.fatherName = "Father's name is required";
+		const fatherPhoneError = validatePhone(formData.fatherPhone || "");
+		if (fatherPhoneError) errors.fatherPhone = fatherPhoneError;
+		if (!formData.motherName?.trim())
+			errors.motherName = "Mother's name is required";
+		const motherPhoneError = validatePhone(formData.motherPhone || "");
+		if (motherPhoneError) errors.motherPhone = motherPhoneError;
+		if (formData.emergencyPhone?.trim()) {
+			const emergencyPhoneError = validatePhone(formData.emergencyPhone);
+			if (emergencyPhoneError) errors.emergencyPhone = emergencyPhoneError;
+		}
+	}
+
+	if (step === 4) {
+		if (!formData.agreeCheck)
+			errors.agreeCheck = "You must agree to the declaration before submitting";
+	}
 
   return errors;
 };
