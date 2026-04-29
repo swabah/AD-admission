@@ -335,7 +335,7 @@ const ApplicationPrintDocument = ({
 		emergencyPhone: app.emergencyPhone || app.emergency_phone,
 		medical:        app.medical,
 		remarks:        app.remarks,
-		photo:          app.photo,
+		photo:          app.photo          || app.photoUrl        || "",
 		submissionDate: app.submissionDate || app.submission_date,
 		status:         app.status         || "submitted",
 	};

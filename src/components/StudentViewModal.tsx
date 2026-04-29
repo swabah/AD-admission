@@ -92,6 +92,8 @@ const StatusBadge = ({ status }: { status?: string }) => {
 
 // ─── Main component ──────────────────────────────────────────────────────────
 const StudentViewModal = ({ app, open, onOpenChange }: StudentViewModalProps) => {
+  if (!app) return null;
+
   const d = {
     appNo:         app.appNo         || app.app_no          || "",
     firstName:     app.firstName     || app.first_name      || "",
@@ -127,7 +129,7 @@ const StudentViewModal = ({ app, open, onOpenChange }: StudentViewModalProps) =>
     medical:       app.medical,
     referral:      app.referral,
     remarks:       app.remarks,
-    photo:         app.photo,
+    photo:         app.photo         || app.photoUrl        || "",
     status:        app.status,
     submissionDate:app.submissionDate|| app.submission_date,
   };
