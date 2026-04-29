@@ -63,6 +63,7 @@ const NewAdmissionPage = () => {
 
 	const [errors, setErrors] = useState<Record<string, string | null>>({});
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [isNavigating, setIsNavigating] = useState(false);
 	const [submitError, setSubmitError] = useState<string | null>(null);
 	const [showSuccess, setShowSuccess] = useState(false);
 	const [appNo, setAppNo] = useState("");
@@ -95,13 +96,21 @@ const NewAdmissionPage = () => {
 			setErrors(stepErrors);
 			return;
 		}
-		setCurrentStep((prev) => prev + 1);
-		window.scrollTo({ top: 0, behavior: "smooth" });
+		setIsNavigating(true);
+		setTimeout(() => {
+			setCurrentStep((prev) => prev + 1);
+			setIsNavigating(false);
+			window.scrollTo({ top: 0, behavior: "smooth" });
+		}, 300);
 	};
 
 	const prevStep = () => {
-		setCurrentStep((prev) => prev - 1);
-		window.scrollTo({ top: 0, behavior: "smooth" });
+		setIsNavigating(true);
+		setTimeout(() => {
+			setCurrentStep((prev) => prev - 1);
+			setIsNavigating(false);
+			window.scrollTo({ top: 0, behavior: "smooth" });
+		}, 300);
 	};
 
 	const handleSubmit = async () => {
@@ -465,12 +474,13 @@ const NewAdmissionPage = () => {
 							<Button
 								variant="ghost"
 								onClick={prevStep}
-								disabled={currentStep === 1 || isSubmitting}
+								disabled={currentStep === 1 || isSubmitting || isNavigating}
+								loading={isNavigating}
 							>
 								<ChevronLeft className="w-4 h-4 mr-2" /> Previous
 							</Button>
 							{currentStep < 4 ? (
-								<Button onClick={nextStep}>
+								<Button onClick={nextStep} loading={isNavigating} disabled={isNavigating}>
 									Next <ChevronRight className="w-4 h-4 ml-2" />
 								</Button>
 							) : (
