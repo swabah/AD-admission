@@ -1,6 +1,7 @@
 import { Users, Clock, Eye, Check, Download, RefreshCw, LogOut } from "lucide-react";
 import logo from "../../assets/logo.jpg";
 import type { ApplicationData } from "../../services/supabase";
+import { Button } from "../ui/button";
 
 interface AdminSidebarProps {
 	applications: ApplicationData[];
@@ -34,11 +35,11 @@ export const AdminSidebar = ({ applications, onExport, onRefresh, onLogout, mobi
 
 	return (
 		<aside className={`fixed inset-y-0 left-0 z-40 w-64 bg-gradient-to-b from-[#0a1628] to-[#132238] shadow-sm transform transition-transform duration-300 flex flex-col ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0 lg:static"}`}>
-			<div className="p-6 border-b border-white/10">
-				<div className="w-12 h-12 rounded-xl bg-white/5 border border-[#c8922a]/50 p-1.5 mb-4 shadow-sm">
-					<img src={logo} alt="Logo" className="w-full h-full object-contain filter invert brightness-0" />
+			<div className="p-8 border-b border-white/10">
+				<div className="mb-6 bg-white p-1.5 rounded-2xl w-fit shadow-xl shadow-black/20">
+					<img src={logo} alt="Logo" className="w-12 h-12 object-contain" />
 				</div>
-				<h2 className="font-display text-xl text-white font-bold leading-tight">Ahlussuffa Dars</h2>
+				<h2 className="font-display text-2xl text-white font-bold leading-tight">Ahlussuffa Dars</h2>
 				<p className="text-xs text-white/50 mt-1 uppercase tracking-wider font-semibold">Admission Portal</p>
 			</div>
 
@@ -47,15 +48,29 @@ export const AdminSidebar = ({ applications, onExport, onRefresh, onLogout, mobi
 			</div>
 
 			<div className="p-4 border-t border-white/10 space-y-1">
-				<button  type="button" onClick={onExport} className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-white/70 hover:text-white hover:bg-white/10 transition-colors text-left">
+			<div className="p-4 border-t border-white/10 space-y-2">
+				<Button 
+					variant="ghost" 
+					onClick={onExport} 
+					className="w-full justify-start gap-3 text-white/70 hover:text-white hover:bg-white/10"
+				>
 					<Download className="w-4 h-4" /> Export CSV
-				</button>
-				<button type="button"  onClick={onRefresh} className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-white/70 hover:text-white hover:bg-white/10 transition-colors text-left">
+				</Button>
+				<Button 
+					variant="ghost" 
+					onClick={onRefresh} 
+					className="w-full justify-start gap-3 text-white/70 hover:text-white hover:bg-white/10"
+				>
 					<RefreshCw className="w-4 h-4" /> Refresh Data
-				</button>
-				<button type="button"  onClick={onLogout} className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors text-left mt-4">
+				</Button>
+				<Button 
+					variant="ghost" 
+					onClick={onLogout} 
+					className="w-full justify-start gap-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 mt-4"
+				>
 					<LogOut className="w-4 h-4" /> Sign Out
-				</button>
+				</Button>
+			</div>
 			</div>
 		</aside>
 	);

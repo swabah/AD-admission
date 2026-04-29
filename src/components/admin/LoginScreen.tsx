@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Lock, ChevronRight, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "../ui/input";
 import logo from "../../assets/logo.jpg";
 import { authenticateAdmin } from "../../services/supabase";
 
@@ -57,9 +58,9 @@ export const LoginScreen = ({ onLogin, onLoading }: LoginScreenProps) => {
 
 			<div className={`relative z-10 bg-white rounded-3xl border border-slate-200 p-12 w-full max-w-md shadow-sm animate-in fade-in slide-in-from-bottom-8 ${shake ? 'animate-[shake_0.4s_ease-in-out]' : ''}`}>
 				<div className="text-center mb-8">
-					<div className="w-16 h-16 rounded-full bg-[#0a1628] mx-auto mb-4 flex items-center justify-center border-4 border-[#c8922a] overflow-hidden shadow-sm">
-						<img src={logo} alt="Logo" className="w-full h-full object-cover filter invert brightness-0" />
-					</div>
+				<div className="mb-6">
+					<img src={logo} alt="Logo" className="w-20 h-20 object-contain mx-auto" />
+				</div>
 					<h2 className="font-display text-2xl text-[#0a1628] mb-1">Admin Portal</h2>
 					<p className="text-sm text-slate-500">Ahlussuffa Dars · Admission System</p>
 				</div>
@@ -71,31 +72,31 @@ export const LoginScreen = ({ onLogin, onLoading }: LoginScreenProps) => {
 						</div>
 					)}
 					<div className="relative">
-						<div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+						<div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 z-10">
 							<Mail className="w-5 h-5" />
 						</div>
-						<input
+						<Input
 							type="email"
 							value={email}
 							placeholder="Enter admin email"
 							onChange={e => setEmail(e.target.value)}
 							onKeyDown={e => e.key === "Enter" && !isLoading && attempt()}
 							disabled={isLoading}
-							className="w-full pl-12 pr-4 py-3 font-sans text-sm border-2 border-slate-100 rounded-xl outline-none bg-slate-50 text-slate-800 focus:border-[#0a1628] focus:bg-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+							className="pl-12 h-12 rounded-xl bg-slate-50 focus:bg-white border-2 border-slate-100 focus:border-[#0a1628]"
 						/>
 					</div>
 					<div className="relative">
-						<div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+						<div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 z-10">
 							<Lock className="w-5 h-5" />
 						</div>
-						<input
+						<Input
 							type="password"
 							value={password}
 							placeholder="Enter password"
 							onChange={e => setPassword(e.target.value)}
 							onKeyDown={e => e.key === "Enter" && !isLoading && attempt()}
 							disabled={isLoading}
-							className="w-full pl-12 pr-4 py-3 font-sans text-sm border-2 border-slate-100 rounded-xl outline-none bg-slate-50 text-slate-800 focus:border-[#0a1628] focus:bg-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+							className="pl-12 h-12 rounded-xl bg-slate-50 focus:bg-white border-2 border-slate-100 focus:border-[#0a1628]"
 						/>
 					</div>
 					<Button
@@ -103,10 +104,10 @@ export const LoginScreen = ({ onLogin, onLoading }: LoginScreenProps) => {
 						onClick={attempt}
 						loading={isLoading}
 						disabled={isLoading}
-						className="w-full py-3 bg-[#0a1628] hover:bg-[#132238] text-white font-sans text-sm font-medium rounded-xl shadow-sm"
+						className="w-full py-6 bg-[#0a1628] hover:bg-[#132238] text-white font-sans text-sm font-medium rounded-xl shadow-sm"
 					>
 						{isLoading ? "Authenticating..." : "Sign In"}
-						<ChevronRight className="w-4 h-4" />
+						<ChevronRight className="w-4 h-4 ml-2" />
 					</Button>
 				</div>
 				<div className="text-center mt-6 text-xs text-slate-400 uppercase tracking-widest font-semibold">

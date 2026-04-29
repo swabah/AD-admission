@@ -1,68 +1,35 @@
-import { useState, useRef, type ChangeEvent } from "react";
+import { useState, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { addApplication } from "../services/supabase";
 import { downloadApplicationPDF } from "../utils/pdfDownloader";
 import logo from "../assets/logo.jpg";
 import ApplicationPrintDocument from "../components/ApplicationPrintDocument";
-import { validateStep, validatePhoto } from "../utils/formValidation";
+import { validateStep, type FormData } from "../utils/formValidation";
 import { formatApplicationNo } from "../utils/formatters";
 import { InputField } from "../components/InputField";
 import { FormStep } from "../components/FormStep";
+import { Button } from "../components/ui/button";
+import {
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
+	CardDescription,
+} from "../components/ui/card";
 import {
 	Camera,
-	AlertTriangle,
-	ChevronRight,
 	ChevronLeft,
+	ChevronRight,
 	Send,
-	Loader2,
-	Edit2,
+	CheckCircle2,
 	Printer,
-	Share2,
-	X,
+	AlertCircle,
 } from "lucide-react";
 
-interface FormData {
-	firstName: string;
-	lastName: string;
-	dob: string;
-	bloodGroup: string;
-	nationality: string;
-	aadhar: string;
-	studentPhone: string;
-	address: string;
-	applyClass: string;
-	academicYear: string;
-	stream: string;
-	prevSchool: string;
-	prevClass: string;
-	prevBoard: string;
-	prevPercentage: string;
-	achievements: string;
-	fatherName: string;
-	fatherOcc: string;
-	fatherPhone: string;
-	fatherEmail: string;
-	motherName: string;
-	motherOcc: string;
-	motherPhone: string;
-	motherEmail: string;
-	income: string;
-	emergencyName: string;
-	emergencyPhone: string;
-	medical: string;
-	referral: string;
-	remarks: string;
-	agreeCheck: boolean;
-}
-
-interface FormErrors {
-	[key: string]: string | null;
-}
-
-
-
 const NewAdmissionPage = () => {
-	const photoInputRef = useRef<HTMLInputElement>(null);
+	const navigate = useNavigate();
 	const [currentStep, setCurrentStep] = useState(1);
+	const photoInputRef = useRef<HTMLInputElement>(null);
 	const [photoDataURL, setPhotoDataURL] = useState<string | null>(null);
 	const [formData, setFormData] = useState<FormData>({
 		firstName: "",
@@ -74,7 +41,7 @@ const NewAdmissionPage = () => {
 		studentPhone: "",
 		address: "",
 		applyClass: "",
-		academicYear: "",
+		academicYear: "2026–27",
 		stream: "",
 		prevSchool: "",
 		prevClass: "",
@@ -88,92 +55,22 @@ const NewAdmissionPage = () => {
 		motherName: "",
 		motherOcc: "",
 		motherPhone: "",
-		motherEmail: "",
-		income: "",
-		emergencyName: "",
-		emergencyPhone: "",
-		medical: "",
-		referral: "",
-		remarks: "",
+		annualIncome: "",
+		localGuardian: "",
+		guardianPhone: "",
 		agreeCheck: false,
 	});
-	const [errors, setErrors] = useState<FormErrors>({});
-	const [photoError, setPhotoError] = useState<string | null>(null);
-	const [photoInfo, setPhotoInfo] = useState<string | null>(null);
-	const [showPreview, setShowPreview] = useState(false);
-	const [appNo, setAppNo] = useState("");
+
+	const [errors, setErrors] = useState<Record<string, string | null>>({});
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [submitError, setSubmitError] = useState<string | null>(null);
-
-	const compressImage = (
-		file: File,
-		callback: (compressedDataURL: string) => void,
-	) => {
-		const reader = new FileReader();
-		reader.onload = (event) => {
-			const img = new Image();
-			img.src = event.target?.result as string;
-			img.onload = () => {
-				const canvas = document.createElement("canvas");
-				let width = img.width,
-					height = img.height;
-				const maxWidth = 1200,
-					maxHeight = 1600;
-				if (width > maxWidth) {
-					height = Math.round((height * maxWidth) / width);
-					width = maxWidth;
-				}
-				if (height > maxHeight) {
-					width = Math.round((width * maxHeight) / height);
-					height = maxHeight;
-				}
-				canvas.width = width;
-				canvas.height = height;
-				const ctx = canvas.getContext("2d");
-				if (ctx) ctx.drawImage(img, 0, 0, width, height);
-				let quality = 0.9;
-				let compressedDataURL = canvas.toDataURL("image/jpeg", quality);
-				while (compressedDataURL.length > 2 * 1024 * 1024 && quality > 0.1) {
-					quality -= 0.1;
-					compressedDataURL = canvas.toDataURL("image/jpeg", quality);
-				}
-				callback(compressedDataURL);
-			};
-		};
-		reader.readAsDataURL(file);
-	};
-
-	const previewPhoto = (e: ChangeEvent<HTMLInputElement>) => {
-		const file = e.target.files?.[0];
-		if (!file) return;
-		setPhotoError(null);
-		setPhotoInfo(null);
-		const validationError = validatePhoto(file);
-		if (validationError) {
-			setPhotoError(validationError);
-			e.target.value = "";
-			return;
-		}
-		const fileSizeInMB = file.size / (1024 * 1024);
-		if (fileSizeInMB > 2) {
-			setPhotoInfo("Compressing image, please wait…");
-			compressImage(file, (compressedDataURL) => {
-				const finalMB = (compressedDataURL.length / (1024 * 1024)).toFixed(1);
-				setPhotoDataURL(compressedDataURL);
-				setPhotoInfo(`Photo ready — compressed to ${finalMB} MB`);
-			});
-		} else {
-			const reader = new FileReader();
-			reader.onload = (ev) => {
-				setPhotoDataURL(ev.target?.result as string);
-				setPhotoInfo(`Photo uploaded (${fileSizeInMB.toFixed(1)} MB)`);
-			};
-			reader.readAsDataURL(file);
-		}
-	};
+	const [showSuccess, setShowSuccess] = useState(false);
+	const [appNo, setAppNo] = useState("");
 
 	const handleInputChange = (
-		e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
+		e: React.ChangeEvent<
+			HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+		>,
 	) => {
 		const { id, value, type } = e.target;
 		const checked = (e.target as HTMLInputElement).checked;
@@ -184,108 +81,90 @@ const NewAdmissionPage = () => {
 		if (errors[id]) setErrors((prev) => ({ ...prev, [id]: null }));
 	};
 
-	const validate = (step: number) => {
-		const newErrors = validateStep(step, formData);
-		setErrors(newErrors);
-		return Object.keys(newErrors).length === 0;
+	const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (!file) return;
+		const reader = new FileReader();
+		reader.onload = (ev) => setPhotoDataURL(ev.target?.result as string);
+		reader.readAsDataURL(file);
 	};
 
-	const nextStep = (from: number) => {
-		if (!validate(from)) return;
-		setCurrentStep(from + 1);
-		window.scrollTo({ top: 0, behavior: "smooth" });
-	};
-
-	const prevStep = (from: number) => {
-		setCurrentStep(from - 1);
-		window.scrollTo({ top: 0, behavior: "smooth" });
-	};
-
-	const submitForm = async () => {
-		setSubmitError(null);
-		if (!validate(3)) {
-			window.scrollTo({ top: 0, behavior: "smooth" });
+	const nextStep = () => {
+		const stepErrors = validateStep(currentStep, formData);
+		if (Object.keys(stepErrors).length > 0) {
+			setErrors(stepErrors);
 			return;
 		}
+		setCurrentStep((prev) => prev + 1);
+		window.scrollTo({ top: 0, behavior: "smooth" });
+	};
+
+	const prevStep = () => {
+		setCurrentStep((prev) => prev - 1);
+		window.scrollTo({ top: 0, behavior: "smooth" });
+	};
+
+	const handleSubmit = async () => {
 		setIsSubmitting(true);
+		setSubmitError(null);
 		const newAppNo = formatApplicationNo();
 		setAppNo(newAppNo);
+
 		try {
 			await addApplication({
 				...formData,
 				appNo: newAppNo,
-				submissionDate: new Date(),
 				photo: photoDataURL,
-				admissionType: "new" as const,
-			} as FormData & { appNo: string; submissionDate: Date; photo: string | null; admissionType: "new" });
-			setShowPreview(true);
-			window.scrollTo({ top: 0, behavior: "smooth" });
-		} catch (error) {
-			console.error("Error submitting application: ", error);
-			setSubmitError(
-				"We couldn't submit your application right now. Please check your connection and try again.",
-			);
-			window.scrollTo({ top: 0, behavior: "smooth" });
+				submissionDate: new Date(),
+				admissionType: "new",
+				status: "submitted",
+			});
+			setShowSuccess(true);
+		} catch (err: any) {
+			setSubmitError(err.message || "Failed to submit application.");
 		} finally {
 			setIsSubmitting(false);
 		}
 	};
 
-	const shareApplication = async () => {
-		if (navigator.share) {
-			try {
-				await navigator.share({
-					title: "My Application",
-					text: `Application No: ${appNo}`,
-					url: window.location.href,
-				});
-			} catch {
-				// Share cancelled or failed silently
-			}
-		} else {
-			navigator.clipboard.writeText(window.location.href);
-			alert("Link copied to clipboard!");
-		}
-	};
-
-	if (showPreview) {
+	if (showSuccess) {
 		return (
-			<div className="min-h-screen bg-[#faf8f5] font-sans pb-20">
-				<div className="max-w-4xl mx-auto px-4 pt-8">
-					<div className="bg-[#0a1628] rounded-2xl p-6 mb-8 flex flex-col sm:flex-row justify-between items-center gap-6 shadow-sm no-print">
-						<h2 className="font-display text-2xl text-white font-bold">
-							Application Preview
-						</h2>
-						<div className="flex flex-wrap gap-3">
-							<button
-								type="button"
-								onClick={() => {
-									setShowPreview(false);
-									window.scrollTo({ top: 0, behavior: "smooth" });
-								}}
-								className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm font-semibold transition-all border border-white/10"
-							>
-								<Edit2 className="w-4 h-4" /> Edit
-							</button>
-							<button
-								type="button"
-								onClick={() => downloadApplicationPDF(appNo, `${formData.firstName} ${formData.lastName}`.trim())}
-								className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-[#0a1628] text-sm font-semibold transition-all shadow-sm"
-							>
-								<Printer className="w-4 h-4" /> Download PDF
-							</button>
-							<button
-								type="button"
-								onClick={shareApplication}
-								className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#c8922a] to-[#b5801f] hover:brightness-110 text-white text-sm font-semibold transition-all shadow-sm "
-							>
-								<Share2 className="w-4 h-4" /> Share
-							</button>
+			<div className="container mx-auto py-12 max-w-4xl px-4">
+				<Card className="border-emerald-100 bg-emerald-50/10">
+					<CardContent className="pt-12 pb-12 flex flex-col items-center text-center">
+						<div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-6">
+							<CheckCircle2 className="w-8 h-8" />
 						</div>
-					</div>
+						<h2 className="text-3xl font-bold mb-2">Submission Successful!</h2>
+						<p className="text-muted-foreground mb-8">
+							Your application number is{" "}
+							<span className="font-mono font-bold text-foreground">
+								{appNo}
+							</span>
+						</p>
+						<div className="flex gap-4">
+							<Button onClick={() => navigate("/")} variant="outline">
+								Back Home
+							</Button>
+							<Button
+								onClick={() =>
+									downloadApplicationPDF(appNo, formData.firstName)
+								}
+							>
+								<Printer className="w-4 h-4 mr-2" /> Download PDF
+							</Button>
+						</div>
+					</CardContent>
+				</Card>
+				<div className="mt-8">
 					<ApplicationPrintDocument
-						app={{ ...formData, appNo, photo: photoDataURL ?? undefined, submissionDate: new Date().toISOString(), status: 'submitted' }}
-						showStatus={true}
+						app={{
+							...formData,
+							appNo,
+							photo: photoDataURL,
+							status: "submitted",
+							submissionDate: new Date().toISOString(),
+						}}
 					/>
 				</div>
 			</div>
@@ -293,552 +172,318 @@ const NewAdmissionPage = () => {
 	}
 
 	return (
-		<div className="min-h-screen bg-[#faf8f5] font-sans relative">
-			{/* Header */}
-			<div className="bg-gradient-to-br from-[#0a1628] to-[#132238] pt-16 pb-24 px-6 relative overflow-hidden text-center z-0 shadow-sm">
-				<div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djI2SDI0VjM0SDJWMjRoMjJWMEgzNnYyNGgyMnYxMEgzNnoiLz48L2c+PC9nPjwvc3ZnPg==')] opacity-10 mix-blend-overlay"></div>
-				<div className="absolute top-1/2 left-1/4 w-96 h-96 bg-[#c8922a]/20 rounded-full blur-[100px] -translate-y-1/2 pointer-events-none"></div>
-				<div className="absolute top-1/2 right-1/4 w-96 h-96 bg-[#1e3a5f]/40 rounded-full blur-[100px] -translate-y-1/2 pointer-events-none"></div>
-
-				<div className="relative z-10 flex flex-col items-center">
-					<div className="w-24 h-24 rounded-2xl bg-white/5 border border-[#c8922a]/30 p-2.5 backdrop-blur-md shadow-sm mb-6">
-						<img
-							src={logo}
-							alt="Logo"
-							className="w-full h-full object-contain filter invert brightness-0"
-						/>
-					</div>
-					<h1 className="font-display text-4xl sm:text-5xl font-bold text-white mb-2 tracking-tight">
-						Ahlussuffa Dars
-					</h1>
-					<p className="text-white/60 text-sm tracking-[0.15em] uppercase mb-6 font-medium">
-						Where Faith Meets Knowledge · Kannur, Kerala
-					</p>
-					<div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-[#c8922a]/15 border border-[#c8922a]/30 text-[#c8922a] backdrop-blur-sm text-xs font-bold uppercase tracking-wider shadow-inner">
-						<span className="w-2 h-2 rounded-full bg-[#c8922a] animate-pulse"></span>
-						New Admission · 2026–27
-					</div>
-				</div>
-			</div>
-
-			<div className="max-w-6xl mx-auto px-4 sm:px-6 relative z-10 -mt-12 pb-24">
-				<div className="bg-white rounded-3xl shadow-sm border border-slate-200/60 overflow-hidden">
-					{/* Progress Bar */}
-					<div className="bg-white border-b border-slate-100 sticky top-0 z-20 p-4 sm:p-6">
-						<div className="flex max-w-3xl mx-auto gap-2">
-							<FormStep
-								step={1}
-								currentStep={currentStep}
-								label="Personal"
-								onClick={(step) => currentStep >= step && setCurrentStep(step)}
-								isLast={false}
-							/>
-							<FormStep
-								step={2}
-								currentStep={currentStep}
-								label="Academic"
-								onClick={(step) => currentStep >= step && setCurrentStep(step)}
-								isLast={false}
-							/>
-							<FormStep
-								step={3}
-								currentStep={currentStep}
-								label="Parent & Misc"
-								onClick={(step) => currentStep >= step && setCurrentStep(step)}
-								isLast={true}
-							/>
+		<div className="bg-slate-50 min-h-screen pb-20">
+			<header className="bg-[#0a1628] border-b border-[#c8922a]/20 py-4 mb-12 shadow-md">
+				<div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
+					<div className="flex items-center gap-5">
+						<div className="bg-white p-1 rounded-xl shadow-lg border border-white/20">
+							<img src={logo} alt="Logo" className="w-10 h-10 object-contain" />
+						</div>
+						<div>
+							<h1 className="text-white text-2xl font-display font-bold leading-none mb-1.5">
+								New Admission
+							</h1>
+							<p className="text-[#c8922a] text-[10px] uppercase font-bold tracking-[0.2em]">
+								Session 2026–27
+							</p>
 						</div>
 					</div>
+					<Link
+						to="/apply"
+						className="text-white/60 hover:text-white text-xs font-bold flex items-center gap-2 transition-colors group"
+					>
+						<ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />{" "}
+						Back to Portal
+					</Link>
+				</div>
+			</header>
 
-					{/* Form Content */}
-					<div className="p-6 sm:p-10 lg:p-12">
+			<div className="max-w-7xl mx-auto px-4 sm:px-6">
+				<Card className="mb-8 border-0 bg-transparent shadow-none sm:border sm:bg-white sm:shadow-sm sm:rounded-xl overflow-hidden">
+					<CardContent className="p-0">
+						<div className="flex overflow-x-auto no-scrollbar py-4 px-2 sm:px-6 divide-x divide-slate-100">
+							{[1, 2, 3, 4].map((step) => (
+								<FormStep
+									key={step}
+									step={step}
+									currentStep={currentStep}
+									label={
+										step === 1
+											? "Personal"
+											: step === 2
+												? "Academic"
+												: step === 3
+													? "Family"
+													: "Review"
+									}
+									onClick={setCurrentStep}
+									isLast={step === 4}
+								/>
+							))}
+						</div>
+					</CardContent>
+				</Card>
+
+				<Card className="border-0 bg-transparent shadow-none sm:border sm:bg-white sm:shadow-sm sm:rounded-xl overflow-hidden">
+					<CardHeader className="px-0 sm:px-6">
+						<CardTitle>Step {currentStep}</CardTitle>
+						<CardDescription>
+							Please provide the required information below.
+						</CardDescription>
+					</CardHeader>
+					<CardContent className="space-y-8 px-0 sm:px-6">
 						{submitError && (
-							<div className="mb-8 p-4 bg-rose-50 border border-rose-200 rounded-2xl flex gap-3 animate-in fade-in slide-in-from-top-4">
-								<AlertTriangle className="w-6 h-6 text-rose-500 shrink-0" />
-								<div className="flex-1">
-									<h3 className="font-bold text-rose-800 text-sm mb-1">
-										Submission Failed
-									</h3>
-									<p className="text-sm text-rose-600 leading-relaxed">
-										{submitError}
-									</p>
-								</div>
-								<button
-									type="button"
-									onClick={() => setSubmitError(null)}
-									className="text-rose-400 hover:text-rose-600"
-								>
-									<X className="w-5 h-5" />
-								</button>
+							<div className="p-4 bg-destructive/10 text-destructive rounded-lg flex gap-3 text-sm">
+								<AlertCircle className="w-4 h-4 shrink-0" />
+								{submitError}
 							</div>
 						)}
 
-						{/* Step 1: Personal Information */}
-						<div
-							className={`space-y-8 animate-in fade-in slide-in-from-right-4 duration-500 ${currentStep === 1 ? "block" : "hidden"}`}
-						>
-							<div className="mb-8">
-								<div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-slate-500 text-xs font-bold uppercase tracking-widest mb-3">
-									Step 1 of 3
-								</div>
-								<h2 className="font-display text-3xl font-bold text-[#0a1628] mb-2">
-									Personal Information
-								</h2>
-								<p className="text-slate-500 text-[15px]">
-									Please provide the student's personal details accurately.
-								</p>
-							</div>
-
-							<div className="flex flex-col md:flex-row gap-8 lg:gap-12">
-								{/* Photo Upload */}
-								<div className="shrink-0 flex flex-col gap-2">
-									<label htmlFor="photo-upload" className="text-xs font-bold uppercase tracking-wider text-slate-500">
-										Student Photo
-									</label>
-									<button
-										type="button"
-										id="photo-upload"
-										onClick={() => photoInputRef.current?.click()}
-										onKeyDown={(e) => e.key === 'Enter' && photoInputRef.current?.click()}
-										className={`w-36 h-48 rounded-2xl border-2 border-dashed flex flex-col items-center justify-center cursor-pointer overflow-hidden transition-all group relative ${photoError ? "border-rose-300 bg-rose-50/50" : "border-slate-300 bg-slate-50 hover:bg-slate-100 hover:border-[#0a1628]/50"}`}
-									>
-										{photoDataURL ? (
-											<>
+						{currentStep === 1 && (
+							<div className="space-y-6">
+								<div className="flex flex-col md:flex-row gap-8">
+									<div className="shrink-0 flex flex-col items-center gap-2">
+										<div className="text-sm font-medium">Student Photo</div>
+										<div
+											onClick={() => photoInputRef.current?.click()}
+											className="w-32 h-40 border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer bg-slate-50 hover:bg-slate-100 transition-colors mx-auto"
+										>
+											{photoDataURL ? (
 												<img
 													src={photoDataURL}
-													alt="Preview"
-													className="w-full h-full object-cover"
+													className="w-full h-full object-cover rounded-lg"
 												/>
-												<div className="absolute inset-0 bg-[#0a1628]/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-													<Camera className="w-8 h-8 text-white" />
-												</div>
-											</>
-										) : (
-											<div className="text-center p-4 text-slate-400 group-hover:text-[#0a1628] transition-colors">
-												<Camera className="w-8 h-8 mx-auto mb-2 opacity-50" />
-												<div className="text-xs font-bold">Upload Photo</div>
-												<div className="text-[10px] mt-1 opacity-70">
-													JPG, PNG <br />
-													Max 5MB
-												</div>
-											</div>
-										)}
-									</button>
-									<input
-										type="file"
-										accept="image/jpeg,image/png,image/webp"
-										onChange={previewPhoto}
-										ref={photoInputRef}
-										className="hidden"
-									/>
-									{photoError && (
-										<div className="text-[11px] font-bold text-rose-500 max-w-[144px] leading-tight text-center mt-1">
-											{photoError}
+											) : (
+												<Camera className="text-slate-400" />
+											)}
 										</div>
-									)}
-									{photoInfo && !photoError && (
-										<div className="text-[11px] font-bold text-emerald-600 max-w-[144px] leading-tight text-center mt-1">
-											{photoInfo}
-										</div>
-									)}
+										<input
+											type="file"
+											className="hidden"
+											ref={photoInputRef}
+											onChange={handlePhotoUpload}
+										/>
+									</div>
+									<div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+										<InputField
+											label="First Name"
+											id="firstName"
+											formData={formData}
+											handleInputChange={handleInputChange}
+											errors={errors}
+											required
+										/>
+										<InputField
+											label="Last Name"
+											id="lastName"
+											formData={formData}
+											handleInputChange={handleInputChange}
+											errors={errors}
+											required
+										/>
+										<InputField
+											label="Date of Birth"
+											id="dob"
+											type="date"
+											formData={formData}
+											handleInputChange={handleInputChange}
+											errors={errors}
+											required
+										/>
+										<InputField
+											label="Blood Group"
+											id="bloodGroup"
+											type="select"
+											options={[
+												"A+",
+												"B+",
+												"O+",
+												"AB+",
+												"A-",
+												"B-",
+												"O-",
+												"AB-",
+											]}
+											formData={formData}
+											handleInputChange={handleInputChange}
+											errors={errors}
+											required
+										/>
+									</div>
 								</div>
-
-								<div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-6">
-									<InputField formData={formData} handleInputChange={handleInputChange} errors={errors}
-										label="First Name"
-										id="firstName"
-										placeholder="e.g. Muhammad"
-										required
-									/>
-									<InputField formData={formData} handleInputChange={handleInputChange} errors={errors}
-										label="Last Name"
-										id="lastName"
-										placeholder="e.g. Ibrahim"
-										required
-									/>
-									<InputField formData={formData} handleInputChange={handleInputChange} errors={errors}
-										label="Date of Birth"
-										id="dob"
-										type="date"
-										required
-									/>
-									<InputField formData={formData} handleInputChange={handleInputChange} errors={errors}
-										label="Blood Group"
-										id="bloodGroup"
-										type="select"
-										placeholder="Select"
-										options={["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"]}
-									/>
-									<InputField formData={formData} handleInputChange={handleInputChange} errors={errors}
-										label="Nationality"
-										id="nationality"
-										placeholder="Indian"
-									/>
-									<InputField formData={formData} handleInputChange={handleInputChange} errors={errors}
-										label="Aadhar Number"
-										id="aadhar"
-										placeholder="XXXX XXXX XXXX"
-										maxLength={14}
-										required
-									/>
-								</div>
-							</div>
-
-							<div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-								<InputField formData={formData} handleInputChange={handleInputChange} errors={errors}
-									label="Student Phone"
-									id="studentPhone"
-									type="tel"
-									placeholder="+91 XXXXX XXXXX"
+								<InputField
+									label="Aadhar Number"
+									id="aadhar"
+									formData={formData}
+									handleInputChange={handleInputChange}
+									errors={errors}
+									required
 								/>
-								<InputField formData={formData} handleInputChange={handleInputChange} errors={errors}
-									label="Residential Address"
+								<InputField
+									label="Address"
 									id="address"
 									type="textarea"
-									placeholder="House No., Street, Area, City, State, PIN"
-									className="sm:col-span-2"
+									formData={formData}
+									handleInputChange={handleInputChange}
+									errors={errors}
 									required
 								/>
 							</div>
+						)}
 
-							<div className="pt-6 border-t border-slate-100 flex justify-end">
-								<button
-									type="button"
-									onClick={() => nextStep(1)}
-									className="bg-[#0a1628] hover:bg-[#132238] text-white px-8 py-3.5 rounded-xl font-bold text-[15px] transition-all flex items-center gap-2 shadow-sm hover:-translate-y-0.5"
-								>
-									Next: Academic Details <ChevronRight className="w-4 h-4" />
-								</button>
-							</div>
-						</div>
-
-						{/* Step 2: Academic Details */}
-						<div
-							className={`space-y-8 animate-in fade-in slide-in-from-right-4 duration-500 ${currentStep === 2 ? "block" : "hidden"}`}
-						>
-							<div className="mb-8">
-								<div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-slate-500 text-xs font-bold uppercase tracking-widest mb-3">
-									Step 2 of 3
-								</div>
-								<h2 className="font-display text-3xl font-bold text-[#0a1628] mb-2">
-									Academic Details
-								</h2>
-								<p className="text-slate-500 text-[15px]">
-									Admission preference and previous academic history.
-								</p>
-							</div>
-
-							<div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-								<InputField formData={formData} handleInputChange={handleInputChange} errors={errors}
+						{currentStep === 2 && (
+							<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+								<InputField
 									label="Applying for Class"
 									id="applyClass"
 									type="select"
-									placeholder="Select class"
 									options={[
 										"Class 8",
 										"Class 9",
 										"Class 10",
 										"Plus One",
 										"Plus Two",
-										"Degree 1st Year",
-										"Degree 2nd Year",
-										"Degree 3rd Year",
-										"Degree 4th Year",
+										"Degree",
 									]}
+									formData={formData}
+									handleInputChange={handleInputChange}
+									errors={errors}
 									required
 								/>
-								<InputField formData={formData} handleInputChange={handleInputChange} errors={errors}
+								<InputField
 									label="Academic Year"
 									id="academicYear"
 									type="select"
-									placeholder="Select year"
-									options={["2026–27", "2027–28", "2028–29"]}
+									options={["2026–27"]}
+									formData={formData}
+									handleInputChange={handleInputChange}
+									errors={errors}
 									required
 								/>
-								<InputField formData={formData} handleInputChange={handleInputChange} errors={errors}
-									label="Stream / Section"
-									id="stream"
-									type="select"
-									placeholder="Select Stream"
-									options={[
-										"RootExc",
-										"HS (Higher Secondary)",
-										"BS (Bachelor of Science)",
-									]}
-								/>
-								<div className="hidden sm:block"></div>
-
-								<div className="sm:col-span-2 flex items-center gap-3 my-2">
-									<div className="h-px bg-slate-200 flex-1"></div>
-									<span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-										Previous History
-									</span>
-									<div className="h-px bg-slate-200 flex-1"></div>
-								</div>
-
-								<InputField formData={formData} handleInputChange={handleInputChange} errors={errors}
-									label="Previous School Name"
+								<InputField
+									label="Previous School"
 									id="prevSchool"
-									placeholder="School name"
-									className="sm:col-span-2"
+									formData={formData}
+									handleInputChange={handleInputChange}
+									errors={errors}
+									required
 								/>
-								<InputField formData={formData} handleInputChange={handleInputChange} errors={errors}
-									label="Previous Class"
-									id="prevClass"
-									placeholder="e.g. Class 7"
-								/>
-								<InputField formData={formData} handleInputChange={handleInputChange} errors={errors}
-									label="Previous Board"
-									id="prevBoard"
-									type="select"
-									placeholder="Select Board"
-									options={["CBSE", "ICSE", "State Board", "IB", "IGCSE"]}
-								/>
-								<InputField formData={formData} handleInputChange={handleInputChange} errors={errors}
-									label="Percentage / Grade"
+								<InputField
+									label="Previous Percentage"
 									id="prevPercentage"
-									placeholder="e.g. 85% or A+"
-								/>
-								<InputField formData={formData} handleInputChange={handleInputChange} errors={errors}
-									label="Extracurricular Activities / Achievements"
-									id="achievements"
-									type="textarea"
-									placeholder="Sports, arts, clubs, awards, competitions…"
-									className="sm:col-span-2"
+									formData={formData}
+									handleInputChange={handleInputChange}
+									errors={errors}
+									required
 								/>
 							</div>
+						)}
 
-							<div className="pt-6 border-t border-slate-100 flex justify-between items-center">
-								<button
-									type="button"
-									onClick={() => prevStep(2)}
-									className="text-slate-500 hover:text-[#0a1628] font-bold px-4 py-3 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-2"
-								>
-									<ChevronLeft className="w-4 h-4" /> Back
-								</button>
-								<button
-									type="button"
-									onClick={() => nextStep(2)}
-									className="bg-[#0a1628] hover:bg-[#132238] text-white px-8 py-3.5 rounded-xl font-bold text-[15px] transition-all flex items-center gap-2 shadow-sm hover:-translate-y-0.5"
-								>
-									Next: Parent Details <ChevronRight className="w-4 h-4" />
-								</button>
+						{currentStep === 3 && (
+							<div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+								<InputField
+									label="Father's Name"
+									id="fatherName"
+									formData={formData}
+									handleInputChange={handleInputChange}
+									errors={errors}
+									required
+								/>
+								<InputField
+									label="Father's Phone"
+									id="fatherPhone"
+									type="tel"
+									formData={formData}
+									handleInputChange={handleInputChange}
+									errors={errors}
+									required
+								/>
+								<InputField
+									label="Mother's Name"
+									id="motherName"
+									formData={formData}
+									handleInputChange={handleInputChange}
+									errors={errors}
+									required
+								/>
+								<InputField
+									label="Mother's Phone"
+									id="motherPhone"
+									type="tel"
+									formData={formData}
+									handleInputChange={handleInputChange}
+									errors={errors}
+								/>
 							</div>
-						</div>
+						)}
 
-						{/* Step 3: Parent & Misc */}
-						<div
-							className={`space-y-8 animate-in fade-in slide-in-from-right-4 duration-500 ${currentStep === 3 ? "block" : "hidden"}`}
-						>
-							<div className="mb-8">
-								<div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-slate-500 text-xs font-bold uppercase tracking-widest mb-3">
-									Step 3 of 3
-								</div>
-								<h2 className="font-display text-3xl font-bold text-[#0a1628] mb-2">
-									Parent & Guardian Info
-								</h2>
-								<p className="text-slate-500 text-[15px]">
-									Contact details and additional information.
-								</p>
-							</div>
-
-							<div className="space-y-8">
-								{/* Father */}
-								<div>
-									<div className="flex items-center gap-2 mb-4">
-										<div className="w-1 h-4 bg-[#c8922a] rounded-full"></div>
-										<h3 className="text-sm font-bold uppercase tracking-widest text-slate-400">
-											Father's Details
-										</h3>
-									</div>
-									<div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-										<InputField formData={formData} handleInputChange={handleInputChange} errors={errors}
-											label="Full Name"
-											id="fatherName"
-											placeholder="Full name"
-											required
-										/>
-										<InputField formData={formData} handleInputChange={handleInputChange} errors={errors}
-											label="Occupation"
-											id="fatherOcc"
-											placeholder="e.g. Engineer"
-										/>
-										<InputField formData={formData} handleInputChange={handleInputChange} errors={errors}
-											label="Phone Number"
-											id="fatherPhone"
-											type="tel"
-											placeholder="+91 XXXXX XXXXX"
-											required
-										/>
-										<InputField formData={formData} handleInputChange={handleInputChange} errors={errors}
-											label="Email Address"
-											id="fatherEmail"
-											type="email"
-											placeholder="email@example.com"
-										/>
-									</div>
-								</div>
-
-								{/* Mother */}
-								<div>
-									<div className="flex items-center gap-2 mb-4">
-										<div className="w-1 h-4 bg-[#c8922a] rounded-full"></div>
-										<h3 className="text-sm font-bold uppercase tracking-widest text-slate-400">
-											Mother's Details
-										</h3>
-									</div>
-									<div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-										<InputField formData={formData} handleInputChange={handleInputChange} errors={errors}
-											label="Full Name"
-											id="motherName"
-											placeholder="Full name"
-											required
-										/>
-										<InputField formData={formData} handleInputChange={handleInputChange} errors={errors}
-											label="Occupation"
-											id="motherOcc"
-											placeholder="e.g. Teacher"
-										/>
-										<InputField formData={formData} handleInputChange={handleInputChange} errors={errors}
-											label="Phone Number"
-											id="motherPhone"
-											type="tel"
-											placeholder="+91 XXXXX XXXXX"
-										/>
-										<InputField formData={formData} handleInputChange={handleInputChange} errors={errors}
-											label="Email Address"
-											id="motherEmail"
-											type="email"
-											placeholder="email@example.com"
-										/>
-									</div>
-								</div>
-
-								{/* Additional */}
-								<div>
-									<div className="flex items-center gap-2 mb-4">
-										<div className="w-1 h-4 bg-[#c8922a] rounded-full"></div>
-										<h3 className="text-sm font-bold uppercase tracking-widest text-slate-400">
-											Additional Details
-										</h3>
-									</div>
-									<div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-										<InputField formData={formData} handleInputChange={handleInputChange} errors={errors}
-											label="Annual Family Income"
-											id="income"
-											type="select"
-											placeholder="Prefer not to say"
-											options={[
-												"Below ₹2 Lakhs",
-												"₹2–5 Lakhs",
-												"₹5–10 Lakhs",
-												"Above ₹10 Lakhs",
-											]}
-										/>
-										<InputField formData={formData} handleInputChange={handleInputChange} errors={errors}
-											label="How did you hear about us?"
-											id="referral"
-											type="select"
-											placeholder="Select"
-											options={[
-												"Friend / Family",
-												"Website",
-												"Social Media",
-												"Newspaper",
-												"Other",
-											]}
-										/>
-										<InputField formData={formData} handleInputChange={handleInputChange} errors={errors}
-											label="Emergency Contact Name"
-											id="emergencyName"
-											placeholder="Contact name"
-										/>
-										<InputField formData={formData} handleInputChange={handleInputChange} errors={errors}
-											label="Emergency Contact Phone"
-											id="emergencyPhone"
-											type="tel"
-											placeholder="+91 XXXXX XXXXX"
-										/>
-										<InputField formData={formData} handleInputChange={handleInputChange} errors={errors}
-											label="Medical Conditions / Allergies"
-											id="medical"
-											type="textarea"
-											placeholder="Any known conditions, medications, or allergies…"
-											className="sm:col-span-2"
-										/>
-										<InputField formData={formData} handleInputChange={handleInputChange} errors={errors}
-											label="Additional Remarks"
-											id="remarks"
-											type="textarea"
-											placeholder="Any other information you'd like to share…"
-											className="sm:col-span-2"
-										/>
-									</div>
-								</div>
-
-								{/* Declaration */}
-								<div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 mt-6">
-									<p className="text-sm text-slate-600 mb-4 leading-relaxed">
-										<strong className="text-[#0a1628]">Declaration:</strong> I
-										hereby declare that all the information provided in this
-										application is true and correct to the best of my knowledge.
-										I agree to abide by the rules and regulations of the
-										institution.
-									</p>
-									<label className="flex items-start gap-3 cursor-pointer group">
-										<input
-											type="checkbox"
-											id="agreeCheck"
-											checked={formData.agreeCheck}
-											onChange={handleInputChange}
-											className="mt-1 w-5 h-5 rounded border-slate-300 text-[#0a1628] focus:ring-[#0a1628] cursor-pointer"
-										/>
-										<div className="flex-1">
-											<span
-												className={`text-[15px] font-medium transition-colors ${errors.agreeCheck ? "text-rose-600" : "text-slate-700 group-hover:text-[#0a1628]"}`}
-											>
-												I agree to the declaration above{" "}
-												<span className="text-rose-500">*</span>
-											</span>
-											{errors.agreeCheck && (
-												<div className="text-xs font-bold text-rose-500 mt-1">
-													{errors.agreeCheck}
-												</div>
-											)}
+						{currentStep === 4 && (
+							<div className="space-y-6">
+								<div className="p-6 border rounded-lg bg-slate-50">
+									<h3 className="font-bold mb-4">Review Information</h3>
+									<div className="grid grid-cols-2 gap-4 text-sm">
+										<div>
+											<span className="text-muted-foreground">Name:</span>{" "}
+											{formData.firstName} {formData.lastName}
 										</div>
-									</label>
+										<div>
+											<span className="text-muted-foreground">Class:</span>{" "}
+											{formData.applyClass}
+										</div>
+										<div>
+											<span className="text-muted-foreground">DOB:</span>{" "}
+											{formData.dob}
+										</div>
+										<div>
+											<span className="text-muted-foreground">Father:</span>{" "}
+											{formData.fatherName}
+										</div>
+									</div>
 								</div>
+								<label className="flex items-start gap-3 cursor-pointer">
+									<input
+										type="checkbox"
+										id="agreeCheck"
+										checked={formData.agreeCheck}
+										onChange={handleInputChange}
+										className="mt-1"
+									/>
+									<span className="text-sm text-muted-foreground">
+										I confirm that all information provided is accurate.
+									</span>
+								</label>
+								{errors.agreeCheck && (
+									<p className="text-xs text-destructive font-medium">
+										{errors.agreeCheck}
+									</p>
+								)}
 							</div>
+						)}
 
-							<div className="pt-8 border-t border-slate-100 flex justify-between items-center">
-								<button
-									type="button"
-									onClick={() => prevStep(3)}
+						<div className="flex justify-between pt-6 border-t">
+							<Button
+								variant="ghost"
+								onClick={prevStep}
+								disabled={currentStep === 1 || isSubmitting}
+							>
+								<ChevronLeft className="w-4 h-4 mr-2" /> Previous
+							</Button>
+							{currentStep < 4 ? (
+								<Button onClick={nextStep}>
+									Next <ChevronRight className="w-4 h-4 ml-2" />
+								</Button>
+							) : (
+								<Button
+									onClick={handleSubmit}
 									disabled={isSubmitting}
-									className="text-slate-500 hover:text-[#0a1628] font-bold px-4 py-3 rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-2 disabled:opacity-50"
+									loading={isSubmitting}
 								>
-									<ChevronLeft className="w-4 h-4" /> Back
-								</button>
-								<button
-									type="button"
-									onClick={submitForm}
-									disabled={isSubmitting}
-									className="bg-gradient-to-r from-[#c8922a] to-[#b5801f] hover:brightness-110 text-white px-8 py-4 rounded-xl font-bold text-[15px] transition-all flex items-center gap-2 shadow-sm hover:-translate-y-0.5 disabled:opacity-70 disabled:hover:translate-y-0 disabled:cursor-not-allowed"
-								>
-									{isSubmitting ? (
-										<>
-											<Loader2 className="w-5 h-5 animate-spin" /> Submitting…
-										</>
-									) : (
-										<>
-											Review & Submit <Send className="w-4 h-4 ml-1" />
-										</>
-									)}
-								</button>
-							</div>
+									Submit Application <Send className="w-4 h-4 ml-2" />
+								</Button>
+							)}
 						</div>
-					</div>
-				</div>
+					</CardContent>
+				</Card>
 			</div>
 		</div>
 	);

@@ -1,5 +1,7 @@
 import { formatDate } from "../utils/formatters";
 import { User, GraduationCap, Users, AlertCircle, X } from "lucide-react";
+import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -73,18 +75,18 @@ const Section = ({ title, icon: Icon, children, className = "" }: { title: strin
 );
 
 const StatusBadge = ({ status }: { status?: string }) => {
-  const cfg: Record<string, { label: string; textClass: string; bgClass: string; dotClass: string }> = {
-    submitted: { label: "Submitted", textClass: "text-blue-600", bgClass: "bg-blue-100", dotClass: "bg-blue-600" },
-    reviewing: { label: "Reviewing", textClass: "text-purple-600", bgClass: "bg-purple-100", dotClass: "bg-purple-600" },
-    approved:  { label: "Approved", textClass: "text-emerald-600", bgClass: "bg-emerald-100", dotClass: "bg-emerald-600" },
-    rejected:  { label: "Rejected", textClass: "text-red-600", bgClass: "bg-red-100", dotClass: "bg-red-600" },
+  const variantMap: Record<string, "submitted" | "reviewing" | "approved" | "rejected"> = {
+    submitted: "submitted",
+    reviewing: "reviewing",
+    approved: "approved",
+    rejected: "rejected",
   };
-  const c = cfg[status || "submitted"] || cfg.submitted;
+  const variant = variantMap[status || "submitted"] || "submitted";
   return (
-    <span className={`inline-flex items-center gap-1.5 font-sans text-xs font-bold px-3 py-1 rounded-full shadow-sm ${c.textClass} ${c.bgClass}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${c.dotClass}`} />
-      {c.label}
-    </span>
+    <Badge variant={variant} className="gap-1.5 shadow-sm border-none">
+      <span className="w-1.5 h-1.5 rounded-full bg-current" />
+      {status?.charAt(0).toUpperCase()}{status?.slice(1)}
+    </Badge>
   );
 };
 
@@ -157,23 +159,24 @@ const StudentViewModal = ({ app, open, onOpenChange }: StudentViewModalProps) =>
           <div className="flex-1 min-w-0 relative z-10">
             <DialogTitle className="font-display text-2xl sm:text-3xl text-white font-bold leading-tight truncate">{fullName}</DialogTitle>
             <div className="flex flex-wrap items-center gap-2 sm:gap-3 mt-2">
-              <span className="font-mono text-xs font-bold bg-[#c8922a] text-[#0a1628] px-2.5 py-1 rounded shadow-sm">
+              <Badge variant="outline" className="font-mono text-xs font-bold bg-[#c8922a] text-[#0a1628] px-2.5 py-1 rounded shadow-sm border-none">
                 {d.appNo}
-              </span>
-              <span className="font-sans text-xs font-semibold text-white/80 bg-white/10 px-2.5 py-1 rounded backdrop-blur-sm">
+              </Badge>
+              <Badge variant="outline" className="font-sans text-xs font-semibold text-white/80 bg-white/10 px-2.5 py-1 rounded backdrop-blur-sm border-white/10">
                 Class {d.applyClass} · {d.academicYear}
-              </span>
+              </Badge>
               <StatusBadge status={d.status} />
             </div>
           </div>
 
-          <button
-          type="button"
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => onOpenChange(false)}
-            className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 text-white/70 hover:text-white flex items-center justify-center shrink-0 transition-all border border-white/10 relative z-10"
+            className="rounded-xl bg-white/10 hover:bg-white/20 text-white/70 hover:text-white shrink-0 transition-all border border-white/10 relative z-10"
           >
             <X className="w-5 h-5" />
-          </button>
+          </Button>
         </div>
 
         {/* Body (Bento Grid) */}
