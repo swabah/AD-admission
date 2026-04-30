@@ -45,7 +45,7 @@ const ApplicationReview = <T extends FieldValues>({
 					<div className="space-y-4">
 						<SummaryItem label="Father&apos;s Name" value={values.fatherName} />
 						<SummaryItem label="Contact Number" value={values.fatherPhone} />
-						<SummaryItem label="Stream" value={values.stream} />
+						<SummaryItem label="Department" value={values.stream} />
 						<SummaryItem label="Blood Group" value={values.bloodGroup} />
 					</div>
 				</div>

@@ -526,7 +526,7 @@ const AdminApplicationView = () => {
 							value={application.applyClass}
 						/>
 						<ViewDetailItem label="Academic Year" value={application.academicYear} />
-						<ViewDetailItem label="Stream / Section" value={application.stream} />
+						<ViewDetailItem label="Department" value={application.stream} />
 						<ViewDetailItem label="Previous School" value={application.prevSchool} />
 						<ViewDetailItem label="Previous Class" value={application.prevClass} />
 						<ViewDetailItem label="Previous Board" value={application.prevBoard} />

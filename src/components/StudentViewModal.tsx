@@ -205,7 +205,7 @@ const StudentViewModal = ({ app, open, onOpenChange }: StudentViewModalProps) =>
             <Section title="Academic Details" icon={GraduationCap}>
               <Field label="Applying Class" value={d.applyClass} />
               <Field label="Academic Year" value={d.academicYear} />
-              <Field label="Stream" value={d.stream} />
+              <Field label="Department" value={d.stream} />
               <Field label="Medium" value={d.medium} />
               <div className="col-span-2">
                 <Field label="Previous School" value={d.prevSchool} />

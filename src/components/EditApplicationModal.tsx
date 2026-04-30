@@ -50,8 +50,12 @@ const EditApplicationModal = ({
         return ["Plus One", "Plus Two"];
       case "BS":
         return ["Degree 1st Year", "Degree 2nd Year", "Degree 3rd Year"];
+      case "AD":
+        return ["AD 1st Year", "AD 2nd Year", "AD 3rd Year", "AD 4th Year", "AD 5th Year"];
+      case "PG":
+        return ["PG 1st Year", "PG 2nd Year"];
       default:
-        return ["Class 8", "Class 9", "Class 10", "Plus One", "Plus Two", "Degree"];
+        return [];
     }
   };
 
@@ -241,10 +245,10 @@ const EditApplicationModal = ({
                 required
               />
               <InputField
-                label="Stream"
+                label="Department"
                 id="stream"
                 type="select"
-                options={["Root Exc", "HS", "BS", "N/A"]}
+                options={["Root Exc", "HS", "BS", "AD", "PG", "N/A"]}
                 registration={register("stream")}
                 error={errors.stream?.message}
               />

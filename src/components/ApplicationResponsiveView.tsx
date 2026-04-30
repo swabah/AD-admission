@@ -121,7 +121,7 @@ export const ApplicationResponsiveView = ({ app }: ApplicationResponsiveViewProp
 				<InfoCard title="Academic Details" icon={GraduationCap}>
 					<DetailItem label="Applying Class" value={d.applyClass} />
 					<DetailItem label="Academic Year" value={d.academicYear} />
-					<DetailItem label="Stream" value={d.stream} />
+					<DetailItem label="Department" value={d.stream} />
 					<div className="sm:col-span-2">
 						<DetailItem label="Previous School" value={d.prevSchool} />
 					</div>

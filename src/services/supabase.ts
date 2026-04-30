@@ -185,6 +185,8 @@ export const generateNextAppNo = async (
 			if (stream === "Root Exc") streamCode = "RE";
 			else if (stream === "HS") streamCode = "HS";
 			else if (stream === "BS") streamCode = "BS";
+			else if (stream === "AD") streamCode = "AD";
+			else if (stream === "PG") streamCode = "PG";
 		}
 
 		return `AS${streamCode}${paddedId}`;

@@ -112,6 +112,7 @@ const AdminPage = () => {
 	);
 	const [bulkPrintReady, setBulkPrintReady] = useState(false);
 	const [classFilter, setClassFilter] = useState("all");
+	const [departmentFilter, setDepartmentFilter] = useState("all");
 	const [sortBy, setSortBy] = useState("date");
 	const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 	const [selectedApps, setSelectedApps] = useState<string[]>([]);
@@ -353,7 +354,7 @@ const AdminPage = () => {
 			"Date of Birth": app.dob ? new Date(app.dob).toLocaleDateString("en-IN") : "",
 			"Applied Class": app.applyClass || "",
 			"Academic Year": app.academicYear || "",
-			"Stream/Section": app.stream || "",
+			"Department": app.stream || "",
 			"Current Status": (app.status || "submitted").toUpperCase(),
 			"Submission Date": app.submissionDate 
 				? new Date(app.submissionDate as string).toLocaleDateString("en-IN") 
@@ -479,7 +480,9 @@ const AdminPage = () => {
 					: app.status === statusFilter;
 			const matchClass =
 				classFilter === "all" || app.applyClass === classFilter;
-			return matchSearch && matchStatus && matchClass;
+			const matchDepartment =
+				departmentFilter === "all" || app.stream === departmentFilter;
+			return matchSearch && matchStatus && matchClass && matchDepartment;
 		})
 		.sort((a, b) => {
 			let av: string | Date, bv: string | Date;
@@ -667,6 +670,8 @@ const AdminPage = () => {
 										}}
 										classFilter={classFilter}
 										onClassChange={setClassFilter}
+										departmentFilter={departmentFilter}
+										onDepartmentChange={setDepartmentFilter}
 										sortBy={sortBy}
 										onSortByChange={setSortBy}
 										sortOrder={sortOrder}

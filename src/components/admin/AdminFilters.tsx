@@ -8,6 +8,8 @@ interface AdminFiltersProps {
 	onStatusChange: (value: string) => void;
 	classFilter: string;
 	onClassChange: (value: string) => void;
+	departmentFilter: string;
+	onDepartmentChange: (value: string) => void;
 	sortBy: string;
 	onSortByChange: (value: string) => void;
 	sortOrder: "asc" | "desc";
@@ -22,6 +24,8 @@ export const AdminFilters = ({
 	onStatusChange,
 	classFilter,
 	onClassChange,
+	departmentFilter,
+	onDepartmentChange,
 	sortBy,
 	onSortByChange,
 	sortOrder,
@@ -63,6 +67,19 @@ export const AdminFilters = ({
 						{c}
 					</option>
 				))}
+			</select>
+			<select
+				className="shrink-0 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#0a1628] transition-colors font-medium text-slate-700"
+				value={departmentFilter}
+				onChange={(e) => onDepartmentChange(e.target.value)}
+			>
+				<option value="all">All Departments</option>
+				<option value="Root Exc">Root Exc</option>
+				<option value="HS">HS</option>
+				<option value="BS">BS</option>
+				<option value="AD">AD</option>
+				<option value="PG">PG</option>
+				<option value="N/A">N/A</option>
 			</select>
 			<select
 				className="shrink-0 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#0a1628] transition-colors font-medium text-slate-700"

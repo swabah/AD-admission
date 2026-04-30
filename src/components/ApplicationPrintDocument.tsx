@@ -555,7 +555,7 @@ const ApplicationPrintDocument = ({
 					<FormGrid cols={3}>
 						<Field label="Applying for Class" value={d.applyClass}     />
 						<Field label="Academic Year"      value={d.academicYear}   />
-						<Field label="Stream / Section"   value={d.stream}         />
+						<Field label="Department"   value={d.stream}         />
 						<Field label="Previous School"    value={d.prevSchool}     span={2} />
 						<Field label="Previous Class"     value={d.prevClass}      />
 						<Field label="Board"              value={d.prevBoard}      />
