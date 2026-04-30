@@ -82,7 +82,7 @@ const AdminApplicationView = () => {
 				// Convert snake_case to camelCase
 				const formatted: Application = {
 					...data,
-					// Ensure all camelCase fields are explicitly assigned if needed, 
+					// Ensure all camelCase fields are explicitly assigned if needed,
 					// but since getApplicationById already returns them, we just spread.
 					// We add explicit mappings for any potential mismatches or missing fields.
 					id: data.id || id,
@@ -491,9 +491,18 @@ const AdminApplicationView = () => {
 						<ViewDetailItem label="First Name" value={application.firstName} />
 						<ViewDetailItem label="Last Name" value={application.lastName} />
 						<ViewDetailItem label="Date of Birth" value={application.dob} />
-						<ViewDetailItem label="Blood Group" value={application.bloodGroup} />
-						<ViewDetailItem label="Nationality" value={application.nationality} />
-						<ViewDetailItem label="Student Phone" value={application.studentPhone} />
+						<ViewDetailItem
+							label="Blood Group"
+							value={application.bloodGroup}
+						/>
+						<ViewDetailItem
+							label="Nationality"
+							value={application.nationality}
+						/>
+						<ViewDetailItem
+							label="Student Phone"
+							value={application.studentPhone}
+						/>
 						<ViewDetailItem
 							label="Aadhar Number"
 							value={application.aadhar}
@@ -525,11 +534,23 @@ const AdminApplicationView = () => {
 							label="Applying for Class"
 							value={application.applyClass}
 						/>
-						<ViewDetailItem label="Academic Year" value={application.academicYear} />
+						<ViewDetailItem
+							label="Academic Year"
+							value={application.academicYear}
+						/>
 						<ViewDetailItem label="Department" value={application.stream} />
-						<ViewDetailItem label="Previous School" value={application.prevSchool} />
-						<ViewDetailItem label="Previous Class" value={application.prevClass} />
-						<ViewDetailItem label="Previous Board" value={application.prevBoard} />
+						<ViewDetailItem
+							label="Previous School"
+							value={application.prevSchool}
+						/>
+						<ViewDetailItem
+							label="Previous Class"
+							value={application.prevClass}
+						/>
+						<ViewDetailItem
+							label="Previous Board"
+							value={application.prevBoard}
+						/>
 						<ViewDetailItem
 							label="Percentage / Grade"
 							value={application.prevPercentage}
@@ -579,13 +600,22 @@ const AdminApplicationView = () => {
 						Father's Details
 					</div>
 					<div className="form-grid col-2" style={{ marginBottom: "20px" }}>
-						<ViewDetailItem label="Father's Name" value={application.fatherName} />
+						<ViewDetailItem
+							label="Father's Name"
+							value={application.fatherName}
+						/>
 						<ViewDetailItem
 							label="Father's Occupation"
 							value={application.fatherOcc}
 						/>
-						<ViewDetailItem label="Father's Phone" value={application.fatherPhone} />
-						<ViewDetailItem label="Father's Email" value={application.fatherEmail} />
+						<ViewDetailItem
+							label="Father's Phone"
+							value={application.fatherPhone}
+						/>
+						<ViewDetailItem
+							label="Father's Email"
+							value={application.fatherEmail}
+						/>
 					</div>
 
 					<div
@@ -612,13 +642,22 @@ const AdminApplicationView = () => {
 						Mother's Details
 					</div>
 					<div className="form-grid col-2" style={{ marginBottom: "20px" }}>
-						<ViewDetailItem label="Mother's Name" value={application.motherName} />
+						<ViewDetailItem
+							label="Mother's Name"
+							value={application.motherName}
+						/>
 						<ViewDetailItem
 							label="Mother's Occupation"
 							value={application.motherOcc}
 						/>
-						<ViewDetailItem label="Mother's Phone" value={application.motherPhone} />
-						<ViewDetailItem label="Mother's Email" value={application.motherEmail} />
+						<ViewDetailItem
+							label="Mother's Phone"
+							value={application.motherPhone}
+						/>
+						<ViewDetailItem
+							label="Mother's Email"
+							value={application.motherEmail}
+						/>
 					</div>
 
 					<div
@@ -645,7 +684,10 @@ const AdminApplicationView = () => {
 						Additional Details
 					</div>
 					<div className="form-grid col-2">
-						<ViewDetailItem label="Annual Family Income" value={application.income} />
+						<ViewDetailItem
+							label="Annual Family Income"
+							value={application.income}
+						/>
 						<ViewDetailItem
 							label="How did you hear about us?"
 							value={application.referral}
@@ -709,10 +751,15 @@ const AdminApplicationView = () => {
 							flexWrap: "wrap",
 						}}
 					>
-						<button onClick={handlePrint} className="btn btn-primary">
+						<button
+							type="button"
+							onClick={handlePrint}
+							className="btn btn-primary"
+						>
 							🖨 Print / Download PDF
 						</button>
 						<button
+							type="button"
 							onClick={() => navigate("/admin")}
 							className="btn btn-outline"
 						>

@@ -6,15 +6,12 @@ interface AdminFiltersProps {
 	onSearchChange: (value: string) => void;
 	statusFilter: string;
 	onStatusChange: (value: string) => void;
-	classFilter: string;
-	onClassChange: (value: string) => void;
 	departmentFilter: string;
 	onDepartmentChange: (value: string) => void;
 	sortBy: string;
 	onSortByChange: (value: string) => void;
 	sortOrder: "asc" | "desc";
 	onSortOrderToggle: () => void;
-	uniqueClasses: string[];
 }
 
 export const AdminFilters = ({
@@ -22,15 +19,12 @@ export const AdminFilters = ({
 	onSearchChange,
 	statusFilter,
 	onStatusChange,
-	classFilter,
-	onClassChange,
 	departmentFilter,
 	onDepartmentChange,
 	sortBy,
 	onSortByChange,
 	sortOrder,
 	onSortOrderToggle,
-	uniqueClasses,
 }: AdminFiltersProps) => (
 	<div className="flex flex-col lg:flex-row gap-4">
 		<div className="relative flex-1">
@@ -56,18 +50,7 @@ export const AdminFilters = ({
 				<option value="rejected">Rejected</option>
 				<option value="deleted">Trash / Deleted</option>
 			</select>
-			<select
-				className="shrink-0 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#0a1628] transition-colors font-medium text-slate-700"
-				value={classFilter}
-				onChange={(e) => onClassChange(e.target.value)}
-			>
-				<option value="all">All Classes</option>
-				{uniqueClasses.map((c) => (
-					<option key={c} value={c}>
-						{c}
-					</option>
-				))}
-			</select>
+
 			<select
 				className="shrink-0 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#0a1628] transition-colors font-medium text-slate-700"
 				value={departmentFilter}
@@ -77,8 +60,6 @@ export const AdminFilters = ({
 				<option value="Root Exc">Root Exc</option>
 				<option value="HS">HS</option>
 				<option value="BS">BS</option>
-				<option value="AD">AD</option>
-				<option value="PG">PG</option>
 				<option value="N/A">N/A</option>
 			</select>
 			<select
@@ -86,9 +67,9 @@ export const AdminFilters = ({
 				value={sortBy}
 				onChange={(e) => onSortByChange(e.target.value)}
 			>
-				<option value="name">Sort A-Z (Name)</option>
+				<option value="name">Sort A-Z</option>
 				<option value="date">Submission Date</option>
-				<option value="class">Class</option>
+
 			</select>
 			<button
 				type="button"

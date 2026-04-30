@@ -141,7 +141,7 @@ export const deletePhotoFromStorage = async (
 		// Extract file path from public URL
 		const url = new URL(photoUrl);
 		const pathMatch = url.pathname.match(
-/\/storage\/v1\/object\/public\/[^/]+\/(.+)$/,
+			/\/storage\/v1\/object\/public\/[^/]+\/(.+)$/,
 		);
 		if (!pathMatch) return;
 
@@ -185,8 +185,6 @@ export const generateNextAppNo = async (
 			if (stream === "Root Exc") streamCode = "RE";
 			else if (stream === "HS") streamCode = "HS";
 			else if (stream === "BS") streamCode = "BS";
-			else if (stream === "AD") streamCode = "AD";
-			else if (stream === "PG") streamCode = "PG";
 		}
 
 		return `AS${streamCode}${paddedId}`;
@@ -209,7 +207,10 @@ export const addApplication = async (
 	}
 
 	// Convert camelCase to snake_case for Supabase
-	const snakeCaseData: Record<string, string | number | boolean | Date | null | undefined> = {
+	const snakeCaseData: Record<
+		string,
+		string | number | boolean | Date | null | undefined
+	> = {
 		app_no: data.appNo,
 		first_name: data.firstName,
 		last_name: data.lastName,
@@ -273,7 +274,7 @@ export const getAllApplications = async (
 	let queryCount = supabase
 		.from(SUPABASE_TABLE_NAME)
 		.select("*", { count: "exact", head: true });
-	
+
 	if (!includeDeleted) {
 		queryCount = queryCount.neq("status", "deleted");
 	}
@@ -283,10 +284,8 @@ export const getAllApplications = async (
 	if (countError) throw countError;
 
 	// Get paginated data
-	let queryData = supabase
-		.from(SUPABASE_TABLE_NAME)
-		.select("*");
-	
+	let queryData = supabase.from(SUPABASE_TABLE_NAME).select("*");
+
 	if (!includeDeleted) {
 		queryData = queryData.neq("status", "deleted");
 	} else {
@@ -414,7 +413,9 @@ export const searchApplicationsByPhoneAndDob = async (
 		.from(SUPABASE_TABLE_NAME)
 		.select("*")
 		.neq("status", "deleted")
-		.or(`father_phone.eq.${phone},mother_phone.eq.${phone},student_phone.eq.${phone}`)
+		.or(
+			`father_phone.eq.${phone},mother_phone.eq.${phone},student_phone.eq.${phone}`,
+		)
 		.eq("dob", dob)
 		.order("submitted_at", { ascending: false });
 
@@ -503,7 +504,7 @@ export const deleteApplication = async (
 
 		if (error) throw error;
 	}
-	
+
 	return { success: true };
 };
 
@@ -561,35 +562,54 @@ export const updateApplication = async (
 	}
 
 	// Convert camelCase to snake_case for Supabase
-	const snakeCaseData: Record<string, string | number | boolean | Date | null | undefined> = {};
-	
+	const snakeCaseData: Record<
+		string,
+		string | number | boolean | Date | null | undefined
+	> = {};
+
 	if (data.firstName !== undefined) snakeCaseData.first_name = data.firstName;
 	if (data.lastName !== undefined) snakeCaseData.last_name = data.lastName;
 	if (data.dob !== undefined) snakeCaseData.dob = data.dob;
-	if (data.bloodGroup !== undefined) snakeCaseData.blood_group = data.bloodGroup;
-	if (data.nationality !== undefined) snakeCaseData.nationality = data.nationality;
+	if (data.bloodGroup !== undefined)
+		snakeCaseData.blood_group = data.bloodGroup;
+	if (data.nationality !== undefined)
+		snakeCaseData.nationality = data.nationality;
 	if (data.aadhar !== undefined) snakeCaseData.aadhar = data.aadhar;
-	if (data.studentPhone !== undefined) snakeCaseData.student_phone = data.studentPhone;
+	if (data.studentPhone !== undefined)
+		snakeCaseData.student_phone = data.studentPhone;
 	if (data.address !== undefined) snakeCaseData.address = data.address;
-	if (data.applyClass !== undefined) snakeCaseData.apply_class = data.applyClass;
-	if (data.academicYear !== undefined) snakeCaseData.academic_year = data.academicYear;
+	if (data.applyClass !== undefined)
+		snakeCaseData.apply_class = data.applyClass;
+	if (data.academicYear !== undefined)
+		snakeCaseData.academic_year = data.academicYear;
 	if (data.stream !== undefined) snakeCaseData.stream = data.stream;
-	if (data.prevSchool !== undefined) snakeCaseData.prev_school = data.prevSchool;
+	if (data.prevSchool !== undefined)
+		snakeCaseData.prev_school = data.prevSchool;
 	if (data.prevClass !== undefined) snakeCaseData.prev_class = data.prevClass;
 	if (data.prevBoard !== undefined) snakeCaseData.prev_board = data.prevBoard;
-	if (data.prevPercentage !== undefined) snakeCaseData.prev_percentage = data.prevPercentage;
-	if (data.achievements !== undefined) snakeCaseData.achievements = data.achievements;
-	if (data.fatherName !== undefined) snakeCaseData.father_name = data.fatherName;
+	if (data.prevPercentage !== undefined)
+		snakeCaseData.prev_percentage = data.prevPercentage;
+	if (data.achievements !== undefined)
+		snakeCaseData.achievements = data.achievements;
+	if (data.fatherName !== undefined)
+		snakeCaseData.father_name = data.fatherName;
 	if (data.fatherOcc !== undefined) snakeCaseData.father_occ = data.fatherOcc;
-	if (data.fatherPhone !== undefined) snakeCaseData.father_phone = data.fatherPhone;
-	if (data.fatherEmail !== undefined) snakeCaseData.father_email = data.fatherEmail;
-	if (data.motherName !== undefined) snakeCaseData.mother_name = data.motherName;
+	if (data.fatherPhone !== undefined)
+		snakeCaseData.father_phone = data.fatherPhone;
+	if (data.fatherEmail !== undefined)
+		snakeCaseData.father_email = data.fatherEmail;
+	if (data.motherName !== undefined)
+		snakeCaseData.mother_name = data.motherName;
 	if (data.motherOcc !== undefined) snakeCaseData.mother_occ = data.motherOcc;
-	if (data.motherPhone !== undefined) snakeCaseData.mother_phone = data.motherPhone;
-	if (data.motherEmail !== undefined) snakeCaseData.mother_email = data.motherEmail;
+	if (data.motherPhone !== undefined)
+		snakeCaseData.mother_phone = data.motherPhone;
+	if (data.motherEmail !== undefined)
+		snakeCaseData.mother_email = data.motherEmail;
 	if (data.income !== undefined) snakeCaseData.income = data.income;
-	if (data.emergencyName !== undefined) snakeCaseData.emergency_name = data.emergencyName;
-	if (data.emergencyPhone !== undefined) snakeCaseData.emergency_phone = data.emergencyPhone;
+	if (data.emergencyName !== undefined)
+		snakeCaseData.emergency_name = data.emergencyName;
+	if (data.emergencyPhone !== undefined)
+		snakeCaseData.emergency_phone = data.emergencyPhone;
 	if (data.medical !== undefined) snakeCaseData.medical = data.medical;
 	if (data.referral !== undefined) snakeCaseData.referral = data.referral;
 	if (data.remarks !== undefined) snakeCaseData.remarks = data.remarks;

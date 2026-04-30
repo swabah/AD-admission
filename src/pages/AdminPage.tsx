@@ -103,7 +103,9 @@ const AdminPage = () => {
 	const [downloadingApp, setDownloadingApp] = useState<ApplicationData | null>(
 		null,
 	);
-	const [editModalApp, setEditModalApp] = useState<ApplicationData | null>(null);
+	const [editModalApp, setEditModalApp] = useState<ApplicationData | null>(
+		null,
+	);
 	const [activeTab, setActiveTab] = useState("all");
 	const [searchTerm, setSearchTerm] = useState("");
 	const [statusFilter, setStatusFilter] = useState("all");
@@ -111,12 +113,11 @@ const AdminPage = () => {
 		[],
 	);
 	const [bulkPrintReady, setBulkPrintReady] = useState(false);
-	const [classFilter, setClassFilter] = useState("all");
 	const [departmentFilter, setDepartmentFilter] = useState("all");
 	const [sortBy, setSortBy] = useState("name");
 	const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 	const [selectedApps, setSelectedApps] = useState<string[]>([]);
-	
+
 	// Reset bulk print ready state when selection or tab changes
 	useEffect(() => {
 		setBulkPrintReady(false);
@@ -138,14 +139,13 @@ const AdminPage = () => {
 		type: "danger",
 	});
 
-
 	const fetchApplications = useCallback(async (page = 1) => {
 		setLoading(true);
 		try {
-			const result = await getAllApplications({ 
-				page, 
+			const result = await getAllApplications({
+				page,
 				pageSize: 100,
-				includeDeleted: true // Always include so we can filter for "Deleted" tab
+				includeDeleted: true, // Always include so we can filter for "Deleted" tab
 			});
 			if (page === 1) {
 				setApplications(result.data);
@@ -221,8 +221,8 @@ const AdminPage = () => {
 	};
 
 	const handleDelete = (id: string, photoUrl?: string | null) => {
-		const app = applications.find(a => a.id === id);
-		const isCurrentlyDeleted = app?.status === 'deleted';
+		const app = applications.find((a) => a.id === id);
+		const isCurrentlyDeleted = app?.status === "deleted";
 
 		setConfirmDialog({
 			isOpen: true,
@@ -290,7 +290,7 @@ const AdminPage = () => {
 			await Promise.all(preloads);
 
 			setSelectedApp(app);
-			
+
 			// Use requestAnimationFrame to ensure the component is rendered
 			await new Promise((resolve) => {
 				requestAnimationFrame(() => {
@@ -342,29 +342,32 @@ const AdminPage = () => {
 	};
 
 	const exportData = () => {
-		const appsToExport = selectedApps.length > 0 
-			? applications.filter(app => selectedApps.includes(app.id!))
-			: tabApplications;
+		const appsToExport =
+			selectedApps.length > 0
+				? applications.filter((app) => selectedApps.includes(app.id!))
+				: tabApplications;
 
 		if (!appsToExport.length) return;
 
 		const rows = appsToExport.map((app) => ({
 			"Application No": app.appNo || "",
 			"Full Name": `${app.firstName || ""} ${app.lastName || ""}`.trim(),
-			"Date of Birth": app.dob ? new Date(app.dob).toLocaleDateString("en-IN") : "",
+			"Date of Birth": app.dob
+				? new Date(app.dob).toLocaleDateString("en-IN")
+				: "",
 			"Applied Class": app.applyClass || "",
 			"Academic Year": app.academicYear || "",
-			"Department": app.stream || "",
+			Department: app.stream || "",
 			"Current Status": (app.status || "submitted").toUpperCase(),
-			"Submission Date": app.submissionDate 
-				? new Date(app.submissionDate as string).toLocaleDateString("en-IN") 
+			"Submission Date": app.submissionDate
+				? new Date(app.submissionDate as string).toLocaleDateString("en-IN")
 				: "",
 			"Father Name": app.fatherName || "",
 			"Father Phone": app.fatherPhone || "",
 			"Mother Name": app.motherName || "",
 			"Mother Phone": app.motherPhone || "",
 			"Residential Address": app.address?.replace(/\n/g, " ") || "",
-			"Nationality": app.nationality || "",
+			Nationality: app.nationality || "",
 			"Aadhar No": app.aadhar || "",
 			"Previous School": app.prevSchool || "",
 			"Previous Class": app.prevClass || "",
@@ -392,11 +395,14 @@ const AdminPage = () => {
 
 		// Add UTF-8 BOM for Excel
 		const BOM = "\uFEFF";
-		const blob = new Blob([BOM + csvContent], { type: "text/csv;charset=utf-8;" });
-		
-		const filename = selectedApps.length > 0 
-			? `selected_applications_${new Date().toISOString().split("T")[0]}.csv`
-			: `applications_${activeTab}_${new Date().toISOString().split("T")[0]}.csv`;
+		const blob = new Blob([BOM + csvContent], {
+			type: "text/csv;charset=utf-8;",
+		});
+
+		const filename =
+			selectedApps.length > 0
+				? `selected_applications_${new Date().toISOString().split("T")[0]}.csv`
+				: `applications_${activeTab}_${new Date().toISOString().split("T")[0]}.csv`;
 
 		const link = document.createElement("a");
 		link.href = URL.createObjectURL(blob);
@@ -406,9 +412,10 @@ const AdminPage = () => {
 	};
 
 	const handleBulkPrint = async () => {
-		const appsToPrint = selectedApps.length > 0 
-			? applications.filter(app => selectedApps.includes(app.id!))
-			: tabApplications;
+		const appsToPrint =
+			selectedApps.length > 0
+				? applications.filter((app) => selectedApps.includes(app.id!))
+				: tabApplications;
 
 		if (!appsToPrint.length) return;
 
@@ -462,9 +469,7 @@ const AdminPage = () => {
 		}
 	};
 
-	const uniqueClasses = [
-		...new Set(applications.map((a) => a.applyClass).filter(Boolean)),
-	];
+
 
 	const filteredApplications = applications
 		.filter((app) => {
@@ -472,10 +477,11 @@ const AdminPage = () => {
 			const appNo = (app.appNo || "").toLowerCase();
 			const father = (app.fatherName || "").toLowerCase();
 			const q = searchTerm.toLowerCase();
-			
+
 			// 1. Search Filter
-			const matchSearch = !q || name.includes(q) || appNo.includes(q) || father.includes(q);
-			
+			const matchSearch =
+				!q || name.includes(q) || appNo.includes(q) || father.includes(q);
+
 			// 2. Status/Tab Filter
 			let matchStatus = true;
 			if (activeTab === "all") {
@@ -485,14 +491,12 @@ const AdminPage = () => {
 			} else {
 				matchStatus = app.status === activeTab;
 			}
-			
+
 			// 3. Department/Stream Filter
-			const matchDepartment = departmentFilter === "all" || app.stream === departmentFilter;
-			
-			// 4. Class Filter
-			const matchClass = classFilter === "all" || app.applyClass === classFilter;
-			
-			return matchSearch && matchStatus && matchDepartment && matchClass;
+			const matchDepartment =
+				departmentFilter === "all" || app.stream === departmentFilter;
+
+			return matchSearch && matchStatus && matchDepartment;
 		})
 		.sort((a, b) => {
 			let av: any, bv: any;
@@ -502,9 +506,6 @@ const AdminPage = () => {
 			} else if (sortBy === "date") {
 				av = new Date(a.submissionDate as string).getTime();
 				bv = new Date(b.submissionDate as string).getTime();
-			} else if (sortBy === "class") {
-				av = a.applyClass || "";
-				bv = b.applyClass || "";
 			} else {
 				av = a.status || "submitted";
 				bv = b.status || "submitted";
@@ -518,12 +519,37 @@ const AdminPage = () => {
 	const tabApplications = filteredApplications;
 
 	const TABS = [
-		{ id: "all", label: "All", count: applications.filter(a => a.status !== 'deleted').length },
-		{ id: "submitted", label: "Pending", count: applications.filter(a => !a.status || a.status === 'submitted').length },
-		{ id: "reviewing", label: "Reviewing", count: applications.filter(a => a.status === 'reviewing').length },
-		{ id: "approved", label: "Approved", count: applications.filter(a => a.status === 'approved').length },
-		{ id: "rejected", label: "Rejected", count: applications.filter(a => a.status === 'rejected').length },
-		{ id: "deleted", label: "Trash", count: applications.filter(a => a.status === 'deleted').length },
+		{
+			id: "all",
+			label: "All",
+			count: applications.filter((a) => a.status !== "deleted").length,
+		},
+		{
+			id: "submitted",
+			label: "Pending",
+			count: applications.filter((a) => !a.status || a.status === "submitted")
+				.length,
+		},
+		{
+			id: "reviewing",
+			label: "Reviewing",
+			count: applications.filter((a) => a.status === "reviewing").length,
+		},
+		{
+			id: "approved",
+			label: "Approved",
+			count: applications.filter((a) => a.status === "approved").length,
+		},
+		{
+			id: "rejected",
+			label: "Rejected",
+			count: applications.filter((a) => a.status === "rejected").length,
+		},
+		{
+			id: "deleted",
+			label: "Trash",
+			count: applications.filter((a) => a.status === "deleted").length,
+		},
 	];
 
 	const handleSelectAll = () => {
@@ -674,8 +700,6 @@ const AdminPage = () => {
 											setStatusFilter(s);
 											setActiveTab(s);
 										}}
-										classFilter={classFilter}
-										onClassChange={setClassFilter}
 										departmentFilter={departmentFilter}
 										onDepartmentChange={setDepartmentFilter}
 										sortBy={sortBy}
@@ -684,9 +708,6 @@ const AdminPage = () => {
 										onSortOrderToggle={() =>
 											setSortOrder((s) => (s === "asc" ? "desc" : "asc"))
 										}
-										uniqueClasses={uniqueClasses}
-										onDropdownClose={() => setDropdownOpen(null)}
-										onRestore={handleRestore}
 									/>
 								</div>
 
@@ -733,12 +754,19 @@ const AdminPage = () => {
 											variant="outline"
 											size="sm"
 											loading={processingAction === "bulk-print"}
-											disabled={processingAction !== null && processingAction !== "bulk-print"}
+											disabled={
+												processingAction !== null &&
+												processingAction !== "bulk-print"
+											}
 											onClick={handleBulkPrint}
 											className={`flex items-center gap-1.5 bg-white border-blue-200 rounded-lg text-sm font-semibold shadow-sm whitespace-nowrap transition-all ${bulkPrintReady ? "text-emerald-700 border-emerald-200 bg-emerald-50 hover:bg-emerald-100" : "text-blue-700 hover:bg-blue-50"}`}
 										>
-											<Printer className="w-4 h-4" /> 
-											{processingAction === "bulk-print" ? "Cooking..." : bulkPrintReady ? "Ready to Print" : "Bulk Print"}
+											<Printer className="w-4 h-4" />
+											{processingAction === "bulk-print"
+												? "Cooking..."
+												: bulkPrintReady
+													? "Ready to Print"
+													: "Bulk Print"}
 										</Button>
 										<button
 											type="button"
