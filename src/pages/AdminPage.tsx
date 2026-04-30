@@ -113,8 +113,8 @@ const AdminPage = () => {
 	const [bulkPrintReady, setBulkPrintReady] = useState(false);
 	const [classFilter, setClassFilter] = useState("all");
 	const [departmentFilter, setDepartmentFilter] = useState("all");
-	const [sortBy, setSortBy] = useState("date");
-	const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+	const [sortBy, setSortBy] = useState("name");
+	const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 	const [selectedApps, setSelectedApps] = useState<string[]>([]);
 	
 	// Reset bulk print ready state when selection or tab changes
@@ -466,50 +466,56 @@ const AdminPage = () => {
 		...new Set(applications.map((a) => a.applyClass).filter(Boolean)),
 	];
 
-	const filtered = applications
+	const filteredApplications = applications
 		.filter((app) => {
 			const name = `${app.firstName || ""} ${app.lastName || ""}`.toLowerCase();
 			const appNo = (app.appNo || "").toLowerCase();
 			const father = (app.fatherName || "").toLowerCase();
 			const q = searchTerm.toLowerCase();
-			const matchSearch =
-				!q || name.includes(q) || appNo.includes(q) || father.includes(q);
-			const matchStatus =
-				statusFilter === "all"
-					? app.status !== "deleted"
-					: app.status === statusFilter;
-			const matchClass =
-				classFilter === "all" || app.applyClass === classFilter;
-			const matchDepartment =
-				departmentFilter === "all" || app.stream === departmentFilter;
-			return matchSearch && matchStatus && matchClass && matchDepartment;
+			
+			// 1. Search Filter
+			const matchSearch = !q || name.includes(q) || appNo.includes(q) || father.includes(q);
+			
+			// 2. Status/Tab Filter
+			let matchStatus = true;
+			if (activeTab === "all") {
+				matchStatus = app.status !== "deleted";
+			} else if (activeTab === "submitted") {
+				matchStatus = !app.status || app.status === "submitted";
+			} else {
+				matchStatus = app.status === activeTab;
+			}
+			
+			// 3. Department/Stream Filter
+			const matchDepartment = departmentFilter === "all" || app.stream === departmentFilter;
+			
+			// 4. Class Filter
+			const matchClass = classFilter === "all" || app.applyClass === classFilter;
+			
+			return matchSearch && matchStatus && matchDepartment && matchClass;
 		})
 		.sort((a, b) => {
-			let av: string | Date, bv: string | Date;
-			if (sortBy === "date") {
-				av = new Date(a.submissionDate as string);
-				bv = new Date(b.submissionDate as string);
-			} else if (sortBy === "name") {
-				av = `${a.firstName}`;
-				bv = `${b.firstName}`;
+			let av: any, bv: any;
+			if (sortBy === "name") {
+				av = `${a.firstName} ${a.lastName}`.toLowerCase();
+				bv = `${b.firstName} ${b.lastName}`.toLowerCase();
+			} else if (sortBy === "date") {
+				av = new Date(a.submissionDate as string).getTime();
+				bv = new Date(b.submissionDate as string).getTime();
 			} else if (sortBy === "class") {
-				av = a.applyClass;
-				bv = b.applyClass;
+				av = a.applyClass || "";
+				bv = b.applyClass || "";
 			} else {
 				av = a.status || "submitted";
 				bv = b.status || "submitted";
 			}
-			return sortOrder === "asc" ? (av > bv ? 1 : -1) : av < bv ? 1 : -1;
+
+			if (av < bv) return sortOrder === "asc" ? -1 : 1;
+			if (av > bv) return sortOrder === "asc" ? 1 : -1;
+			return 0;
 		});
 
-	const tabApplications =
-		activeTab === "all"
-			? filtered
-			: filtered.filter((app) => {
-					if (activeTab === "submitted")
-						return !app.status || app.status === "submitted";
-					return app.status === activeTab;
-				});
+	const tabApplications = filteredApplications;
 
 	const TABS = [
 		{ id: "all", label: "All", count: applications.filter(a => a.status !== 'deleted').length },

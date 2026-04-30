@@ -86,8 +86,8 @@ export const AdminFilters = ({
 				value={sortBy}
 				onChange={(e) => onSortByChange(e.target.value)}
 			>
-				<option value="date">Date</option>
-				<option value="name">Name</option>
+				<option value="name">Sort A-Z (Name)</option>
+				<option value="date">Submission Date</option>
 				<option value="class">Class</option>
 			</select>
 			<button
