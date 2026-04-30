@@ -114,8 +114,6 @@ const AdminPage = () => {
 	);
 	const [bulkPrintReady, setBulkPrintReady] = useState(false);
 	const [departmentFilter, setDepartmentFilter] = useState("all");
-	const [sortBy, setSortBy] = useState("name");
-	const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 	const [selectedApps, setSelectedApps] = useState<string[]>([]);
 
 	// Reset bulk print ready state when selection or tab changes
@@ -499,21 +497,9 @@ const AdminPage = () => {
 			return matchSearch && matchStatus && matchDepartment;
 		})
 		.sort((a, b) => {
-			let av: any, bv: any;
-			if (sortBy === "name") {
-				av = `${a.firstName} ${a.lastName}`.toLowerCase();
-				bv = `${b.firstName} ${b.lastName}`.toLowerCase();
-			} else if (sortBy === "date") {
-				av = new Date(a.submissionDate as string).getTime();
-				bv = new Date(b.submissionDate as string).getTime();
-			} else {
-				av = a.status || "submitted";
-				bv = b.status || "submitted";
-			}
-
-			if (av < bv) return sortOrder === "asc" ? -1 : 1;
-			if (av > bv) return sortOrder === "asc" ? 1 : -1;
-			return 0;
+			const av = new Date(a.submissionDate as string).getTime();
+			const bv = new Date(b.submissionDate as string).getTime();
+			return bv - av; // Sort by date descending by default
 		});
 
 	const tabApplications = filteredApplications;
@@ -702,12 +688,6 @@ const AdminPage = () => {
 										}}
 										departmentFilter={departmentFilter}
 										onDepartmentChange={setDepartmentFilter}
-										sortBy={sortBy}
-										onSortByChange={setSortBy}
-										sortOrder={sortOrder}
-										onSortOrderToggle={() =>
-											setSortOrder((s) => (s === "asc" ? "desc" : "asc"))
-										}
 									/>
 								</div>
 

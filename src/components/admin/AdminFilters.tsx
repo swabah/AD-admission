@@ -1,5 +1,5 @@
 import React from "react";
-import { Search, ArrowUpAZ, ArrowDownAZ } from "lucide-react";
+import { Search } from "lucide-react";
 
 interface AdminFiltersProps {
 	searchTerm: string;
@@ -8,10 +8,6 @@ interface AdminFiltersProps {
 	onStatusChange: (value: string) => void;
 	departmentFilter: string;
 	onDepartmentChange: (value: string) => void;
-	sortBy: string;
-	onSortByChange: (value: string) => void;
-	sortOrder: "asc" | "desc";
-	onSortOrderToggle: () => void;
 }
 
 export const AdminFilters = ({
@@ -21,10 +17,6 @@ export const AdminFilters = ({
 	onStatusChange,
 	departmentFilter,
 	onDepartmentChange,
-	sortBy,
-	onSortByChange,
-	sortOrder,
-	onSortOrderToggle,
 }: AdminFiltersProps) => (
 	<div className="flex flex-col lg:flex-row gap-4">
 		<div className="relative flex-1">
@@ -62,26 +54,7 @@ export const AdminFilters = ({
 				<option value="BS">BS</option>
 				<option value="N/A">N/A</option>
 			</select>
-			<select
-				className="shrink-0 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#0a1628] transition-colors font-medium text-slate-700"
-				value={sortBy}
-				onChange={(e) => onSortByChange(e.target.value)}
-			>
-				<option value="name">Sort A-Z</option>
-				<option value="date">Submission Date</option>
 
-			</select>
-			<button
-				type="button"
-				className="shrink-0 p-2.5 bg-slate-50 border border-slate-200 hover:bg-slate-100 rounded-xl text-slate-600 transition-colors"
-				onClick={onSortOrderToggle}
-			>
-				{sortOrder === "asc" ? (
-					<ArrowUpAZ className="w-5 h-5" />
-				) : (
-					<ArrowDownAZ className="w-5 h-5" />
-				)}
-			</button>
 		</div>
 	</div>
 );
