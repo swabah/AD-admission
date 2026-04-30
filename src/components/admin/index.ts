@@ -15,3 +15,4 @@ export { StatCard } from './StatCard';
 export { AdminTopbar } from './AdminTopbar';
 export { AdminFilters } from './AdminFilters';
 export { AdminSummaryStats } from './AdminSummaryStats';
+export { ExportModal } from './ExportModal';

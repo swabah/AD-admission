@@ -24,6 +24,7 @@ import {
 	AdminTopbar,
 	AdminFilters,
 	AdminSummaryStats,
+	ExportModal,
 } from "../components/admin";
 import { Button } from "@/components/ui/button";
 import { downloadApplicationPDF } from "../utils/pdfDownloader";
@@ -114,7 +115,9 @@ const AdminPage = () => {
 	);
 	const [bulkPrintReady, setBulkPrintReady] = useState(false);
 	const [departmentFilter, setDepartmentFilter] = useState("all");
+	const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 	const [selectedApps, setSelectedApps] = useState<string[]>([]);
+	const [exportModalOpen, setExportModalOpen] = useState(false);
 
 	// Reset bulk print ready state when selection or tab changes
 	useEffect(() => {
@@ -339,11 +342,17 @@ const AdminPage = () => {
 		}
 	};
 
-	const exportData = () => {
-		const appsToExport =
+	const exportData = (departmentOverride?: string) => {
+		let appsToExport =
 			selectedApps.length > 0
 				? applications.filter((app) => selectedApps.includes(app.id!))
 				: tabApplications;
+
+		if (departmentOverride) {
+			appsToExport = applications.filter(
+				(app) => app.status !== "deleted" && (departmentOverride === "all" || app.stream === departmentOverride)
+			);
+		}
 
 		if (!appsToExport.length) return;
 
@@ -409,11 +418,17 @@ const AdminPage = () => {
 		URL.revokeObjectURL(link.href);
 	};
 
-	const handleBulkPrint = async () => {
-		const appsToPrint =
+	const handleBulkPrint = async (departmentOverride?: string) => {
+		let appsToPrint =
 			selectedApps.length > 0
 				? applications.filter((app) => selectedApps.includes(app.id!))
 				: tabApplications;
+
+		if (departmentOverride) {
+			appsToPrint = applications.filter(
+				(app) => app.status !== "deleted" && (departmentOverride === "all" || app.stream === departmentOverride)
+			);
+		}
 
 		if (!appsToPrint.length) return;
 
@@ -497,9 +512,12 @@ const AdminPage = () => {
 			return matchSearch && matchStatus && matchDepartment;
 		})
 		.sort((a, b) => {
-			const av = new Date(a.submissionDate as string).getTime();
-			const bv = new Date(b.submissionDate as string).getTime();
-			return bv - av; // Sort by date descending by default
+			const av = `${a.firstName || ""} ${a.lastName || ""}`.toLowerCase();
+			const bv = `${b.firstName || ""} ${b.lastName || ""}`.toLowerCase();
+			
+			if (av < bv) return sortOrder === "asc" ? -1 : 1;
+			if (av > bv) return sortOrder === "asc" ? 1 : -1;
+			return 0;
 		});
 
 	const tabApplications = filteredApplications;
@@ -634,12 +652,25 @@ const AdminPage = () => {
 					<ApplicationPrintDocument app={downloadingApp} />
 				</div>
 			)}
+			<ExportModal
+				isOpen={exportModalOpen}
+				onClose={() => setExportModalOpen(false)}
+				onExportCSV={(dept) => {
+					setExportModalOpen(false);
+					exportData(dept);
+				}}
+				onBulkPrint={(dept) => {
+					setExportModalOpen(false);
+					handleBulkPrint(dept);
+				}}
+				processingAction={processingAction}
+				bulkPrintReady={bulkPrintReady}
+			/>
 			<div className="flex min-h-screen font-sans bg-slate-50 text-slate-800 no-print">
 				{/* Sidebar */}
 				<AdminSidebar
 					applications={applications}
-					onExport={exportData}
-					onExportPDF={handleBulkPrint}
+					onExportClick={() => setExportModalOpen(true)}
 					onRefresh={() => fetchApplications(1)}
 					onLogout={handleLogout}
 					mobileMenuOpen={mobileMenuOpen}
@@ -661,8 +692,7 @@ const AdminPage = () => {
 				<main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
 					<AdminTopbar
 						onMenuClick={() => setMobileMenuOpen(true)}
-						onExportCSV={exportData}
-						onExportPDF={handleBulkPrint}
+						onExportClick={() => setExportModalOpen(true)}
 						onRefresh={() => fetchApplications(1)}
 						isLoading={loading}
 						processingAction={processingAction}
@@ -688,6 +718,10 @@ const AdminPage = () => {
 										}}
 										departmentFilter={departmentFilter}
 										onDepartmentChange={setDepartmentFilter}
+										sortOrder={sortOrder}
+										onSortOrderToggle={() =>
+											setSortOrder((s) => (s === "asc" ? "desc" : "asc"))
+										}
 									/>
 								</div>
 

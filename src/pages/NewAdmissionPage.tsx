@@ -40,33 +40,43 @@ const NewAdmissionPage = () => {
 			agreeCheck: false,
 		},
 	});
-    
-    const selectedStream = watch("stream");
 
-    const getClassOptions = () => {
-        switch (selectedStream) {
-            case "Root Exc":
-                return ["Class 8", "Class 9", "Class 10"];
-            case "HS":
-                return ["Plus One", "Plus Two"];
-            case "BS":
-                return ["Degree 1st Year", "Degree 2nd Year", "Degree 3rd Year"];
-            case "AD":
-                return ["AD 1st Year", "AD 2nd Year", "AD 3rd Year", "AD 4th Year", "AD 5th Year"];
-            case "PG":
-                return ["PG 1st Year", "PG 2nd Year"];
-            default:
-                return [];
-        }
-    };
+	const selectedStream = watch("stream");
+
+	const getClassOptions = () => {
+		switch (selectedStream) {
+			case "Root Exc":
+				return ["Class 8", "Class 9", "Class 10"];
+			case "HS":
+				return ["Plus One", "Plus Two"];
+			case "BS":
+				return ["Degree 1st Year", "Degree 2nd Year", "Degree 3rd Year"];
+			default:
+				return [];
+		}
+	};
 
 	const [submitError, setSubmitError] = useState<string | null>(null);
 	const [showSuccess, setShowSuccess] = useState(false);
 	const [appNo, setAppNo] = useState("");
 
 	const stepFields: Record<number, (keyof AdmissionFormData)[]> = {
-		1: ["firstName", "lastName", "dob", "bloodGroup", "nationality", "aadhar", "address"],
-		2: ["applyClass", "academicYear", "prevSchool", "prevClass", "prevPercentage"],
+		1: [
+			"firstName",
+			"lastName",
+			"dob",
+			"bloodGroup",
+			"nationality",
+			"aadhar",
+			"address",
+		],
+		2: [
+			"applyClass",
+			"academicYear",
+			"prevSchool",
+			"prevClass",
+			"prevPercentage",
+		],
 		3: ["fatherName", "fatherPhone", "motherName"],
 		4: ["agreeCheck"],
 	};
@@ -74,16 +84,16 @@ const NewAdmissionPage = () => {
 	const getStepHasError = (step: number) => {
 		const fields = stepFields[step];
 		if (!fields) return false;
-		
+
 		// Photo error is specifically for step 1
 		if (step === 1 && photoError) return true;
-		
-		return fields.some(field => !!errors[field]);
+
+		return fields.some((field) => !!errors[field]);
 	};
 
 	const nextStep = async () => {
 		const fieldsToValidate = stepFields[currentStep] || [];
-		
+
 		if (currentStep === 1 && !photoDataURL) {
 			setPhotoError("Student photo is required");
 			window.scrollTo({ top: 0, behavior: "smooth" });
@@ -203,9 +213,12 @@ const NewAdmissionPage = () => {
 						<form
 							onSubmit={handleSubmit(onSubmit, (errs) => {
 								// Find the first step that has any of the errors
-								const firstStepWithError = [1, 2, 3, 4].find(step => {
+								const firstStepWithError = [1, 2, 3, 4].find((step) => {
 									const fields = stepFields[step] || [];
-									return fields.some(field => !!errs[field]) || (step === 1 && !photoDataURL);
+									return (
+										fields.some((field) => !!errs[field]) ||
+										(step === 1 && !photoDataURL)
+									);
 								});
 								if (firstStepWithError) {
 									setCurrentStep(firstStepWithError);
@@ -218,9 +231,15 @@ const NewAdmissionPage = () => {
 								<div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 flex items-start gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
 									<AlertCircle className="w-5 h-5 text-rose-500 mt-0.5" />
 									<div>
-										<p className="text-sm font-bold text-rose-800">Please correct the errors before submitting.</p>
+										<p className="text-sm font-bold text-rose-800">
+											Please correct the errors before submitting.
+										</p>
 										<p className="text-xs text-rose-600 mt-1">
-											Errors detected in: { [1, 2, 3, 4].filter(s => getStepHasError(s)).map(s => `Step ${s}`).join(", ") }
+											Errors detected in:{" "}
+											{[1, 2, 3, 4]
+												.filter((s) => getStepHasError(s))
+												.map((s) => `Step ${s}`)
+												.join(", ")}
 										</p>
 									</div>
 								</div>
@@ -335,7 +354,7 @@ const NewAdmissionPage = () => {
 											label="Department"
 											id="stream"
 											type="select"
-											options={["Root Exc", "HS", "BS", "AD", "PG", "N/A"]}
+											options={["Root Exc", "HS", "BS", "N/A"]}
 											registration={register("stream")}
 											error={errors.stream?.message}
 										/>

@@ -4,8 +4,7 @@ import { Button } from "@/components/ui/button";
 
 interface AdminTopbarProps {
 	onMenuClick: () => void;
-	onExportCSV: () => void;
-	onExportPDF: () => void;
+	onExportClick: () => void;
 	onRefresh: () => void;
 	isLoading: boolean;
 	processingAction: string | null;
@@ -14,8 +13,7 @@ interface AdminTopbarProps {
 
 export const AdminTopbar = ({
 	onMenuClick,
-	onExportCSV,
-	onExportPDF,
+	onExportClick,
 	onRefresh,
 	isLoading,
 	processingAction,
@@ -37,19 +35,10 @@ export const AdminTopbar = ({
 		<div className="flex items-center gap-3">
 			<button
 				type="button"
-				onClick={onExportCSV}
+				onClick={onExportClick}
 				className="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-semibold text-[#0a1628] bg-white border border-slate-200 hover:bg-slate-50 rounded-lg shadow-sm transition-colors"
 			>
-				<Download className="w-4 h-4" /> CSV
-			</button>
-			<button
-				type="button"
-				onClick={onExportPDF}
-				disabled={processingAction !== null && processingAction !== "bulk-print"}
-				className={`hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-semibold border rounded-lg shadow-sm transition-all disabled:opacity-50 ${bulkPrintReady ? "text-emerald-700 bg-emerald-50 border-emerald-200 hover:bg-emerald-100" : "text-[#0a1628] bg-white border-slate-200 hover:bg-slate-50"}`}
-			>
-				<Printer className="w-4 h-4" />{" "}
-				{processingAction === "bulk-print" ? "Cooking..." : bulkPrintReady ? "Ready to Print" : "Bulk Print"}
+				<Download className="w-4 h-4" /> Export
 			</button>
 			<Button
 				type="button"

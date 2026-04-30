@@ -248,7 +248,7 @@ const EditApplicationModal = ({
                 label="Department"
                 id="stream"
                 type="select"
-                options={["Root Exc", "HS", "BS", "AD", "PG", "N/A"]}
+                options={["Root Exc", "HS", "BS", "N/A"]}
                 registration={register("stream")}
                 error={errors.stream?.message}
               />
