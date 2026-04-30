@@ -37,7 +37,7 @@ export const AdminSidebar = ({ applications, onExportClick, onRefresh, onLogout,
 	];
 
 	return (
-		<aside className={`fixed inset-y-0 left-0 z-40 w-64 bg-gradient-to-b from-[#0a1628] to-[#132238] shadow-sm transform transition-transform duration-300 flex flex-col ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0 lg:static"}`}>
+		<aside className={`fixed inset-y-0 left-0 z-40 w-64 bg-gradient-to-b from-[#0a1628] to-[#132238] shadow-sm transform transition-transform duration-300 flex flex-col ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0 lg:sticky lg:top-0 lg:h-[100dvh]"}`}>
 			<div className="p-8 border-b border-white/10">
 				<div className="mb-6 bg-white p-1.5 rounded-2xl w-fit shadow-xl shadow-black/20">
 					<img src={logo} alt="Logo" className="w-12 h-12 object-contain" />

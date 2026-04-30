@@ -19,7 +19,7 @@ export const AdminTopbar = ({
 	processingAction,
 	bulkPrintReady,
 }: AdminTopbarProps) => (
-	<header className="shrink-0 bg-white border-b border-slate-200 px-4 lg:px-8 py-4 flex items-center justify-between z-10 shadow-sm">
+	<header className="sticky top-0 z-30 shrink-0 bg-white border-b border-slate-200 px-4 lg:px-8 py-4 flex items-center justify-between shadow-sm">
 		<div className="flex items-center gap-4">
 			<button
 				type="button"

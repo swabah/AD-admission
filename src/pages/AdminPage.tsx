@@ -666,7 +666,7 @@ const AdminPage = () => {
 				processingAction={processingAction}
 				bulkPrintReady={bulkPrintReady}
 			/>
-			<div className="flex min-h-screen font-sans bg-slate-50 text-slate-800 no-print">
+			<div className="flex min-h-[100dvh] font-sans bg-slate-50 text-slate-800 no-print">
 				{/* Sidebar */}
 				<AdminSidebar
 					applications={applications}
@@ -689,7 +689,7 @@ const AdminPage = () => {
 				)}
 
 				{/* Main Area */}
-				<main className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
+				<main className="flex-1 flex flex-col min-w-0">
 					<AdminTopbar
 						onMenuClick={() => setMobileMenuOpen(true)}
 						onExportClick={() => setExportModalOpen(true)}
@@ -699,7 +699,7 @@ const AdminPage = () => {
 						bulkPrintReady={bulkPrintReady}
 					/>
 
-					<div className="flex-1 overflow-y-auto bg-slate-50">
+					<div className="flex-1 bg-slate-50">
 						<div className="p-4 lg:p-8 space-y-6 max-w-7xl mx-auto">
 							<AdminSummaryStats
 								applications={applications}
@@ -707,7 +707,7 @@ const AdminPage = () => {
 							/>
 
 							<div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-								<div className="p-4 lg:p-6 border-b border-slate-100 bg-white sticky top-0 z-20">
+								<div className="p-4 lg:p-6 border-b border-slate-100 bg-white sticky top-[72px] z-20">
 									<AdminFilters
 										searchTerm={searchTerm}
 										onSearchChange={setSearchTerm}
