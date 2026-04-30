@@ -348,9 +348,9 @@ const AdminPage = () => {
 				? applications.filter((app) => selectedApps.includes(app.id!))
 				: tabApplications;
 
-		if (departmentOverride) {
-			appsToExport = applications.filter(
-				(app) => app.status !== "deleted" && (departmentOverride === "all" || app.stream === departmentOverride)
+		if (departmentOverride && departmentOverride !== "all") {
+			appsToExport = appsToExport.filter(
+				(app) => app.stream === departmentOverride
 			);
 		}
 
@@ -373,7 +373,7 @@ const AdminPage = () => {
 			"Father Phone": app.fatherPhone || "",
 			"Mother Name": app.motherName || "",
 			"Mother Phone": app.motherPhone || "",
-			"Residential Address": app.address?.replace(/\n/g, " ") || "",
+			"Residential Address": app.address?.replace(/[\r\n]+/g, " ") || "",
 			Nationality: app.nationality || "",
 			"Aadhar No": app.aadhar || "",
 			"Previous School": app.prevSchool || "",
@@ -424,9 +424,9 @@ const AdminPage = () => {
 				? applications.filter((app) => selectedApps.includes(app.id!))
 				: tabApplications;
 
-		if (departmentOverride) {
-			appsToPrint = applications.filter(
-				(app) => app.status !== "deleted" && (departmentOverride === "all" || app.stream === departmentOverride)
+		if (departmentOverride && departmentOverride !== "all") {
+			appsToPrint = appsToPrint.filter(
+				(app) => app.stream === departmentOverride
 			);
 		}
 
