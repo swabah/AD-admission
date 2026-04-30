@@ -268,7 +268,6 @@ const LocalAdmissionPage = () => {
 										id="prevClass"
 										registration={register("prevClass")}
 										error={errors.prevClass?.message}
-										required
 									/>
 									<InputField
 										label="Academic Year"

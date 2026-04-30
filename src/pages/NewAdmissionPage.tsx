@@ -30,6 +30,7 @@ const NewAdmissionPage = () => {
 		handleSubmit,
 		trigger,
 		getValues,
+		watch,
 		formState: { errors, isSubmitting },
 	} = useForm<AdmissionFormData>({
 		resolver: zodResolver(admissionSchema),
@@ -39,6 +40,21 @@ const NewAdmissionPage = () => {
 			agreeCheck: false,
 		},
 	});
+    
+    const selectedStream = watch("stream");
+
+    const getClassOptions = () => {
+        switch (selectedStream) {
+            case "Root Exc":
+                return ["Class 8", "Class 9", "Class 10"];
+            case "HS":
+                return ["Plus One", "Plus Two"];
+            case "BS":
+                return ["Degree 1st Year", "Degree 2nd Year", "Degree 3rd Year"];
+            default:
+                return ["Class 8", "Class 9", "Class 10", "Plus One", "Plus Two", "Degree"];
+        }
+    };
 
 	const [submitError, setSubmitError] = useState<string | null>(null);
 	const [showSuccess, setShowSuccess] = useState(false);
@@ -263,7 +279,6 @@ const NewAdmissionPage = () => {
 												]}
 												registration={register("bloodGroup")}
 												error={errors.bloodGroup?.message}
-												required
 											/>
 										</div>
 									</div>
@@ -273,7 +288,6 @@ const NewAdmissionPage = () => {
 											id="nationality"
 											registration={register("nationality")}
 											error={errors.nationality?.message}
-											required
 										/>
 										<InputField
 											label="Student Phone"
@@ -305,19 +319,12 @@ const NewAdmissionPage = () => {
 								<div className="space-y-6">
 									<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
 										<InputField
-											label="Applying for Class"
-											id="applyClass"
+											label="Academic Year"
+											id="academicYear"
 											type="select"
-											options={[
-												"Class 8",
-												"Class 9",
-												"Class 10",
-												"Plus One",
-												"Plus Two",
-												"Degree",
-											]}
-											registration={register("applyClass")}
-											error={errors.applyClass?.message}
+											options={["2026–27"]}
+											registration={register("academicYear")}
+											error={errors.academicYear?.message}
 											required
 										/>
 										<InputField
@@ -329,12 +336,12 @@ const NewAdmissionPage = () => {
 											error={errors.stream?.message}
 										/>
 										<InputField
-											label="Academic Year"
-											id="academicYear"
+											label="Applying for Class"
+											id="applyClass"
 											type="select"
-											options={["2026–27"]}
-											registration={register("academicYear")}
-											error={errors.academicYear?.message}
+											options={getClassOptions()}
+											registration={register("applyClass")}
+											error={errors.applyClass?.message}
 											required
 										/>
 									</div>
@@ -367,14 +374,12 @@ const NewAdmissionPage = () => {
 											id="prevClass"
 											registration={register("prevClass")}
 											error={errors.prevClass?.message}
-											required
 										/>
 										<InputField
 											label="Percentage (%)"
 											id="prevPercentage"
 											registration={register("prevPercentage")}
 											error={errors.prevPercentage?.message}
-											required
 										/>
 									</div>
 									<InputField

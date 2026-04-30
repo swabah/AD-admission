@@ -34,10 +34,26 @@ const EditApplicationModal = ({
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<AdmissionFormData>({
     resolver: zodResolver(admissionSchema),
   });
+
+  const selectedStream = watch("stream");
+
+  const getClassOptions = () => {
+    switch (selectedStream) {
+      case "Root Exc":
+        return ["Class 8", "Class 9", "Class 10"];
+      case "HS":
+        return ["Plus One", "Plus Two"];
+      case "BS":
+        return ["Degree 1st Year", "Degree 2nd Year", "Degree 3rd Year"];
+      default:
+        return ["Class 8", "Class 9", "Class 10", "Plus One", "Plus Two", "Degree"];
+    }
+  };
 
   useEffect(() => {
     if (app && open) {
@@ -171,7 +187,6 @@ const EditApplicationModal = ({
                   options={["A+", "B+", "O+", "AB+", "A-", "B-", "O-", "AB-"]}
                   registration={register("bloodGroup")}
                   error={errors.bloodGroup?.message}
-                  required
                 />
               </div>
             </div>
@@ -181,7 +196,6 @@ const EditApplicationModal = ({
                 id="nationality"
                 registration={register("nationality")}
                 error={errors.nationality?.message}
-                required
               />
               <InputField
                 label="Aadhar Number"
@@ -221,7 +235,7 @@ const EditApplicationModal = ({
                 label="Applying Class"
                 id="applyClass"
                 type="select"
-                options={["Class 8", "Class 9", "Class 10", "Plus One", "Plus Two", "Degree"]}
+                options={getClassOptions()}
                 registration={register("applyClass")}
                 error={errors.applyClass?.message}
                 required
@@ -265,14 +279,12 @@ const EditApplicationModal = ({
                 id="prevClass"
                 registration={register("prevClass")}
                 error={errors.prevClass?.message}
-                required
               />
               <InputField
                 label="Percentage (%)"
                 id="prevPercentage"
                 registration={register("prevPercentage")}
                 error={errors.prevPercentage?.message}
-                required
               />
             </div>
           </div>

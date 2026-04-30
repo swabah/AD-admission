@@ -16,8 +16,8 @@ export const admissionSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
   dob: z.string().min(1, "Date of birth is required"),
-  bloodGroup: z.string().min(1, "Blood group is required"),
-  nationality: z.string().min(1, "Nationality is required"),
+  bloodGroup: z.string().optional(),
+  nationality: z.string().optional(),
   aadhar: z.string().min(1, "Aadhar number is required").refine((val) => {
     const clean = val.replace(/\s/g, "");
     return /^\d{12}$/.test(clean);
@@ -30,9 +30,9 @@ export const admissionSchema = z.object({
   academicYear: z.string().min(1, "Please select the academic year"),
   stream: z.string().optional(),
   prevSchool: z.string().min(1, "Previous school name is required"),
-  prevClass: z.string().min(1, "Previous class is required"),
+  prevClass: z.string().optional(),
   prevBoard: z.string().optional(),
-  prevPercentage: z.string().min(1, "Previous year percentage is required"),
+  prevPercentage: z.string().optional(),
   achievements: z.string().optional(),
 
   // Step 3: Family
@@ -64,7 +64,7 @@ export const localAdmissionSchema = z.object({
   studentPhone: phoneSchema.optional(),
   applyClass: z.string().min(1, "Please select the class"),
   academicYear: z.string().min(1, "Please select the academic year"),
-  prevClass: z.string().min(1, "Previous class is required"),
+  prevClass: z.string().optional(),
   fatherName: z.string().min(1, "Father's name is required"),
   fatherPhone: requiredPhoneSchema,
   prevBoard: z.string().optional(),

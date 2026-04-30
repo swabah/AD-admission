@@ -63,7 +63,7 @@ export const validateStep = (
     if (!formData.firstName?.trim()) errors.firstName = "First name is required";
     if (!formData.lastName?.trim()) errors.lastName = "Last name is required";
     if (!formData.dob) errors.dob = "Date of birth is required";
-    if (!formData.bloodGroup) errors.bloodGroup = "Blood group is required";
+
     if (!formData.address?.trim()) errors.address = "Residential address is required";
     if (!formData.aadhar?.trim()) {
       errors.aadhar = "Aadhar number is required";
@@ -83,7 +83,7 @@ export const validateStep = (
     if (!formData.applyClass) errors.applyClass = "Please select the class you are applying for";
     if (!formData.academicYear) errors.academicYear = "Please select the academic year";
     if (!formData.prevSchool?.trim()) errors.prevSchool = "Previous school name is required";
-    if (!formData.prevPercentage?.trim()) errors.prevPercentage = "Previous year percentage is required";
+
   }
 
 	if (step === 3) {
